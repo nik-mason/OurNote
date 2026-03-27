@@ -113,15 +113,15 @@
                     class="size-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-primary/20 border border-primary/20">
                     <span class="material-symbols-outlined text-4xl text-primary">login</span>
                 </div>
-                <h2 class="text-5xl font-black text-white tracking-tighter mb-4">반가워요!</h2>
+                <h2 class="text-5xl font-black text-[var(--text-white)] tracking-tighter mb-4">반가워요!</h2>
                 <p class="text-text-dim text-lg">우리만의 소중한 공간으로 들어오세요.</p>
             </div>
 
-            <div class="flex gap-2 p-1.5 bg-white/5 rounded-2xl mb-10 border border-white/5">
+            <div class="flex gap-2 p-1.5 bg-[var(--card-bg)] rounded-2xl mb-10 border border-[var(--glass-border)]">
                 <button id="radio-student-btn"
-                    class="flex-1 py-4 rounded-[14px] bg-primary text-white font-bold transition-all shadow-lg shadow-primary/20">학생</button>
+                    class="flex-1 py-4 rounded-[14px] bg-primary text-[var(--text-white)] font-bold transition-all shadow-lg shadow-primary/20">학생</button>
                 <button id="radio-teacher-btn"
-                    class="flex-1 py-4 rounded-[14px] text-text-dim font-bold hover:text-white transition-all">선생님</button>
+                    class="flex-1 py-4 rounded-[14px] text-text-dim font-bold hover:text-[var(--text-white)] transition-all">선생님</button>
                 <input type="hidden" id="login-mode" value="student">
             </div>
 
@@ -130,14 +130,14 @@
                     <span
                         class="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-dim">pin</span>
                     <input type="text" id="student-id"
-                        class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-6 text-white outline-none focus:border-primary transition-all placeholder:text-white/20"
+                        class="w-full bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-2xl py-5 pl-14 pr-6 text-[var(--text-white)] outline-none focus:border-primary transition-all placeholder:text-text-dim"
                         placeholder="출석 번호 (01)">
                 </div>
                 <div class="relative">
                     <span
                         class="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-dim">person</span>
                     <input type="text" id="student-name"
-                        class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-6 text-white outline-none focus:border-primary transition-all placeholder:text-white/20"
+                        class="w-full bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-2xl py-5 pl-14 pr-6 text-[var(--text-white)] outline-none focus:border-primary transition-all placeholder:text-text-dim"
                         placeholder="이름">
                 </div>
             </div>
@@ -147,14 +147,14 @@
                     <span
                         class="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-dim">badge</span>
                     <input type="text" id="teacher-id"
-                        class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-6 text-white outline-none focus:border-primary transition-all placeholder:text-white/20"
+                        class="w-full bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-2xl py-5 pl-14 pr-6 text-[var(--text-white)] outline-none focus:border-primary transition-all placeholder:text-text-dim"
                         placeholder="아이디">
                 </div>
                 <div class="relative">
                     <span
                         class="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-dim">key</span>
                     <input type="password" id="teacher-pw"
-                        class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-6 text-white outline-none focus:border-primary transition-all placeholder:text-white/20"
+                        class="w-full bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-2xl py-5 pl-14 pr-6 text-[var(--text-white)] outline-none focus:border-primary transition-all placeholder:text-text-dim"
                         placeholder="비밀번호">
                 </div>
             </div>

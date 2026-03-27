@@ -248,21 +248,24 @@
                                 <h4 class="settings-section-title">기본 테마 설정</h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
                                     <div class="theme-option active" data-theme="dark">
-                                        <div
-                                            class="size- full bg-slate-900 border border-white/10 rounded-xl mb-3 h-20">
-                                        </div>
+                                        <div class="size-full bg-slate-900 border border-white/10 rounded-xl mb-3 h-20"></div>
                                         <span>다크 브릴리언트</span>
                                     </div>
                                     <div class="theme-option" data-theme="white">
-                                        <div class="size-full bg-white border border-slate-200 rounded-xl mb-3 h-20">
-                                        </div>
+                                        <div class="size-full bg-white border border-slate-200 rounded-xl mb-3 h-20"></div>
                                         <span class="text-slate-400">퓨어 화이트</span>
                                     </div>
                                     <div class="theme-option" data-theme="blue">
-                                        <div
-                                            class="size-full bg-primary border border-white/20 rounded-xl mb-3 h-20 shadow-[0_0_20px_rgba(43,140,238,0.3)]">
-                                        </div>
+                                        <div class="size-full bg-primary border border-white/20 rounded-xl mb-3 h-20 shadow-[0_0_20px_rgba(43,140,238,0.3)]"></div>
                                         <span>오션 블루</span>
+                                    </div>
+                                    <div class="theme-option" data-theme="aurora">
+                                        <div class="size-full bg-[#10b981] border border-white/20 rounded-xl mb-3 h-20 shadow-[0_0_20px_rgba(16,185,129,0.3)]"></div>
+                                        <span>오로라 민트</span>
+                                    </div>
+                                    <div class="theme-option" data-theme="moonlight">
+                                        <div class="size-full bg-[#8b5cf6] border border-white/20 rounded-xl mb-3 h-20 shadow-[0_0_20px_rgba(139,92,246,0.3)]"></div>
+                                        <span>문라이트 퍼플</span>
                                     </div>
                                 </div>
                             </section>
@@ -308,6 +311,24 @@
                                             <button
                                                 class="size-10 rounded-lg bg-white/10 hover:bg-primary transition-all">가+</button>
                                         </div>
+                                    </div>
+                                    <div class="flex justify-between items-center bg-white/5 p-4 rounded-2xl">
+                                        <div>
+                                            <p class="font-bold">카드 모서리 곡률</p>
+                                            <p class="text-xs text-text-dim">UI 요소들의 둥글기를 변경합니다.</p>
+                                        </div>
+                                        <select class="select-ultra">
+                                            <option>조금 둥글게 (Rounded)</option>
+                                            <option selected>완전히 둥글게 (Pill)</option>
+                                            <option>날카롭게 (Sharp)</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex justify-between items-center bg-white/5 p-4 rounded-2xl">
+                                        <div>
+                                            <p class="font-bold">네온 글로우 강도 (Neon Glow)</p>
+                                            <p class="text-xs text-text-dim">버튼과 카드의 빛 번짐 효과를 설정합니다.</p>
+                                        </div>
+                                        <input type="range" class="range-ultra" min="0" max="100" value="80">
                                     </div>
                                 </div>
                             </section>

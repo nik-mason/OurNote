@@ -2,10 +2,12 @@
  * OURNOTE ULTRA-ENGINE (V4)
  */
 document.addEventListener('DOMContentLoaded', () => {
-    const savedGlobalTheme = localStorage.getItem('ournote-theme');
-    if (savedGlobalTheme) {
-        document.documentElement.setAttribute('data-theme', savedGlobalTheme);
+    let savedGlobalTheme = localStorage.getItem('ournote-theme');
+    if (!savedGlobalTheme) {
+        savedGlobalTheme = 'dark';
+        localStorage.setItem('ournote-theme', 'dark');
     }
+    document.documentElement.setAttribute('data-theme', savedGlobalTheme);
 
     const isDashboard = window.location.pathname.includes('/dashboard');
     let currentUser = JSON.parse(localStorage.getItem('currentUser'));

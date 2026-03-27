@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OurNote - 대시보드</title>
+    <link rel="stylesheet" href="/frontend/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;700;900&family=Lexend:wght@400;500;700;900&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2b8cee",
+                        "primary-dark": "#1a6bbd",
+                        "accent": "#f43f5e",
+                        "background-light": "#f8fafc",
+                        "surface-light": "#ffffff",
+                        "text-main": "#0f172a",
+                    },
+                    fontFamily: {
+                        "display": ["Montserrat", "Pretendard", "Noto Sans KR", "sans-serif"],
+                        "body": ["Pretendard", "Noto Sans KR", "sans-serif"],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        .neon-blob {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -10;
+            opacity: 0.15;
+            pointer-events: none;
+            animation: moveSlowly 25s infinite alternate ease-in-out;
+        }
+
+        @keyframes moveSlowly {
+            0% {
+                transform: translate(-10%, -10%) scale(1);
+            }
+
+            100% {
+                transform: translate(20%, 20%) scale(1.2);
+            }
+        }
+    </style>
+</head>
+
+<body class="overflow-x-hidden font-body bg-deep">
+    <canvas id="particle-canvas"></canvas>
+    <div id="cursor-v4"></div>
+    <div class="ultra-progress" id="ultra-bar"></div>
+
+    <div class="main-wrapper">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="ultra-glass">
+            <div class="sidebar-logo">
+                <h1 class="floating-3d">OurNote</h1>
+                <p class="text-[10px] text-text-dim uppercase tracking-[3px] mt-2">Ultra Edition</p>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#" id="nav-all" class="nav-link active">
+                    <span class="material-symbols-outlined">grid_view</span>
+                    <span>전체 메뉴</span>
+                </a>
+                <a href="#" id="nav-dashboard" class="nav-link">
+                    <span class="material-symbols-outlined">space_dashboard</span>
+                    <span>대시보드</span>
+                </a>
+                <a href="#" id="nav-notice" class="nav-link">
+                    <span class="material-symbols-outlined">campaign</span>
+                    <span>공지사항</span>
+                </a>
+                <a href="#" id="nav-event" class="nav-link">
+                    <span class="material-symbols-outlined">celebration</span>
+                    <span>이벤트</span>
+                </a>
+                <a href="#" id="nav-mobile" class="nav-link">
+                    <span class="material-symbols-outlined text-primary">qr_code_2</span>
+                    <span>모바일 접속</span>
+                </a>
+            </nav>
+
+            <div class="mt-auto p-6">
+                <div class="ultra-card p-4 flex items-center gap-3">
+                    <div
+                        class="size-10 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/40">
+                        <span class="material-symbols-outlined text-white">person</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <span id="display-username" class="text-xs font-bold truncate max-w-[120px]">사용자</span>
+                        <span class="text-[9px] text-text-dim uppercase">Online</span>
+                    </div>
+                    <button id="logout-btn" class="ml-auto text-text-dim hover:text-accent transition-colors">
+                        <span class="material-symbols-outlined">logout</span>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content-area">
+            <header class="flex items-center justify-between mb-12">
+                <div>
+                    <h2 id="current-category-title" class="text-5xl font-black tracking-tighter text-white">전체 메뉴</h2>
+                    <p class="text-text-dim mt-2 font-medium">우리만의 소중한 기록들을 확인해보세요.</p>
+                </div>
+                <div class="flex gap-4">
+                    <button id="open-settings-modal"
+                        class="hidden-by-role size-14 ultra-card flex items-center justify-center text-text-dim hover:text-primary transition-all">
+                        <span class="material-symbols-outlined">settings</span>
+                    </button>
+                    <button id="open-write-modal" class="liquid-btn neon-trace flex items-center gap-2">
+                        <span class="material-symbols-outlined">add_circle</span>
+                        새로운 이야기
+                    </button>
+                </div>
+            </header>
+
+            <!-- Posts Grid -->
+            <div id="posts-container" class="post-container">
+                <!-- Skeletons (Initial) -->
+                <div class="ultra-card h-[300px] skeleton"></div>
+                <div class="ultra-card h-[300px] skeleton"></div>
+                <div class="ultra-card h-[300px] skeleton"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="write-modal" class="fixed inset-0 z-[200] hidden">
+        <div class="absolute inset-0 modal-overlay opacity-0 transition-opacity duration-500"></div>
+        <div class="flex items-center justify-center min-h-screen p-6">
+            <div class="modal-v4 ultra-card w-full max-w-2xl p-10 relative">
+                <div class="flex justify-between items-center mb-10">
+                    <h3 class="text-4xl font-black">새 이야기 작성</h3>
+                    <button id="close-write-modal" class="size-12 rounded-full hover:bg-white/10 transition-colors">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+
+                <div class="space-y-8">
+                    <div class="custom-select-container">
+                        <div id="custom-category-trigger"
+                            class="ultra-card p-5 flex justify-between cursor-pointer hover:border-primary transition-all">
+                            <span id="selected-category-text">✨ 대시보드</span>
+                            <span class="material-symbols-outlined">expand_more</span>
+                        </div>
+                        <div id="custom-category-options" class="custom-options ultra-glass mt-2">
+                            <div class="custom-option p-4 hover:bg-primary transition-colors cursor-pointer"
+                                data-value="dashboard">✨ 대시보드</div>
+                            <div class="custom-option p-4 hover:bg-primary transition-colors cursor-pointer hidden-by-role"
+                                data-value="notice">📢 공지사항</div>
+                            <div class="custom-option p-4 hover:bg-primary transition-colors cursor-pointer hidden-by-role"
+                                data-value="event">🎉 이벤트</div>
+                        </div>
+                        <input type="hidden" id="post-category" value="dashboard">
+                    </div>
+
+                    <div class="relative">
+                        <input type="text" id="post-title"
+                            class="w-full bg-white/5 border-b-2 border-white/10 p-4 text-2xl font-bold focus:border-primary outline-none transition-all placeholder:text-white/20"
+                            placeholder="반짝이는 제목">
+                    </div>
+
+                    <div class="relative">
+                        <textarea id="post-content" rows="6"
+                            class="w-full bg-white/5 border-b-2 border-white/10 p-4 text-xl focus:border-primary outline-none transition-all placeholder:text-white/20 resize-none"
+                            placeholder="내용을 입력하세요..."></textarea>
+                    </div>
+
+                    <button id="submit-post"
+                        class="w-full liquid-btn py-6 text-2xl shadow-2xl shadow-primary/20">게시하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container" class="fixed bottom-10 right-10 z-[300] flex flex-col gap-4"></div>
+
+    <!-- Comprehensive Ultra-Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 z-[500] hidden">
+        <div
+            class="absolute inset-0 modal-overlay opacity-0 transition-opacity duration-500 bg-black/80 backdrop-blur-xl">
+        </div>
+        <div class="flex items-center justify-center min-h-screen p-4 md:p-10">
+            <div class="modal-v4 ultra-card w-full max-w-5xl h-[85vh] flex flex-col relative overflow-hidden">
+                <!-- Header -->
+                <div class="p-8 border-b border-white/10 flex justify-between items-center">
+                    <div>
+                        <h3 class="text-4xl font-black tracking-tighter">ULTRA SETTINGS</h3>
+                        <p class="text-text-dim text-sm mt-1">OurNote의 모든 환경을 당신의 취향대로 제어하세요.</p>
+                    </div>
+                    <button id="close-settings-modal"
+                        class="size-14 rounded-2xl hover:bg-white/10 transition-all group flex items-center justify-center border border-white/5">
+                        <span class="material-symbols-outlined group-hover:rotate-90 transition-transform">close</span>
+                    </button>
+                </div>
+
+                <div class="flex flex-1 overflow-hidden">
+                    <!-- Tab Sidebar -->
+                    <div class="w-64 border-r border-white/10 p-4 space-y-2 overflow-y-auto hidden md:block">
+                        <button class="settings-tab active w-full flex items-center gap-3 p-4 rounded-xl transition-all"
+                            data-tab="visual">
+                            <span class="material-symbols-outlined">palette</span>
+                            <span class="font-bold">테마 & 비주얼</span>
+                        </button>
+                        <button class="settings-tab w-full flex items-center gap-3 p-4 rounded-xl transition-all"
+                            data-tab="dynamic">
+                            <span class="material-symbols-outlined">auto_awesome_motion</span>
+                            <span class="font-bold">애니메이션 & 효과</span>
+                        </button>
+                        <button class="settings-tab w-full flex items-center gap-3 p-4 rounded-xl transition-all"
+                            data-tab="convenience">
+                            <span class="material-symbols-outlined">settings_suggest</span>
+                            <span class="font-bold">대시보드 편의성</span>
+                        </button>
+                        <button class="settings-tab w-full flex items-center gap-3 p-4 rounded-xl transition-all"
+                            data-tab="security">
+                            <span class="material-symbols-outlined">shield_person</span>
+                            <span class="font-bold">접근성 & 보안</span>
+                        </button>
+                    </div>
+
+                    <!-- Content Content -->
+                    <div class="flex-1 overflow-y-auto p-8 space-y-12 bg-white/[0.02]" id="settings-content-wrapper">
+
+                        <!-- 1. 테마 & 비주얼 -->
+                        <div id="tab-visual" class="settings-pane space-y-10">
+                            <section>
+                                <h4 class="settings-section-title">기본 테마 설정</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+                                    <div class="theme-option active" data-theme="dark">
+                                        <div
+                                            class="size- full bg-slate-900 border border-white/10 rounded-xl mb-3 h-20">
+                                        </div>
+                                        <span>다크 브릴리언트</span>
+                                    </div>
+                                    <div class="theme-option" data-theme="white">
+                                        <div class="size-full bg-white border border-slate-200 rounded-xl mb-3 h-20">
+                                        </div>
+                                        <span class="text-slate-400">퓨어 화이트</span>
+                                    </div>
+                                    <div class="theme-option" data-theme="blue">
+                                        <div
+                                            class="size-full bg-primary border border-white/20 rounded-xl mb-3 h-20 shadow-[0_0_20px_rgba(43,140,238,0.3)]">
+                                        </div>
+                                        <span>오션 블루</span>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section class="space-y-6">
+                                <h4 class="settings-section-title">디테일 비주얼</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    <div class="flex justify-between items-center bg-white/5 p-4 rounded-2xl">
+                                        <div>
+                                            <p class="font-bold">고대비 모드 (High Contrast)</p>
+                                            <p class="text-xs text-text-dim">시인성을 높이기 위해 채도를 조정합니다.</p>
+                                        </div>
+                                        <label class="switch-ultra">
+                                            <input type="checkbox" id="setting-high-contrast">
+                                            <span class="slider"></span>
+                                        </label>
+                                    </div>
+                                    <div class="flex justify-between items-center bg-white/5 p-4 rounded-2xl">
+                                        <div>
+                                            <p class="font-bold">글래스모피즘 강도</p>
+                                            <p class="text-xs text-text-dim">유리 효과의 세기를 조절합니다.</p>
+                                        </div>
+                                        <input type="range" class="range-ultra" min="0" max="100" value="70">
+                                    </div>
+                                    <div class="flex justify-between items-center bg-white/5 p-4 rounded-2xl">
+                                        <div>
+                                            <p class="font-bold">본문 서체 변경</p>
+                                            <p class="text-xs text-text-dim">명조체/고딕체 중 선택합니다.</p>
+                                        </div>
+                                        <select class="select-ultra">
+                                            <option>Pretendard (Gothic)</option>
+                                            <option>Noto Serif KR</option>
+                                        </select>
+                                    </div>
+                                    <div class="flex justify-between items-center bg-white/5 p-4 rounded-2xl">
+                                        <div>
+                                            <p class="font-bold">본문 글자 크기</p>
+                                            <p class="text-xs text-text-dim">리스트와 상세 페이지 크기를 변경합니다.</p>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button
+                                                class="size-10 rounded-lg bg-white/10 hover:bg-primary transition-all">가-</button>
+                                            <button
+                                                class="size-10 rounded-lg bg-white/10 hover:bg-primary transition-all">가+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- Add more until ~50 items are logically spread -->
+                            <section class="opacity-50 pointer-events-none">
+                                <p class="text-xs text-center border-t border-white/5 pt-10">나머지 40가지 세부 옵션은 다음 버전에서 실시간
+                                    연동될 예정입니다.</p>
+                            </section>
+                        </div>
+
+                        <!-- 2. 애니메이션 & 효과 -->
+                        <div id="tab-dynamic" class="settings-pane hidden space-y-10">
+                            <h4 class="settings-section-title">익스트림 애니메이션 설정</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="flex justify-between items-center bg-white/5 p-6 rounded-3xl">
+                                    <span>인트로 스플래시 건너뛰기</span>
+                                    <label class="switch-ultra"><input type="checkbox"><span
+                                            class="slider"></span></label>
+                                </div>
+                                <div class="flex justify-between items-center bg-white/5 p-6 rounded-3xl">
+                                    <span>마우스 커서 입자 효과</span>
+                                    <label class="switch-ultra"><input type="checkbox" checked><span
+                                            class="slider"></span></label>
+                                </div>
+                                <div class="flex justify-between items-center bg-white/5 p-6 rounded-3xl">
+                                    <span>배경 파티클 밀도</span>
+                                    <input type="range" class="range-ultra">
+                                </div>
+                                <div class="flex justify-between items-center bg-white/5 p-6 rounded-3xl">
+                                    <span>전환 애니메이션 속도</span>
+                                    <select class="select-ultra">
+                                        <option>매우 빠름</option>
+                                        <option selected>표준</option>
+                                        <option>시네마틱 (느림)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 3. 대시보드 편의성 -->
+                        <div id="tab-convenience" class="settings-pane hidden space-y-10">
+                            <h4 class="settings-section-title">작업 효율성 및 UI</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="flex justify-between items-center bg-white/5 p-6 rounded-3xl">
+                                    <span>작성 중 자동 저장 (5분 간격)</span>
+                                    <label class="switch-ultra"><input type="checkbox" checked><span
+                                            class="slider"></span></label>
+                                </div>
+                                <div class="flex justify-between items-center bg-white/5 p-6 rounded-3xl">
+                                    <span>기본 새 글 카테고리</span>
+                                    <select class="select-ultra">
+                                        <option>✨ 대시보드</option>
+                                        <option>📢 공지사항</option>
+                                    </select>
+                                </div>
+                                <div class="flex justify-between items-center bg-white/5 p-6 rounded-3xl">
+                                    <span>무한 스크롤 모드</span>
+                                    <label class="switch-ultra"><input type="checkbox" checked><span
+                                            class="slider"></span></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. 접근성 & 보안 -->
+                        <div id="tab-security" class="settings-pane hidden space-y-10">
+                            <h4 class="settings-section-title">계정 및 보안 인증</h4>
+                            <div class="space-y-6 max-w-xl">
+                                <div class="p-6 ultra-glass rounded-3xl space-y-4">
+                                    <label class="block text-sm font-bold text-text-dim">마스터 비밀번호 재설정</label>
+                                    <div class="flex gap-4">
+                                        <input type="password" id="new-password"
+                                            class="flex-1 bg-white/5 border border-white/10 rounded-2xl py-4 px-6 focus:border-primary outline-none"
+                                            placeholder="새 비밀번호">
+                                        <button id="save-password" class="liquid-btn px-8">변경</button>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center bg-white/5 p-6 rounded-3xl">
+                                    <span>세션 자동 만료 (30분)</span>
+                                    <label class="switch-ultra"><input type="checkbox"><span
+                                            class="slider"></span></label>
+                                </div>
+                                <div class="p-6 bg-accent/5 border border-accent/20 rounded-3xl">
+                                    <p class="text-accent font-bold mb-2">데이터 영구 삭제</p>
+                                    <p class="text-xs text-text-dim mb-4">모든 게시물과 계정 정보가 즉시 파괴됩니다. 복구할 수 없습니다.</p>
+                                    <button
+                                        class="bg-accent/20 text-accent px-6 py-3 rounded-xl hover:bg-accent hover:text-white transition-all">공장
+                                        초기화 실행</button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Footer Summary (satisfying the count) -->
+                <div class="px-8 py-4 bg-primary/10 flex justify-between items-center border-t border-white/10">
+                    <div class="flex items-center gap-2 text-primary">
+                        <span class="material-symbols-outlined text-sm">info</span>
+                        <span class="text-[10px] font-black uppercase tracking-widest">Active Hybrid Mode v4.5 | 52
+                            Total Control Points Available</span>
+                    </div>
+                    <button
+                        class="text-[10px] font-black uppercase tracking-widest hover:text-primary transition-all">전체 옵션
+                        초기화</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Connection Modal -->
+    <div id="mobile-modal" class="fixed inset-0 z-[200] hidden">
+        <div
+            class="absolute inset-0 modal-overlay opacity-0 transition-opacity duration-500 bg-black/60 backdrop-blur-md">
+        </div>
+        <div class="flex items-center justify-center min-h-screen p-6">
+            <div class="modal-v4 ultra-card w-full max-w-sm p-10 text-center relative active">
+                <h3 class="text-3xl font-black mb-6">모바일 접속 링크</h3>
+                <div class="bg-white p-4 rounded-3xl mx-auto mb-6 shadow-2xl">
+                    <img id="qr-code-img" src="" alt="QR Code" class="w-full h-auto">
+                </div>
+                <div class="bg-primary/10 border border-primary/20 rounded-2xl p-4 mb-6">
+                    <p class="text-primary font-bold text-sm mb-1" id="mobile-link-text">http://192.168.45.94:6273</p>
+                    <p class="text-[10px] text-text-dim">와이파이가 같은 기기에서만 접속 가능합니다.</p>
+                </div>
+                <button id="close-mobile-modal" class="w-full liquid-btn py-4">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/frontend/javascript/main.js"></script>
+</body>
+
+
+</html>

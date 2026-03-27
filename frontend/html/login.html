@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OurNote - 로그인</title>
+    <link rel="stylesheet" href="/frontend/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;700;900&family=Lexend:wght@400;500;700;900&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2b8cee",
+                        "primary-dark": "#1a6bbd",
+                        "accent": "#f43f5e",
+                        "background-light": "#f8fafc",
+                        "surface-light": "#ffffff",
+                        "text-main": "#0f172a",
+                    },
+                    fontFamily: {
+                        "display": ["Montserrat", "Pretendard", "Noto Sans KR", "sans-serif"],
+                        "body": ["Pretendard", "Noto Sans KR", "sans-serif"],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        .neon-blob {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: -10;
+            opacity: 0.15;
+            pointer-events: none;
+            animation: moveSlowly 25s infinite alternate ease-in-out;
+        }
+
+        @keyframes moveSlowly {
+            0% {
+                transform: translate(-10%, -10%) scale(1);
+            }
+
+            100% {
+                transform: translate(20%, 20%) scale(1.2);
+            }
+        }
+    </style>
+</head>
+
+<body class="overflow-x-hidden font-body bg-deep">
+    <canvas id="particle-canvas"></canvas>
+    <div id="cursor-v4"></div>
+
+    <!-- Ultra Background Blobs -->
+    <div class="neon-blob bg-primary/20 top-[-10%] left-[-10%]"></div>
+    <div class="neon-blob bg-accent/10 bottom-[10%] right-[-5%]" style="animation-delay: -5s"></div>
+    <div class="neon-blob bg-purple-500/10 top-[20%] right-[15%]" style="animation-delay: -10s"></div>
+
+    <div id="splash-screen"
+        class="fixed inset-0 z-[10000] bg-deep flex flex-col items-center justify-center transition-all duration-1000">
+        <!-- Flying Elements Container -->
+        <div id="flying-particles" class="flying-wrap"></div>
+
+        <!-- Animated Rings -->
+        <div class="splash-ring" style="animation-delay: 0s"></div>
+        <div class="splash-ring" style="animation-delay: 1s"></div>
+        <div class="splash-ring" style="animation-delay: 2s"></div>
+
+        <div class="relative z-10 flex flex-col items-center">
+            <div class="relative mb-12">
+                <div class="logo-container-ultra">
+                    <img src="/assets/ournote_logo.png" alt="OurNote Logo" class="ournote-logo-img">
+                </div>
+                <div class="absolute -inset-12 bg-primary/20 blur-[100px] -z-10 animate-pulse"></div>
+            </div>
+
+            <h1 class="splash-glitch-text mb-4" data-text="OURNOTE">OURNOTE</h1>
+            <h2 class="angel-tag text-4xl mb-8">천사반</h2>
+
+            <div
+                class="h-px w-48 bg-gradient-to-right from-transparent via-primary to-transparent opacity-50 mb-6 transition-all duration-1000">
+            </div>
+            <p class="text-text-dim tracking-[15px] text-xs font-black uppercase opacity-70">Angel Ed. v4.2 Ultra</p>
+
+            <div class="ultra-progress-bar">
+                <div class="ultra-progress-inner"></div>
+            </div>
+        </div>
+    </div>
+
+    <main class="min-h-screen flex items-center justify-center p-6">
+        <div class="ultra-card max-w-lg w-full p-12 relative overflow-hidden modal-v4 active">
+            <!-- Decorative light -->
+            <div class="absolute -top-24 -right-24 size-48 bg-primary/20 blur-[60px] rounded-full"></div>
+
+            <div class="text-center mb-12">
+                <div
+                    class="size-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-primary/20 border border-primary/20">
+                    <span class="material-symbols-outlined text-4xl text-primary">login</span>
+                </div>
+                <h2 class="text-5xl font-black text-white tracking-tighter mb-4">반가워요!</h2>
+                <p class="text-text-dim text-lg">우리만의 소중한 공간으로 들어오세요.</p>
+            </div>
+
+            <div class="flex gap-2 p-1.5 bg-white/5 rounded-2xl mb-10 border border-white/5">
+                <button id="radio-student-btn"
+                    class="flex-1 py-4 rounded-[14px] bg-primary text-white font-bold transition-all shadow-lg shadow-primary/20">학생</button>
+                <button id="radio-teacher-btn"
+                    class="flex-1 py-4 rounded-[14px] text-text-dim font-bold hover:text-white transition-all">선생님</button>
+                <input type="hidden" id="login-mode" value="student">
+            </div>
+
+            <div id="student-fields" class="space-y-6">
+                <div class="relative">
+                    <span
+                        class="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-dim">pin</span>
+                    <input type="text" id="student-id"
+                        class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-6 text-white outline-none focus:border-primary transition-all placeholder:text-white/20"
+                        placeholder="출석 번호 (01)">
+                </div>
+                <div class="relative">
+                    <span
+                        class="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-dim">person</span>
+                    <input type="text" id="student-name"
+                        class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-6 text-white outline-none focus:border-primary transition-all placeholder:text-white/20"
+                        placeholder="이름">
+                </div>
+            </div>
+
+            <div id="teacher-fields" class="space-y-6 hidden">
+                <div class="relative">
+                    <span
+                        class="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-dim">badge</span>
+                    <input type="text" id="teacher-id"
+                        class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-6 text-white outline-none focus:border-primary transition-all placeholder:text-white/20"
+                        placeholder="아이디">
+                </div>
+                <div class="relative">
+                    <span
+                        class="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-dim">key</span>
+                    <input type="password" id="teacher-pw"
+                        class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 pl-14 pr-6 text-white outline-none focus:border-primary transition-all placeholder:text-white/20"
+                        placeholder="비밀번호">
+                </div>
+            </div>
+
+            <button id="login-btn"
+                class="w-full liquid-btn mt-10 py-6 text-2xl group flex items-center justify-center gap-3">
+                입장하기
+                <span
+                    class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </button>
+
+            <p class="text-center mt-8 text-text-dim text-sm font-medium">로그인이 안 되나요? <a href="#"
+                    class="text-primary hover:underline">선생님께 문의하기</a></p>
+        </div>
+    </main>
+
+    <div id="toast-container" class="fixed bottom-10 right-10 z-[300] flex flex-col gap-4"></div>
+
+    <script src="/frontend/javascript/main.js"></script>
+</body>
+
+
+</html>

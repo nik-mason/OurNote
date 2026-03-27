@@ -2,6 +2,11 @@
  * OURNOTE ULTRA-ENGINE (V4)
  */
 document.addEventListener('DOMContentLoaded', () => {
+    const savedGlobalTheme = localStorage.getItem('ournote-theme');
+    if (savedGlobalTheme) {
+        document.documentElement.setAttribute('data-theme', savedGlobalTheme);
+    }
+
     const isDashboard = window.location.pathname.includes('/dashboard');
     let currentUser = JSON.parse(localStorage.getItem('currentUser'));
     let currentCategory = 'all';
@@ -256,6 +261,33 @@ document.addEventListener('DOMContentLoaded', () => {
         setupModal('settings-modal', 'open-settings-modal', 'close-settings-modal');
         setupModal('write-modal', 'open-write-modal', 'close-write-modal');
 
+        // Custom Select Dropdown Logic
+        const categoryTrigger = document.getElementById('custom-category-trigger');
+        const categoryOptions = document.getElementById('custom-category-options');
+        const categoryInput = document.getElementById('post-category');
+        const selectedText = document.getElementById('selected-category-text');
+
+        if (categoryTrigger && categoryOptions) {
+            categoryTrigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                categoryOptions.classList.toggle('active');
+            });
+            
+            document.querySelectorAll('.custom-option').forEach(opt => {
+                opt.addEventListener('click', () => {
+                    categoryInput.value = opt.getAttribute('data-value');
+                    selectedText.textContent = opt.textContent;
+                    categoryOptions.classList.remove('active');
+                });
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.custom-select-container')) {
+                    categoryOptions.classList.remove('active');
+                }
+            });
+        }
+
         document.getElementById('nav-mobile')?.addEventListener('click', () => {
             const localIP = "192.168.45.94";
             document.getElementById('qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(`http://${localIP}:6273`)}`;
@@ -316,20 +348,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 opt.classList.add('active');
 
                 // Apply Theme
-                document.body.classList.remove('white-theme', 'blue-theme');
-                if (theme === 'white') document.body.classList.add('white-theme');
-                if (theme === 'blue') document.body.classList.add('blue-theme');
+                document.documentElement.setAttribute('data-theme', theme);
 
                 localStorage.setItem('ournote-theme', theme);
                 showToast(`${theme.charAt(0).toUpperCase() + theme.slice(1)} 테마가 적용되었습니다.`);
             });
         });
 
-        // Load Persisted Theme
+        // Load Persisted Theme (Checkbox Update only)
         const savedTheme = localStorage.getItem('ournote-theme');
         if (savedTheme) {
             const targetOpt = document.querySelector(`.theme-option[data-theme="${savedTheme}"]`);
-            if (targetOpt) targetOpt.click();
+            if (targetOpt) {
+                document.querySelectorAll('.theme-option').forEach(o => o.classList.remove('active'));
+                targetOpt.classList.add('active');
+            }
         }
 
         document.getElementById('save-password')?.addEventListener('click', async () => {

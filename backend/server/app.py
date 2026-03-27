@@ -33,7 +33,7 @@ def get_data_file(filename):
     tmp_path = os.path.join(tempfile.gettempdir(), filename)
     
     # Check if running in Vercel or similar read-only environments
-    if os.environ.get('VERCEL_ENV') or os.environ.get('VERCEL') or not os.access(os.path.dirname(original_path), os.W_OK):
+    if os.environ.get('VERCEL_ENV') or os.environ.get('VERCEL'):
         if not os.path.exists(tmp_path):
             try:
                 shutil.copy2(original_path, tmp_path)

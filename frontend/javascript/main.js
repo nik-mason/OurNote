@@ -384,6 +384,34 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // Detail Design Tweaks Logic
+        const radiusSelect = document.getElementById('setting-radius');
+        if (radiusSelect) {
+            radiusSelect.addEventListener('change', (e) => {
+                document.documentElement.style.setProperty('--card-radius', e.target.value);
+                showToast('곡률 세팅이 저장되었습니다.');
+            });
+        }
+
+        const glowSlider = document.getElementById('setting-glow');
+        if (glowSlider) {
+            glowSlider.addEventListener('input', (e) => {
+                const alpha = e.target.value;
+                const theme = document.documentElement.getAttribute('data-theme') || 'dark';
+                const themeColors = {
+                    'dark': `43, 140, 238, ${alpha}`,
+                    'white': `59, 130, 246, ${alpha}`,
+                    'blue': `14, 165, 233, ${alpha}`,
+                    'aurora': `16, 185, 129, ${alpha}`,
+                    'moonlight': `139, 92, 246, ${alpha}`
+                };
+                if (themeColors[theme]) {
+                    document.documentElement.style.setProperty('--primary-glow', `rgba(${themeColors[theme]})`);
+                }
+            });
+            glowSlider.addEventListener('change', () => showToast('글로우 감도가 저장되었습니다.'));
+        }
+
         loadPosts();
         initScrollProgress();
     }

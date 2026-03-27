@@ -25,19 +25,38 @@ def serve_assets(filename):
     return send_from_directory(ASSETS_DIR, filename)
 
 import json
+import tempfile
+import shutil
+
+def get_data_file(filename):
+    original_path = os.path.join(BASE_DIR, 'backend', 'data', filename)
+    tmp_path = os.path.join(tempfile.gettempdir(), filename)
+    
+    # Check if running in Vercel or similar read-only environments
+    if os.environ.get('VERCEL_ENV') or os.environ.get('VERCEL') or not os.access(os.path.dirname(original_path), os.W_OK):
+        if not os.path.exists(tmp_path):
+            try:
+                shutil.copy2(original_path, tmp_path)
+            except Exception:
+                pass
+        return tmp_path
+    
+    return original_path
+
+import json
 
 @app.route('/api/students')
 def get_students():
-    return send_from_directory(os.path.join(BASE_DIR, 'backend', 'data'), 'students.json')
+    return send_from_directory(os.path.dirname(get_data_file('students.json')), 'students.json')
 
 @app.route('/api/teacher')
 def get_teacher():
-    return send_from_directory(os.path.join(BASE_DIR, 'backend', 'data'), 'teacher.json')
+    return send_from_directory(os.path.dirname(get_data_file('teacher.json')), 'teacher.json')
 
 @app.route('/api/posts', methods=['GET'])
 def get_posts():
     try:
-        with open(os.path.join(BASE_DIR, 'backend', 'data', 'posts.json'), 'r', encoding='utf-8') as f:
+        with open(get_data_file('posts.json'), 'r', encoding='utf-8') as f:
             return json.load(f)
     except Exception as e:
         return {"error": str(e)}, 500
@@ -47,7 +66,7 @@ def add_post():
     try:
         from flask import request
         new_post = request.json
-        posts_path = os.path.join(BASE_DIR, 'backend', 'data', 'posts.json')
+        posts_path = get_data_file('posts.json')
         
         with open(posts_path, 'r', encoding='utf-8') as f:
             posts = json.load(f)
@@ -70,7 +89,7 @@ def change_teacher_password():
         data = request.json
         new_password = data.get('password')
         
-        teacher_path = os.path.join(BASE_DIR, 'backend', 'data', 'teacher.json')
+        teacher_path = get_data_file('teacher.json')
         with open(teacher_path, 'r', encoding='utf-8') as f:
             teacher = json.load(f)
             
@@ -86,7 +105,7 @@ def change_teacher_password():
 @app.route('/api/posts/<int:post_id>', methods=['DELETE'])
 def delete_post(post_id):
     try:
-        posts_path = os.path.join(BASE_DIR, 'backend', 'data', 'posts.json')
+        posts_path = get_data_file('posts.json')
         with open(posts_path, 'r', encoding='utf-8') as f:
             posts = json.load(f)
             

@@ -93,18 +93,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     size: Math.random() * 2 + 1,
                     speedX: Math.random() * 0.4 - 0.2,
                     speedY: Math.random() * 0.4 - 0.2,
-                    color: `rgba(255, 255, 255, ${Math.random() * 0.2})`
+                    alpha: Math.random() * 0.2
                 });
             }
         }
 
         function animateParticles() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const isWhite = document.documentElement.getAttribute('data-theme') === 'white';
+            const baseRGB = isWhite ? '0, 0, 0' : '255, 255, 255';
+            
             particles.forEach(p => {
                 p.x += p.speedX; p.y += p.speedY;
                 if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
                 if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
-                ctx.fillStyle = p.color;
+                ctx.fillStyle = `rgba(${baseRGB}, ${p.alpha})`;
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
                 ctx.fill();

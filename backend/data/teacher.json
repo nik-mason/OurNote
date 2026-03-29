@@ -1,4 +1,7 @@
 {
     "username": "teacher",
-    "password": "password123"
+    "password": "password123",
+    "settings": {
+        "theme": "white"
+    }
 }

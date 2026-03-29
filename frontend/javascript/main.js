@@ -310,10 +310,37 @@ document.addEventListener('DOMContentLoaded', () => {
             
             document.querySelectorAll('.custom-option').forEach(opt => {
                 opt.addEventListener('click', () => {
-                    categoryInput.value = opt.getAttribute('data-value');
+                    const val = opt.getAttribute('data-value');
+                    categoryInput.value = val;
                     selectedText.textContent = opt.textContent;
                     categoryOptions.classList.remove('active');
+                    
+                    const isHW = val === 'homework';
+                    document.getElementById('homework-tasks-container')?.classList.toggle('hidden', !isHW);
+                    document.getElementById('homework-target-container')?.classList.toggle('hidden', !isHW);
+                    document.getElementById('post-content').parentElement.classList.toggle('hidden', isHW);
+                    
+                    if (isHW && document.getElementById('homework-target-student').children.length <= 1) {
+                        fetch('/api/students').then(r => r.json()).then(stds => {
+                            const sel = document.getElementById('homework-target-student');
+                            stds.forEach(s => sel.innerHTML += `<option value="${s.id}">${s.name} (${s.id})</option>`);
+                        });
+                    }
                 });
+            });
+
+            document.getElementById('add-task-btn')?.addEventListener('click', () => {
+                const list = document.getElementById('tasks-input-list');
+                const div = document.createElement('div');
+                div.className = 'flex gap-2 animate-in slide-in-from-left duration-300';
+                div.innerHTML = `
+                    <input type="text" class="hw-task-input flex-1 bg-white/5 border border-white/10 rounded-xl p-3 outline-none focus:border-primary transition-all" placeholder="할 일 입력...">
+                    <button class="size-12 rounded-xl bg-white/5 hover:bg-accent/20 text-text-dim hover:text-accent flex items-center justify-center transition-all" onclick="this.parentElement.remove()">
+                        <span class="material-symbols-outlined">delete</span>
+                    </button>
+                `;
+                list.appendChild(div);
+                div.querySelector('input').focus();
             });
 
             document.addEventListener('click', (e) => {
@@ -340,14 +367,29 @@ document.addEventListener('DOMContentLoaded', () => {
             const category = document.getElementById('post-category').value;
             if (!title || !content) return showToast('내용을 모두 채워주세요!', 'error');
             try {
-                const res = await fetch('/api/posts', {
+                const endpoint = category === 'homework' ? '/api/homework' : '/api/posts';
+                const bodyObj = { title, category, author: currentUser.name, role: currentUser.role, date: new Date().toLocaleDateString() };
+                
+                if (category === 'homework') {
+                    const taskInputs = document.querySelectorAll('.hw-task-input');
+                    bodyObj.tasks = Array.from(taskInputs).map(i => i.value.trim()).filter(v => v !== '');
+                    if (bodyObj.tasks.length === 0) return showToast('숙제 항목을 하나 이상 추가해 주세요!', 'error');
+                    bodyObj.target_id = document.getElementById('homework-target-student').value;
+                } else {
+                    bodyObj.content = content;
+                }
+
+                const res = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ title, content, category, author: currentUser.name, role: currentUser.role, date: new Date().toLocaleDateString() })
+                    body: JSON.stringify(bodyObj)
                 });
                 if (res.ok) {
                     showToast('성공적으로 게시되었습니다! ✨');
                     document.getElementById('close-write-modal').click();
+                    document.getElementById('post-title').value = '';
+                    document.getElementById('post-content').value = '';
+                    document.getElementById('tasks-input-list').innerHTML = '';
                     loadPosts();
                     triggerConfetti();
                 }
@@ -465,10 +507,103 @@ document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById('posts-container');
         if (!container) return;
         container.innerHTML = '<div class="ultra-card h-[300px] skeleton col-span-full"></div>';
-        const res = await fetch('/api/posts');
-        const posts = await res.json();
-        renderPosts(posts);
+        
+        if (currentCategory === 'homework') {
+            const res = await fetch('/api/homework');
+            const hws = await res.json();
+            renderHomework(hws);
+        } else {
+            const res = await fetch('/api/posts');
+            const posts = await res.json();
+            renderPosts(posts);
+        }
     }
+
+    function renderHomework(hws) {
+        const container = document.getElementById('posts-container');
+        if (!container) return;
+        container.innerHTML = '';
+        
+        // Filter for students: Show 'all' target or specific target matching their ID
+        const filtered = currentUser.role === 'teacher' ? hws : hws.filter(h => h.target_id === 'all' || String(h.target_id) === String(currentUser.id));
+        
+        if (filtered.length === 0) {
+            container.innerHTML = (currentUser.role === 'student') 
+                ? '<div class="col-span-full py-20 text-center text-text-dim text-xl font-bold">나에게 배정된 숙제가 없습니다. 🏝️</div>'
+                : '<div class="col-span-full py-20 text-center text-text-dim text-xl font-bold">등록된 숙제가 없습니다.</div>';
+            return;
+        }
+        filtered.forEach((hw, index) => {
+            const card = document.createElement('div');
+            card.className = `ultra-card post-card-v4`;
+            card.style.transitionDelay = `${index * 0.1}s`;
+            
+            let tasksHtml = '';
+            hw.tasks?.forEach(task => {
+                const isChecked = task.completed_ids?.includes(String(currentUser.id || ''));
+                tasksHtml += `
+                    <div class="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/30 transition-all group">
+                        <div class="relative size-7">
+                            <input type="checkbox" id="hw-${hw.id}-${task.id}" ${isChecked ? 'checked' : ''} 
+                                onchange="toggleHomework(${hw.id}, ${task.id})"
+                                class="peer hidden">
+                            <label for="hw-${hw.id}-${task.id}" class="block size-full rounded-lg border-2 border-white/20 peer-checked:border-primary peer-checked:bg-primary transition-all cursor-pointer flex items-center justify-center">
+                                <span class="material-symbols-outlined text-white text-sm scale-0 peer-checked:scale-100 transition-transform">done</span>
+                            </label>
+                        </div>
+                        <span class="flex-1 text-lg ${isChecked ? 'text-white/30 line-through' : 'text-white/80'} font-medium group-hover:text-white transition-all">${task.text}</span>
+                        <div class="text-[10px] font-black text-primary/50 uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">
+                            ${task.completed_ids?.length || 0} Done
+                        </div>
+                    </div>
+                `;
+            });
+
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-8">
+                    <div class="flex flex-col gap-1">
+                        <span class="text-[10px] font-black uppercase tracking-[3px] text-primary">${hw.target_id === 'all' ? 'Universal Mission' : 'Solo Mission'}</span>
+                        <h3 class="text-3xl font-black text-white">${hw.title}</h3>
+                    </div>
+                    <span class="text-[10px] text-text-dim text-white/30 font-black">${hw.date}</span>
+                </div>
+                
+                <div class="space-y-3 mb-8">
+                    ${tasksHtml}
+                </div>
+                
+                <div class="flex items-center gap-3 pt-6 border-t border-white/5">
+                    <div class="size-8 rounded-full bg-white/10 flex items-center justify-center text-primary"><span class="material-symbols-outlined text-sm">face</span></div>
+                    <div class="flex flex-col">
+                        <span class="text-xs font-bold">${hw.author} 선생님</span>
+                        <span class="text-[9px] text-text-dim uppercase tracking-widest">
+                            ${hw.target_id === 'all' ? 'All Units Assigned' : `Target: ${hw.target_id}`}
+                        </span>
+                    </div>
+                </div>`;
+            container.appendChild(card);
+            requestAnimationFrame(() => setTimeout(() => card.classList.add('reveal'), 50));
+        });
+    }
+
+    window.toggleHomework = async (hwId, taskId) => {
+        if (currentUser.role === 'teacher') return showToast('선생님은 숙제 체크를 할 수 없습니다!', 'info');
+        try {
+            const res = await fetch('/api/homework/toggle', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: hwId, task_id: taskId, student_id: currentUser.id })
+            });
+            if (res.ok) {
+                const el = document.getElementById(`hw-${hwId}-${taskId}`);
+                if (el.checked) triggerConfetti();
+                showToast(el.checked ? '미션 완료! ✨' : '다시 도전해봐요!');
+                loadPosts();
+            }
+        } catch (e) {
+            showToast('연결 실패', 'error');
+        }
+    };
 
     function renderPosts(posts) {
         const container = document.getElementById('posts-container');

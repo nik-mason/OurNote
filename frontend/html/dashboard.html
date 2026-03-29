@@ -92,6 +92,10 @@
                     <span class="material-symbols-outlined">celebration</span>
                     <span>이벤트</span>
                 </a>
+                <a href="#" id="nav-homework" class="nav-link">
+                    <span class="material-symbols-outlined">assignment</span>
+                    <span>숙제</span>
+                </a>
                 <a href="#" id="nav-mobile" class="nav-link">
                     <span class="material-symbols-outlined text-primary">qr_code_2</span>
                     <span>모바일 접속</span>
@@ -170,8 +174,18 @@
                                 data-value="notice">📢 공지사항</div>
                             <div class="custom-option p-4 hover:bg-primary transition-colors cursor-pointer hidden-by-role"
                                 data-value="event">🎉 이벤트</div>
+                            <div class="custom-option p-4 hover:bg-primary transition-colors cursor-pointer hidden-by-role"
+                                data-value="homework">📝 숙제</div>
                         </div>
                         <input type="hidden" id="post-category" value="dashboard">
+                    </div>
+
+                    <div id="homework-target-container" class="hidden relative">
+                        <label class="text-xs font-black text-primary uppercase tracking-widest ml-4 mb-2 block">수신 학생 선택 (전체 또는 개별)</label>
+                        <select id="homework-target-student" class="w-full bg-white/5 border-b-2 border-white/10 p-4 text-xl font-bold focus:border-primary outline-none transition-all placeholder:text-white/20 rounded-xl">
+                            <option value="all">🌍 전체 공개 (All Students)</option>
+                            <!-- Students will be injected here -->
+                        </select>
                     </div>
 
                     <div class="relative">
@@ -184,6 +198,21 @@
                         <textarea id="post-content" rows="6"
                             class="w-full bg-white/5 border-b-2 border-white/10 p-4 text-xl focus:border-primary outline-none transition-all placeholder:text-white/20 resize-none"
                             placeholder="내용을 입력하세요..."></textarea>
+                    </div>
+
+                    <div id="homework-tasks-container" class="hidden space-y-4 p-6 bg-white/5 rounded-3xl border border-white/10">
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="font-bold text-primary flex items-center gap-2">
+                                <span class="material-symbols-outlined">checklist</span>
+                                필수 항목 리스트
+                            </h4>
+                            <button id="add-task-btn" class="size-10 rounded-full bg-primary/20 hover:bg-primary text-primary hover:text-white transition-all">
+                                <span class="material-symbols-outlined">add</span>
+                            </button>
+                        </div>
+                        <div id="tasks-input-list" class="space-y-3">
+                            <!-- Tasks will be injected here -->
+                        </div>
                     </div>
 
                     <button id="submit-post"

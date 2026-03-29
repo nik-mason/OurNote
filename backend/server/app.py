@@ -27,57 +27,78 @@ def serve_assets(filename):
 import json
 import tempfile
 import shutil
+import json
+import tempfile
+import shutil
+import os
+from supabase import create_client, Client
 
-def get_data_file(filename):
-    original_path = os.path.join(BASE_DIR, 'backend', 'data', filename)
-    tmp_path = os.path.join(tempfile.gettempdir(), filename)
+SUPABASE_URL = os.environ.get('SUPABASE_URL')
+SUPABASE_KEY = os.environ.get('SUPABASE_KEY')
+
+def get_db():
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        return None
+    try:
+        return create_client(SUPABASE_URL, SUPABASE_KEY)
+    except: return None
+
+def pull_data(filename):
+    name = filename.split('.')[0]
+    db = get_db()
+    if db:
+        try:
+            res = db.table('app_state').select('data').eq('id', name).execute()
+            if res.data and len(res.data) > 0:
+                return res.data[0]['data']
+        except: pass
     
-    # Check if running in Vercel or similar read-only environments
-    if os.environ.get('VERCEL_ENV') or os.environ.get('VERCEL'):
-        if not os.path.exists(tmp_path):
-            try:
-                shutil.copy2(original_path, tmp_path)
-            except Exception:
-                pass
-        return tmp_path
+    # Fallback/Seed
+    path = os.path.join(BASE_DIR, 'backend', 'data', filename)
+    with open(path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+        # If we have DB but no data, initialize it!
+        if db: push_data(filename, data)
+        return data
+
+def push_data(filename, data):
+    name = filename.split('.')[0]
+    db = get_db()
+    if db:
+        try:
+            db.table('app_state').upsert({"id": name, "data": data}).execute()
+        except: pass
     
-    return original_path
+    # Still write to local file for dev safety
+    path = os.path.join(BASE_DIR, 'backend', 'data', filename)
+    try:
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=4)
+    except: pass
 
 import json
 
-@app.route('/api/students')
+@app.route('/api/students', methods=['GET'])
 def get_students():
-    return send_from_directory(os.path.dirname(get_data_file('students.json')), 'students.json')
+    return pull_data('students.json')
 
-@app.route('/api/teacher')
+@app.route('/api/teacher', methods=['GET'])
 def get_teacher():
-    return send_from_directory(os.path.dirname(get_data_file('teacher.json')), 'teacher.json')
+    return pull_data('teacher.json')
 
 @app.route('/api/posts', methods=['GET'])
 def get_posts():
-    try:
-        with open(get_data_file('posts.json'), 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except Exception as e:
-        return {"error": str(e)}, 500
+    return pull_data('posts.json')
 
 @app.route('/api/posts', methods=['POST'])
 def add_post():
     try:
         from flask import request
         new_post = request.json
-        posts_path = get_data_file('posts.json')
-        
-        with open(posts_path, 'r', encoding='utf-8') as f:
-            posts = json.load(f)
-        
-        # Assign new ID
+        posts = pull_data('posts.json')
         new_post['id'] = max([p['id'] for p in posts], default=0) + 1
         posts.insert(0, new_post)
-        
-        with open(posts_path, 'w', encoding='utf-8') as f:
-            json.dump(posts, f, ensure_ascii=False, indent=4)
-            
+        push_data('posts.json', posts)
         return {"success": True, "post": new_post}
     except Exception as e:
         return {"error": str(e)}, 500
@@ -88,16 +109,9 @@ def change_teacher_password():
         from flask import request
         data = request.json
         new_password = data.get('password')
-        
-        teacher_path = get_data_file('teacher.json')
-        with open(teacher_path, 'r', encoding='utf-8') as f:
-            teacher = json.load(f)
-            
+        teacher = pull_data('teacher.json')
         teacher['password'] = new_password
-        
-        with open(teacher_path, 'w', encoding='utf-8') as f:
-            json.dump(teacher, f, ensure_ascii=False, indent=4)
-            
+        push_data('teacher.json', teacher)
         return {"success": True}
     except Exception as e:
         return {"error": str(e)}, 500
@@ -109,27 +123,70 @@ def update_settings():
         data = request.json
         role = data.get('role')
         settings = data.get('settings')
-        
         if role == 'teacher':
-            path = get_data_file('teacher.json')
-            with open(path, 'r', encoding='utf-8') as f:
-                user_data = json.load(f)
+            user_data = pull_data('teacher.json')
             user_data['settings'] = settings
-            with open(path, 'w', encoding='utf-8') as f:
-                json.dump(user_data, f, ensure_ascii=False, indent=4)
-                
+            push_data('teacher.json', user_data)
         elif role == 'student':
             student_id = data.get('id')
-            path = get_data_file('students.json')
-            with open(path, 'r', encoding='utf-8') as f:
-                students = json.load(f)
+            students = pull_data('students.json')
             for s in students:
                 if str(s.get('number', '')) == str(student_id) or str(s.get('id', '')) == str(student_id):
                     s['settings'] = settings
                     break
-            with open(path, 'w', encoding='utf-8') as f:
-                json.dump(students, f, ensure_ascii=False, indent=4)
-                
+            push_data('students.json', students)
+        return {"success": True}
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+@app.route('/api/homework', methods=['GET'])
+def get_homework():
+    return pull_data('homework.json')
+
+@app.route('/api/homework', methods=['POST'])
+def add_homework():
+    try:
+        from flask import request
+        data = request.json
+        tasks_texts = data.get('tasks', [])
+        new_hw = {
+            "id": 0,
+            "title": data.get('title'),
+            "date": data.get('date'),
+            "author": data.get('author'),
+            "target_id": data.get('target_id', 'all'),
+            "tasks": [{"id": i+1, "text": t, "completed_ids": []} for i, t in enumerate(tasks_texts)]
+        }
+        hws = pull_data('homework.json')
+        new_hw['id'] = max([h['id'] for h in hws], default=0) + 1
+        hws.insert(0, new_hw)
+        push_data('homework.json', hws)
+        return {"success": True, "homework": new_hw}
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+@app.route('/api/homework/toggle', methods=['POST'])
+def toggle_homework():
+    try:
+        from flask import request
+        data = request.json
+        hw_id = data.get('id')
+        task_id = data.get('task_id')
+        student_id = data.get('student_id')
+        hws = pull_data('homework.json')
+        for h in hws:
+            if h['id'] == hw_id:
+                for task in h.get('tasks', []):
+                    if task['id'] == int(task_id):
+                        task_cids = [str(i) for i in task.get('completed_ids', [])]
+                        if str(student_id) in task_cids:
+                            task['completed_ids'] = [str(i) for i in task_cids if str(i) != str(student_id)]
+                        else:
+                            if 'completed_ids' not in task: task['completed_ids'] = []
+                            task['completed_ids'].append(str(student_id))
+                        break
+                break
+        push_data('homework.json', hws)
         return {"success": True}
     except Exception as e:
         return {"error": str(e)}, 500
@@ -137,18 +194,13 @@ def update_settings():
 @app.route('/api/posts/<int:post_id>', methods=['DELETE'])
 def delete_post(post_id):
     try:
-        posts_path = get_data_file('posts.json')
-        with open(posts_path, 'r', encoding='utf-8') as f:
-            posts = json.load(f)
-            
+        posts = pull_data('posts.json')
         posts = [p for p in posts if p['id'] != post_id]
-        
-        with open(posts_path, 'w', encoding='utf-8') as f:
-            json.dump(posts, f, ensure_ascii=False, indent=4)
-            
+        push_data('posts.json', posts)
         return {"success": True}
     except Exception as e:
         return {"error": str(e)}, 500
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=6273)

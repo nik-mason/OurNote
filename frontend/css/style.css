@@ -60,6 +60,12 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -ms-overflow-style: none; /* Hide IE scrollbar */
+    scrollbar-width: none;    /* Hide Firefox scrollbar */
+}
+
+*::-webkit-scrollbar {
+    display: none;             /* Hide Chrome/Safari scrollbar */
 }
 
 body {
@@ -378,17 +384,17 @@ body {
     animation: haptic-shake 0.2s 3;
 }
 
-/* Scroll Progress */
-.ultra-progress {
+/* Scroll Progress (Themed) */
+.ultra-progress, #ultra-bar {
     position: fixed;
     top: 0;
     left: 0;
     width: 0%;
-    height: 8px;
-    background: linear-gradient(to right, #2b8cee, #f43f5e, #fbbf24, #10b981);
+    height: 6px;
+    background: linear-gradient(to right, var(--primary), var(--accent, #f43f5e));
     z-index: 10000;
     transition: width 0.1s;
-    box-shadow: 0 0 20px var(--primary-glow);
+    box-shadow: 0 0 15px var(--primary-glow);
     backdrop-filter: blur(10px);
 }
 
@@ -1835,6 +1841,13 @@ body.dashboard-active {
 
 /* Mobile Responsive Engine (V5 Ultra) */
 @media (max-width: 768px) {
+    html, body {
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        height: auto !important;
+        min-height: 100vh !important;
+    }
+
     /* Main Layout */
     .main-wrapper {
         display: block !important;
@@ -1958,10 +1971,12 @@ body.dashboard-active {
     /* Modal Mobile Fixes */
     .modal-v4 {
         height: auto !important;
-        max-height: 90vh !important;
+        max-height: 85vh !important;
         width: 95vw !important;
         margin: auto !important;
         border-radius: 2rem !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
     }
 
     .modal-v4 .flex.flex-1 {

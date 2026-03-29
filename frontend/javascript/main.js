@@ -456,8 +456,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         loadPosts();
-        initScrollProgress();
     }
+    initScrollProgress();
+
 
     // --- 6. SHARED FUNCTIONS ---
     async function loadPosts() {
@@ -511,10 +512,22 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     function initScrollProgress() {
-        window.addEventListener('scroll', () => {
-            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-            const scrolled = (winScroll / (document.documentElement.scrollHeight - document.documentElement.clientHeight)) * 100;
+        const updateBar = (el) => {
+            const winScroll = el.scrollTop || (el === document.documentElement ? document.body.scrollTop : 0);
+            const height = el.scrollHeight - el.clientHeight;
+            if (height <= 0) {
+                if (ultraBar) ultraBar.style.width = "0%";
+                return;
+            }
+            const scrolled = (winScroll / height) * 100;
             if (ultraBar) ultraBar.style.width = scrolled + "%";
+        };
+
+        window.addEventListener('scroll', () => updateBar(document.documentElement));
+        
+        // Modal scrolling link
+        document.querySelectorAll('.modal-v4').forEach(modal => {
+            modal.addEventListener('scroll', () => updateBar(modal));
         });
     }
 

@@ -2,7 +2,25 @@
  * OURNOTE ULTRA-ENGINE (V4)
  */
 document.addEventListener('DOMContentLoaded', () => {
+    let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
     let savedGlobalTheme = localStorage.getItem('ournote-theme');
+
+    if (currentUser && currentUser.settings) {
+        if (currentUser.settings.theme) savedGlobalTheme = currentUser.settings.theme;
+        if (currentUser.settings.radius) document.documentElement.style.setProperty('--card-radius', currentUser.settings.radius);
+        if (currentUser.settings.glow) {
+            const glowTheme = savedGlobalTheme || 'dark';
+            const tc = {
+                'dark': `43, 140, 238, ${currentUser.settings.glow}`,
+                'white': `59, 130, 246, ${currentUser.settings.glow}`,
+                'blue': `14, 165, 233, ${currentUser.settings.glow}`,
+                'aurora': `16, 185, 129, ${currentUser.settings.glow}`,
+                'moonlight': `139, 92, 246, ${currentUser.settings.glow}`
+            };
+            document.documentElement.style.setProperty('--primary-glow', `rgba(${tc[glowTheme] || tc['dark']})`);
+        }
+    }
+
     if (!savedGlobalTheme) {
         savedGlobalTheme = 'dark';
         localStorage.setItem('ournote-theme', 'dark');
@@ -10,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.documentElement.setAttribute('data-theme', savedGlobalTheme);
 
     const isDashboard = window.location.pathname.includes('/dashboard');
-    let currentUser = JSON.parse(localStorage.getItem('currentUser'));
     let currentCategory = 'all';
 
     // UI Elements
@@ -184,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const res = await fetch('/api/students');
                     const students = await res.json();
                     const student = students.find(s => s.id === id && s.name === name);
-                    if (student) handleLoginSuccess({ name: student.name, role: 'student' });
+                    if (student) handleLoginSuccess({ name: student.name, role: 'student', id: student.id, settings: student.settings || null });
                     else throw new Error('학생 정보를 찾을 수 없습니다.');
                 } else {
                     const id = document.getElementById('teacher-id').value.trim();
@@ -193,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const res = await fetch('/api/teacher');
                     const teacher = await res.json();
                     if (teacher.username === id && teacher.password === pw) {
-                        handleLoginSuccess({ name: '선생님', role: 'teacher' });
+                        handleLoginSuccess({ name: '선생님', role: 'teacher', settings: teacher.settings || null });
                     } else throw new Error('일치하는 정보가 없습니다.');
                 }
             } catch (err) {
@@ -221,6 +238,19 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = '/';
             return;
         }
+        
+        async function saveSettings(updateObj) {
+            currentUser.settings = { ...(currentUser.settings || {}), ...updateObj };
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            try {
+                await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ role: currentUser.role, id: currentUser.id, settings: currentUser.settings })
+                });
+            } catch(e) { console.error('Settings save failed', e); }
+        }
+
         const usernameDisplay = document.getElementById('display-username');
         if (usernameDisplay) usernameDisplay.textContent = currentUser.name;
         if (currentUser.role === 'teacher') {
@@ -356,6 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.documentElement.setAttribute('data-theme', theme);
 
                 localStorage.setItem('ournote-theme', theme);
+                saveSettings({ theme: theme });
                 showToast(`${theme.charAt(0).toUpperCase() + theme.slice(1)} 테마가 적용되었습니다.`);
             });
         });
@@ -392,6 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (radiusSelect) {
             radiusSelect.addEventListener('change', (e) => {
                 document.documentElement.style.setProperty('--card-radius', e.target.value);
+                saveSettings({ radius: e.target.value });
                 showToast('곡률 세팅이 저장되었습니다.');
             });
         }
@@ -412,7 +444,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.documentElement.style.setProperty('--primary-glow', `rgba(${themeColors[theme]})`);
                 }
             });
-            glowSlider.addEventListener('change', () => showToast('글로우 감도가 저장되었습니다.'));
+            glowSlider.addEventListener('change', (e) => {
+                saveSettings({ glow: e.target.value });
+                showToast('글로우 감도가 저장되었습니다.');
+            });
+        }
+        
+        if (currentUser.settings) {
+            if (radiusSelect && currentUser.settings.radius) radiusSelect.value = currentUser.settings.radius;
+            if (glowSlider && currentUser.settings.glow) glowSlider.value = currentUser.settings.glow;
         }
 
         loadPosts();

@@ -102,6 +102,38 @@ def change_teacher_password():
     except Exception as e:
         return {"error": str(e)}, 500
 
+@app.route('/api/settings', methods=['POST'])
+def update_settings():
+    try:
+        from flask import request
+        data = request.json
+        role = data.get('role')
+        settings = data.get('settings')
+        
+        if role == 'teacher':
+            path = get_data_file('teacher.json')
+            with open(path, 'r', encoding='utf-8') as f:
+                user_data = json.load(f)
+            user_data['settings'] = settings
+            with open(path, 'w', encoding='utf-8') as f:
+                json.dump(user_data, f, ensure_ascii=False, indent=4)
+                
+        elif role == 'student':
+            student_id = data.get('id')
+            path = get_data_file('students.json')
+            with open(path, 'r', encoding='utf-8') as f:
+                students = json.load(f)
+            for s in students:
+                if str(s.get('number', '')) == str(student_id) or str(s.get('id', '')) == str(student_id):
+                    s['settings'] = settings
+                    break
+            with open(path, 'w', encoding='utf-8') as f:
+                json.dump(students, f, ensure_ascii=False, indent=4)
+                
+        return {"success": True}
+    except Exception as e:
+        return {"error": str(e)}, 500
+
 @app.route('/api/posts/<int:post_id>', methods=['DELETE'])
 def delete_post(post_id):
     try:

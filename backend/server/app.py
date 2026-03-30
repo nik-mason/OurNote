@@ -33,17 +33,14 @@ import shutil
 import os
 from supabase import create_client, Client
 
-SUPABASE_URL = os.environ.get('SUPABASE_URL') or os.environ.get('SUPABASE_REST_API_URL') or os.environ.get('NEXT_PUBLIC_SUPABASE_URL')
-SUPABASE_KEY = os.environ.get('SUPABASE_KEY') or os.environ.get('SUPABASE_ANON_KEY') or os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY')
+SUPABASE_URL = (os.environ.get('SUPABASE_URL') or os.environ.get('SUPABASE_REST_API_URL') or os.environ.get('NEXT_PUBLIC_SUPABASE_URL') or "").strip()
+SUPABASE_KEY = (os.environ.get('SUPABASE_KEY') or os.environ.get('SUPABASE_ANON_KEY') or os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY') or "").strip()
 
 def get_db():
     if not SUPABASE_URL or not SUPABASE_KEY:
-        return None
-    try:
-        return create_client(SUPABASE_URL, SUPABASE_KEY)
-    except Exception as e:
-        print(f"Supabase Init Error: {e}")
-        return None
+        raise ValueError("SUPABASE_URL or SUPABASE_KEY environment variables are missing.")
+    # create_client can raise exceptions if URL is malformed or other internal errors
+    return create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.route('/api/status')
 def get_status():
@@ -63,10 +60,6 @@ def get_status():
         
     try:
         db = get_db()
-        if not db:
-            status["error_msg"] = "create_client returned None. Check URL and Key values."
-            return status
-            
         # Check if we can reach the table
         res = db.table('app_state').select('id').limit(1).execute()
         status["db_connection"] = True
@@ -77,8 +70,8 @@ def get_status():
         
     except Exception as e:
         import traceback
-        status["error_msg"] = str(e)
-        status["trace"] = traceback.format_exc().split('\n')[-2:]
+        status["error_msg"] = f"Runtime Error: {str(e)}"
+        status["trace"] = traceback.format_exc().split('\n')[-3:]
         
     return status
 

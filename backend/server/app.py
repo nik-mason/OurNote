@@ -33,15 +33,39 @@ import shutil
 import os
 from supabase import create_client, Client
 
-SUPABASE_URL = os.environ.get('SUPABASE_URL')
-SUPABASE_KEY = os.environ.get('SUPABASE_KEY')
+SUPABASE_URL = os.environ.get('SUPABASE_URL') or os.environ.get('SUPABASE_REST_API_URL') or os.environ.get('NEXT_PUBLIC_SUPABASE_URL')
+SUPABASE_KEY = os.environ.get('SUPABASE_KEY') or os.environ.get('SUPABASE_ANON_KEY') or os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY')
 
 def get_db():
     if not SUPABASE_URL or not SUPABASE_KEY:
         return None
     try:
         return create_client(SUPABASE_URL, SUPABASE_KEY)
-    except: return None
+    except Exception as e:
+        print(f"Supabase Init Error: {e}")
+        return None
+
+@app.route('/api/status')
+def get_status():
+    db = get_db()
+    status = {
+        "supabase_configured": bool(SUPABASE_URL and SUPABASE_KEY),
+        "supabase_url_detect": bool(SUPABASE_URL),
+        "db_connection": False,
+        "tables_found": [],
+        "env": os.environ.get('VERCEL_ENV', 'local')
+    }
+    if db:
+        try:
+            # Check if we can reach the table
+            res = db.table('app_state').select('id').limit(1).execute()
+            status["db_connection"] = True
+            # Get list of keys
+            res2 = db.table('app_state').select('id').execute()
+            status["tables_found"] = [r['id'] for r in res2.data]
+        except Exception as e:
+            status["error"] = str(e)
+    return status
 
 def pull_data(filename):
     name = filename.split('.')[0]

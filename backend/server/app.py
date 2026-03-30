@@ -33,13 +33,27 @@ import shutil
 import os
 from supabase import create_client, Client
 
-SUPABASE_URL = (os.environ.get('SUPABASE_URL') or os.environ.get('SUPABASE_REST_API_URL') or os.environ.get('NEXT_PUBLIC_SUPABASE_URL') or "").strip()
-SUPABASE_KEY = (os.environ.get('SUPABASE_KEY') or os.environ.get('SUPABASE_ANON_KEY') or os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY') or "").strip()
+# Advanced Auto-detection for various Vercel/Supabase Integration name patterns
+SUPABASE_URL = ""
+SUPABASE_KEY = ""
+
+for env_key in os.environ:
+    if env_key.endswith('_SUPABASE_URL'):
+        SUPABASE_URL = os.environ[env_key].strip()
+        break
+if not SUPABASE_URL:
+    SUPABASE_URL = (os.environ.get('SUPABASE_URL') or os.environ.get('SUPABASE_REST_API_URL') or os.environ.get('NEXT_PUBLIC_SUPABASE_URL') or "").strip()
+
+for env_key in os.environ:
+    if env_key.endswith('_SUPABASE_ANON_KEY'):
+        SUPABASE_KEY = os.environ[env_key].strip()
+        break
+if not SUPABASE_KEY:
+    SUPABASE_KEY = (os.environ.get('SUPABASE_KEY') or os.environ.get('SUPABASE_ANON_KEY') or os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY') or "").strip()
 
 def get_db():
     if not SUPABASE_URL or not SUPABASE_KEY:
-        raise ValueError("SUPABASE_URL or SUPABASE_KEY environment variables are missing.")
-    # create_client can raise exceptions if URL is malformed or other internal errors
+        raise ValueError("SUPABASE_URL or SUPABASE_KEY environment variables are missing from Vercel.")
     return create_client(SUPABASE_URL, SUPABASE_KEY)
 
 @app.route('/api/status')

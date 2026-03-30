@@ -47,24 +47,39 @@ def get_db():
 
 @app.route('/api/status')
 def get_status():
-    db = get_db()
     status = {
         "supabase_configured": bool(SUPABASE_URL and SUPABASE_KEY),
-        "supabase_url_detect": bool(SUPABASE_URL),
+        "url_preview": (SUPABASE_URL[:10] + "...") if SUPABASE_URL else "None",
+        "url_is_proper": bool(SUPABASE_URL and SUPABASE_URL.startswith('http')),
         "db_connection": False,
+        "error_msg": None,
         "tables_found": [],
         "env": os.environ.get('VERCEL_ENV', 'local')
     }
-    if db:
-        try:
-            # Check if we can reach the table
-            res = db.table('app_state').select('id').limit(1).execute()
-            status["db_connection"] = True
-            # Get list of keys
-            res2 = db.table('app_state').select('id').execute()
-            status["tables_found"] = [r['id'] for r in res2.data]
-        except Exception as e:
-            status["error"] = str(e)
+    
+    if not status["supabase_configured"]:
+        status["error_msg"] = "Supabase env vars missing. Ensure SUPABASE_URL and SUPABASE_KEY are in Vercel settings."
+        return status
+        
+    try:
+        db = get_db()
+        if not db:
+            status["error_msg"] = "create_client returned None. Check URL and Key values."
+            return status
+            
+        # Check if we can reach the table
+        res = db.table('app_state').select('id').limit(1).execute()
+        status["db_connection"] = True
+        
+        # Get list of keys
+        res2 = db.table('app_state').select('id', 'data').execute()
+        status["tables_found"] = [r['id'] for r in res2.data]
+        
+    except Exception as e:
+        import traceback
+        status["error_msg"] = str(e)
+        status["trace"] = traceback.format_exc().split('\n')[-2:]
+        
     return status
 
 def pull_data(filename):

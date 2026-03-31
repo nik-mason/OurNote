@@ -2107,6 +2107,21 @@ main#main-area {
 }
 
 /* Modal Scroll Fix */
+/* --- UI Utilities: Tailwind-style sizing for Vanilla CSS --- */
+.size-4 { width: 1rem; height: 1rem; }
+.size-5 { width: 1.25rem; height: 1.25rem; }
+.size-6 { width: 1.5rem; height: 1.5rem; }
+.size-7 { width: 1.75rem; height: 1.75rem; }
+.size-8 { width: 2rem; height: 2rem; }
+.size-10 { width: 2.5rem; height: 2.5rem; }
+.size-12 { width: 3rem; height: 3rem; }
+.size-14 { width: 3.5rem; height: 3.5rem; }
+.size-16 { width: 4rem; height: 4rem; }
+
+.accent-primary {
+    accent-color: var(--primary);
+}
+
 .modal-v4 .modal-body {
     max-height: 60vh;
     overflow-y: auto !important;

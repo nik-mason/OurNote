@@ -703,18 +703,14 @@ document.addEventListener('DOMContentLoaded', () => {
             hw.tasks?.forEach(task => {
                 const isChecked = task.completed_ids?.includes(String(currentUser.id || ''));
                 tasksHtml += `
-                    <div class="flex items-center gap-4 p-4 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/30 transition-all group">
-                        <div class="relative size-7">
-                            <input type="checkbox" id="hw-${hw.id}-${task.id}" ${isChecked ? 'checked' : ''} 
-                                onchange="toggleHomework(${hw.id}, ${task.id})"
-                                class="peer hidden">
-                            <label for="hw-${hw.id}-${task.id}" class="block size-full rounded-lg border-2 border-white/20 peer-checked:border-primary peer-checked:bg-primary transition-all cursor-pointer flex items-center justify-center">
-                                <span class="material-symbols-outlined text-white text-sm scale-0 peer-checked:scale-100 transition-transform">done</span>
-                            </label>
+                    <div class="flex items-center gap-6 p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-primary/40 transition-all group">
+                        <div class="mission-check-btn ${isChecked ? 'active' : ''}" 
+                             onclick="toggleHomework(${hw.id}, ${task.id})">
+                             <span class="material-symbols-outlined">${isChecked ? 'task_alt' : 'circle'}</span>
                         </div>
-                        <span class="flex-1 text-lg ${isChecked ? 'text-white/30 line-through' : 'text-white/80'} font-medium group-hover:text-white transition-all">${task.text}</span>
-                        <div class="text-[10px] font-black text-primary/50 uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">
-                            ${task.completed_ids?.length || 0} Done
+                        <span class="flex-1 text-xl ${isChecked ? 'text-white/20 line-through' : 'text-white/90'} font-bold transition-all">${task.text}</span>
+                        <div class="flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full opacity-40 group-hover:opacity-100 transition-opacity">
+                            <span class="text-[10px] font-black text-primary uppercase">${task.completed_ids?.length || 0} SOLVED</span>
                         </div>
                     </div>
                 `;
@@ -768,10 +764,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({ id: hwId, task_id: taskId, student_id: currentUser.id })
             });
             if (res.ok) {
-                const el = document.getElementById(`hw-${hwId}-${taskId}`);
-                if (el.checked) triggerConfetti();
-                showToast(el.checked ? '미션 완료! ✨' : '다시 도전해봐요!');
-                loadPosts();
+                const resData = await res.json();
+                loadPosts(); 
+                if (resData.completed) {
+                    triggerConfetti();
+                    showToast('미션 완료! ✨');
+                } else {
+                    showToast('다시 도전해봐요!');
+                }
             }
         } catch (e) {
             showToast('연결 실패', 'error');

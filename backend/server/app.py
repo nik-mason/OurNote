@@ -230,10 +230,11 @@ def toggle_homework():
                         else:
                             if 'completed_ids' not in task: task['completed_ids'] = []
                             task['completed_ids'].append(str(student_id))
+                        is_completed = str(student_id) in [str(i) for i in task.get('completed_ids', [])]
                         break
                 break
         push_data('homework.json', hws)
-        return {"success": True}
+        return {"success": True, "completed": is_completed}
     except Exception as e:
         return {"error": str(e)}, 500
 

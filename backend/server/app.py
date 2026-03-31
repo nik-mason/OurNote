@@ -247,6 +247,16 @@ def delete_post(post_id):
     except Exception as e:
         return {"error": str(e)}, 500
 
+@app.route('/api/homework/<int:hw_id>', methods=['DELETE'])
+def delete_homework(hw_id):
+    try:
+        hws = pull_data('homework.json')
+        hws = [h for h in hws if h['id'] != hw_id]
+        push_data('homework.json', hws)
+        return {"success": True}
+    except Exception as e:
+        return {"error": str(e)}, 500
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=6273)

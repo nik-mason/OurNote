@@ -631,11 +631,23 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${hw.target_id === 'all' ? 'All Units Assigned' : `Target: ${hw.target_id}`}
                         </span>
                     </div>
+                    ${currentUser.role === 'teacher' ? `<button onclick="deleteHomeworkV4(${hw.id}, this)" class="ml-auto text-text-dim hover:text-accent"><span class="material-symbols-outlined text-[20px]">delete</span></button>` : ''}
                 </div>`;
             container.appendChild(card);
             requestAnimationFrame(() => setTimeout(() => card.classList.add('reveal'), 50));
         });
     }
+
+    window.deleteHomeworkV4 = async (id, btn) => {
+        if (!confirm('정말 삭제하시겠습니까?')) return;
+        const card = btn.closest('.ultra-card');
+        card.style.transform = 'perspective(1000px) rotateX(-90deg) scale(0.5)';
+        card.style.opacity = '0';
+        setTimeout(async () => {
+            const res = await fetch(`/api/homework/${id}`, { method: 'DELETE' });
+            if (res.ok) { showToast('숙제가 삭제되었습니다.'); loadPosts(); }
+        }, 600);
+    };
 
     window.toggleHomework = async (hwId, taskId) => {
         if (currentUser.role === 'teacher') return showToast('선생님은 숙제 체크를 할 수 없습니다!', 'info');

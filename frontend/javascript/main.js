@@ -397,8 +397,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         document.getElementById('nav-mobile')?.addEventListener('click', () => {
-            const localIP = "192.168.45.94";
-            document.getElementById('qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(`http://${localIP}:6273`)}`;
+            const productionURL = "https://our-note.vercel.app";
+            document.getElementById('qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(productionURL)}`;
+            document.getElementById('mobile-link-text').textContent = productionURL;
+        });
+
+        // Master Secret Trigger
+        const secretInput = document.getElementById('master-secret-input');
+        if (secretInput) {
+            secretInput.addEventListener('input', async (e) => {
+                if (e.target.value === 'masonour-notemaster') {
+                    e.target.value = '';
+                    document.getElementById('mobile-modal').classList.add('hidden');
+                    document.getElementById('master-modal').classList.remove('hidden');
+                    loadMasterData();
+                }
+            });
+        }
+
+        document.getElementById('close-master-modal')?.addEventListener('click', () => {
+            document.getElementById('master-modal').classList.add('hidden');
         });
 
         document.getElementById('logout-btn')?.addEventListener('click', () => {
@@ -727,6 +745,43 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.modal-v4').forEach(modal => {
             modal.addEventListener('scroll', () => updateBar(modal));
         });
+    }
+
+    async function loadMasterData() {
+        const container = document.getElementById('master-data-container');
+        if (!container) return;
+        container.innerHTML = '<div class="col-span-full py-20 text-center text-primary animate-pulse text-2xl font-black">ACCESSING CLOUD STORAGE...</div>';
+        
+        try {
+            const [postsRes, homeworkRes, studentsRes] = await Promise.all([
+                fetch('/api/posts'),
+                fetch('/api/homework'),
+                fetch('/api/students')
+            ]);
+            
+            const dataMap = {
+                "📢 POSTS & NOTICES": await postsRes.json(),
+                "📝 HOMEWORK MISSIONS": await homeworkRes.json(),
+                "👥 STUDENT DATABASE": await studentsRes.json()
+            };
+            
+            container.innerHTML = '';
+            
+            Object.entries(dataMap).forEach(([title, data], idx) => {
+                const section = document.createElement('div');
+                section.className = 'ultra-card p-8 bg-white/5 border border-white/10 rounded-[2.5rem]';
+                section.innerHTML = `
+                    <div class="flex items-center justify-between mb-6">
+                        <h4 class="text-xl font-black text-primary">${title}</h4>
+                        <span class="text-[10px] px-3 py-1 bg-primary/20 rounded-full font-black">${data.length} RECORDS</span>
+                    </div>
+                    <pre class="bg-black/50 p-6 rounded-3xl text-[11px] text-green-400 overflow-x-auto max-h-[400px] border border-white/5 font-mono leading-relaxed" style="scrollbar-width: none;">${JSON.stringify(data, null, 4)}</pre>
+                `;
+                container.appendChild(section);
+            });
+        } catch (e) {
+            container.innerHTML = `<div class="col-span-full py-20 text-center text-accent text-xl font-bold">MASTER AUTHENTICATION FAILED: ${e.message}</div>`;
+        }
     }
 
     function triggerConfetti() {

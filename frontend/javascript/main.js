@@ -750,7 +750,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function loadMasterData() {
         const container = document.getElementById('master-data-container');
         if (!container) return;
-        container.innerHTML = '<div class="col-span-full py-20 text-center text-primary animate-pulse text-2xl font-black">ACCESSING CLOUD STORAGE...</div>';
+        container.innerHTML = '<div class="col-span-full py-20 text-center text-primary animate-pulse text-4xl font-black italic tracking-tighter">INITIALIZING QUANTUM SYNC...</div>';
         
         try {
             const [postsRes, homeworkRes, studentsRes] = await Promise.all([
@@ -760,28 +760,82 @@ document.addEventListener('DOMContentLoaded', () => {
             ]);
             
             const dataMap = {
-                "📢 POSTS & NOTICES": await postsRes.json(),
-                "📝 HOMEWORK MISSIONS": await homeworkRes.json(),
-                "👥 STUDENT DATABASE": await studentsRes.json()
+                "posts": { icon: "article", title: "게시판 & 공지사항", data: await postsRes.json() },
+                "homework": { icon: "task", title: "숙제 시스템 전송기록", data: await homeworkRes.json() },
+                "students": { icon: "groups", title: "학생 데이터베이스", data: await studentsRes.json() }
             };
             
             container.innerHTML = '';
             
-            Object.entries(dataMap).forEach(([title, data], idx) => {
+            Object.entries(dataMap).forEach(([key, info]) => {
                 const section = document.createElement('div');
-                section.className = 'ultra-card p-8 bg-white/5 border border-white/10 rounded-[2.5rem]';
+                section.className = 'col-span-full mb-12';
                 section.innerHTML = `
-                    <div class="flex items-center justify-between mb-6">
-                        <h4 class="text-xl font-black text-primary">${title}</h4>
-                        <span class="text-[10px] px-3 py-1 bg-primary/20 rounded-full font-black">${data.length} RECORDS</span>
+                    <div class="flex items-center gap-4 mb-8">
+                        <span class="material-symbols-outlined text-4xl text-primary">${info.icon}</span>
+                        <h4 class="text-3xl font-black text-white italic tracking-tighter uppercase">${info.title}</h4>
+                        <span class="text-[10px] px-3 py-1 bg-primary/20 rounded-full font-black ml-auto">${info.data.length} TOTAL RECORDS</span>
                     </div>
-                    <pre class="bg-black/50 p-6 rounded-3xl text-[11px] text-green-400 overflow-x-auto max-h-[400px] border border-white/5 font-mono leading-relaxed" style="scrollbar-width: none;">${JSON.stringify(data, null, 4)}</pre>
+                    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4" id="master-grid-${key}"></div>
                 `;
                 container.appendChild(section);
+                
+                const grid = document.getElementById(`master-grid-${key}`);
+                info.data.forEach((item, idx) => {
+                    const card = document.createElement('div');
+                    card.className = 'master-square-card group bg-white/5 border border-white/10 p-5 rounded-3xl hover:bg-primary/20 hover:border-primary/50 transition-all cursor-pointer relative overflow-hidden';
+                    card.innerHTML = `
+                        <div class="flex flex-col h-full">
+                            <span class="text-[10px] font-black text-primary/50 mb-2 uppercase tracking-widest">ID: ${item.id}</span>
+                            <h5 class="text-sm font-bold text-white line-clamp-2 mb-4">${item.title || item.name || "UNNAMED"}</h5>
+                            <div class="mt-auto flex justify-between items-center opacity-40 group-hover:opacity-100 transition-opacity">
+                                <span class="text-[9px] text-text-dim">${item.date || "NO_DATE"}</span>
+                                <span class="material-symbols-outlined text-sm">open_in_new</span>
+                            </div>
+                        </div>
+                    `;
+                    card.addEventListener('click', () => showMasterDetail(item, info.title));
+                    grid.appendChild(card);
+                });
             });
         } catch (e) {
             container.innerHTML = `<div class="col-span-full py-20 text-center text-accent text-xl font-bold">MASTER AUTHENTICATION FAILED: ${e.message}</div>`;
         }
+    }
+
+    function showMasterDetail(item, categoryTitle) {
+        const detailOverlay = document.createElement('div');
+        detailOverlay.className = 'fixed inset-0 z-[700] flex items-center justify-center p-10 bg-black/80 backdrop-blur-3xl animate-in fade-in duration-300';
+        detailOverlay.innerHTML = `
+            <div class="ultra-card max-w-2xl w-full p-12 relative border-primary/30 border-2 shadow-[0_0_100px_rgba(43,140,238,0.2)]">
+                <button class="absolute top-6 right-6 size-12 rounded-full hover:bg-white/10 flex items-center justify-center" onclick="this.parentElement.parentElement.remove()">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+                <div class="mb-10">
+                    <span class="px-4 py-1 rounded-full bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest">${categoryTitle}</span>
+                    <h2 class="text-4xl font-black text-white mt-4 border-b-2 border-primary/20 pb-4">${item.title || item.name}</h2>
+                </div>
+                <div class="grid grid-cols-2 gap-8 mb-10">
+                    <div>
+                        <p class="text-[9px] text-primary font-black uppercase tracking-[0.2em] mb-2">AUTHORED BY</p>
+                        <p class="text-xl font-bold text-white">${item.author || "SYSTEM_GEN"}</p>
+                    </div>
+                    <div>
+                        <p class="text-[9px] text-primary font-black uppercase tracking-[0.2em] mb-2">TIMESTAMP</p>
+                        <p class="text-xl font-bold text-white">${item.date || "N/A"}</p>
+                    </div>
+                </div>
+                <div class="bg-black/40 p-8 rounded-[2rem] border border-white/5 space-y-4">
+                    <p class="text-[9px] text-text-dim font-black uppercase tracking-[0.2em]">DATA PAYLOAD</p>
+                    <div class="text-white text-sm leading-relaxed max-h-[300px] overflow-y-auto pr-4 scrollbar-hide">
+                        ${item.content ? `<p>${item.content}</p>` : ''}
+                        ${item.tasks ? `<ul class="space-y-2 mt-4">${item.tasks.map(t => `<li class="flex gap-3"><span class="text-primary mt-0.5">•</span>${t.text}</li>`).join('')}</ul>` : ''}
+                        <pre class="mt-8 pt-8 border-t border-white/5 text-[10px] text-primary/40 font-mono">${JSON.stringify(item, null, 4)}</pre>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(detailOverlay);
     }
 
     function triggerConfetti() {

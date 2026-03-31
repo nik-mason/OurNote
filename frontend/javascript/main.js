@@ -400,6 +400,13 @@ document.addEventListener('DOMContentLoaded', () => {
             const productionURL = "https://our-note.vercel.app";
             document.getElementById('qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(productionURL)}`;
             document.getElementById('mobile-link-text').textContent = productionURL;
+            
+            // Exclusive Access for ID 12 (서민준)
+            const secretInput = document.getElementById('master-secret-input');
+            if (secretInput) {
+                const isMJ = String(currentUser.id) === "12";
+                secretInput.classList.toggle('hidden', !isMJ);
+            }
         });
 
         // Master Secret Trigger

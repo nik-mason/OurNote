@@ -2113,6 +2113,21 @@ main#main-area {
     padding-right: 8px;
 }
 
+/* --- MJ Hacker Sequence Enhancements --- */
+.scanlines {
+    background: linear-gradient(
+        to bottom,
+        rgba(18, 16, 16, 0) 50%,
+        rgba(0, 0, 0, 0.25) 50%
+    );
+    background-size: 100% 4px;
+}
+
+.noise {
+    background-image: url('https://media.giphy.com/media/oEI9uWUicGu88/giphy.gif');
+    background-size: cover;
+}
+
 #fake-error-overlay {
     animation: flicker 0.1s infinite;
 }

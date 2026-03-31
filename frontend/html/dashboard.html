@@ -520,12 +520,38 @@
         </div>
     </div>
 
-    <!-- HACKER SEQUENCE OVERLAYS -->
-    <div id="fake-error-overlay" class="fixed inset-0 z-[800] bg-red-900/95 backdrop-blur-3xl hidden flex items-center justify-center text-center p-10">
-        <div class="max-w-xl">
-            <span class="material-symbols-outlined text-9xl text-white animate-bounce mb-8">dangerous</span>
-            <h2 class="text-6xl font-black text-white mb-6 tracking-tighter italic">CRITICAL SYSTEM FAILURE</h2>
-            <p class="text-white/60 text-xl font-mono leading-relaxed">Memory segment violation detected at 0x4F92AB. System integrity compromised. Security protocols engaged...</p>
+    <!-- VINTAGE VIRUS SCAM OVERLAY (5s Prank) -->
+    <div id="fake-error-overlay" class="fixed inset-0 z-[800] bg-red-950 hidden overflow-hidden select-none">
+        <!-- Scanline & Noise Layer -->
+        <div class="absolute inset-0 pointer-events-none opacity-40 mix-blend-overlay scanlines"></div>
+        <div class="absolute inset-0 pointer-events-none opacity-20 noise"></div>
+        
+        <div class="flex flex-col items-center justify-center h-full space-y-10 animate-pulse">
+            <div class="p-8 bg-red-600 border-4 border-white shadow-[10px_10px_0px_#000] text-white">
+                <div class="flex items-center gap-4 mb-4 border-b-2 border-white pb-2">
+                    <span class="material-symbols-outlined text-4xl">warning</span>
+                    <h2 class="text-2xl font-black italic tracking-tighter">WIN95_VIRUS_ALERT.EXE</h2>
+                </div>
+                <p class="text-lg font-mono leading-tight">YOUR COMPUTER IS INFECTED BY "TROJAN.WIN32.LOVE.YOU"</p>
+                <p class="text-xs font-mono mt-4 text-red-100">SYSTEM DATA IS BEING WIPED... [49% COMPLETE]</p>
+                <div class="mt-6 flex justify-end gap-4">
+                    <button class="px-6 py-2 bg-gray-300 text-black border-2 border-black active:shadow-none shadow-[4px_4px_0px_#000]">OK</button>
+                    <button class="px-6 py-2 bg-gray-300 text-black border-2 border-black active:shadow-none shadow-[4px_4px_0px_#000]">CANCEL</button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div class="p-4 bg-white border-2 border-black text-black text-xs font-mono animate-bounce">
+                    CRITICAL_ERROR: 0xDEADBEEF
+                </div>
+                <div class="p-4 bg-white border-2 border-black text-black text-xs font-mono animate-bounce delay-150">
+                    DELETING ALL PHOTOS...
+                </div>
+            </div>
+        </div>
+
+        <div class="absolute bottom-20 left-10 text-red-500 font-mono text-3xl italic font-black uppercase tracking-tighter animate-ping">
+            DELETE_C_DRIVE_EXECUTED
         </div>
     </div>
 

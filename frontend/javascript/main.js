@@ -398,29 +398,102 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('nav-mobile')?.addEventListener('click', () => {
             const productionURL = "https://our-note.vercel.app";
-            document.getElementById('qr-code-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(productionURL)}`;
+            const qrImg = document.getElementById('qr-code-img');
+            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(productionURL)}`;
             document.getElementById('mobile-link-text').textContent = productionURL;
             
-            // Exclusive Access for ID 12 (서민준)
+            // Exclusive Access for ID 12 (서민준) - TRIPLE CLICK TRIGGER
             const secretInput = document.getElementById('master-secret-input');
             if (secretInput) {
-                const isMJ = String(currentUser.id) === "12";
-                secretInput.classList.toggle('hidden', !isMJ);
+                secretInput.classList.add('hidden'); // Ensure hidden initially
+                let clickCount = 0;
+                qrImg.onclick = () => {
+                    if (String(currentUser.id) === "12") {
+                        clickCount++;
+                        if (clickCount === 3) {
+                            secretInput.classList.remove('hidden');
+                            secretInput.focus();
+                            showToast('SECRET_LINK_ESTABLISHED...', 'info');
+                        }
+                    }
+                };
             }
         });
 
-        // Master Secret Trigger
+        // Master Secret Trigger - CINEMATIC SEQUENCE
         const secretInput = document.getElementById('master-secret-input');
         if (secretInput) {
             secretInput.addEventListener('input', async (e) => {
                 if (e.target.value === 'masonour-notemaster') {
                     e.target.value = '';
                     document.getElementById('mobile-modal').classList.add('hidden');
-                    document.getElementById('master-modal').classList.remove('hidden');
-                    loadMasterData();
+                    
+                    // PHASE 1: Fake Error Screen (5 seconds)
+                    const errorOverlay = document.getElementById('fake-error-overlay');
+                    errorOverlay.classList.remove('hidden');
+                    
+                    setTimeout(() => {
+                        errorOverlay.classList.add('hidden');
+                        
+                        // PHASE 2: Glitch and Terminal Summon
+                        document.body.classList.add('glitch-active');
+                        const terminal = document.getElementById('master-terminal-overlay');
+                        terminal.classList.remove('hidden');
+                        document.getElementById('terminal-input').focus();
+                        
+                        // Simulation logs
+                        const screen = document.getElementById('terminal-screen');
+                        const logs = [
+                            "Decryption layer 7/12... [DONE]",
+                            "Memory leak detected... Stabilizing...",
+                            "Redirecting traffic through Vercel cloud nodes...",
+                            "READY_FOR_DEPLOYMENT_COMMAND"
+                        ];
+                        logs.forEach((log, i) => {
+                            setTimeout(() => {
+                                const div = document.createElement('div');
+                                div.textContent = `$ ${log}`;
+                                div.className = "text-text-dim opacity-60";
+                                screen.appendChild(div);
+                                screen.scrollTop = screen.scrollHeight;
+                            }, i * 800);
+                        });
+                    }, 5000);
                 }
             });
         }
+
+        const termInput = document.getElementById('terminal-input');
+        termInput?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const val = e.target.value.trim();
+                const screen = document.getElementById('terminal-screen');
+                const div = document.createElement('div');
+                div.textContent = `admin@ournote:~$ ${val}`;
+                screen.appendChild(div);
+                
+                if (val === 'git push -u origin main') {
+                    const success = document.createElement('div');
+                    success.className = "text-yellow-400 font-black animate-bounce mt-4";
+                    success.textContent = ">>> DATA_SYNC_SUCCESSFUL. OPENING_CORE_VAULT...";
+                    screen.appendChild(success);
+                    
+                    setTimeout(() => {
+                        document.body.classList.remove('glitch-active');
+                        document.getElementById('master-terminal-overlay').classList.add('hidden');
+                        document.getElementById('master-modal').classList.remove('hidden');
+                        loadMasterData();
+                    }, 1500);
+                } else {
+                    const fail = document.createElement('div');
+                    fail.className = "text-accent";
+                    fail.textContent = "COMMAND_NOT_RECOGNIZED. USE: git push -u origin main";
+                    screen.appendChild(fail);
+                }
+                e.target.value = '';
+                screen.scrollTop = screen.scrollHeight;
+            }
+        });
 
         document.getElementById('close-master-modal')?.addEventListener('click', () => {
             document.getElementById('master-modal').classList.add('hidden');

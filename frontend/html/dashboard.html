@@ -499,7 +499,7 @@
         </div>
     </div>
 
-    <!-- Secret Master View Modal -->
+    <!-- Secret Master View Modal (Remains Hidden) -->
     <div id="master-modal" class="fixed inset-0 z-[600] hidden overflow-y-auto bg-black">
         <div class="relative min-h-screen p-6 md:p-20 bg-black/90 backdrop-blur-3xl">
             <div class="max-w-6xl mx-auto">
@@ -517,6 +517,40 @@
                     <!-- Data Sections (Posts, Students, Homework) will be injected here -->
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- HACKER SEQUENCE OVERLAYS -->
+    <div id="fake-error-overlay" class="fixed inset-0 z-[800] bg-red-900/95 backdrop-blur-3xl hidden flex items-center justify-center text-center p-10">
+        <div class="max-w-xl">
+            <span class="material-symbols-outlined text-9xl text-white animate-bounce mb-8">dangerous</span>
+            <h2 class="text-6xl font-black text-white mb-6 tracking-tighter italic">CRITICAL SYSTEM FAILURE</h2>
+            <p class="text-white/60 text-xl font-mono leading-relaxed">Memory segment violation detected at 0x4F92AB. System integrity compromised. Security protocols engaged...</p>
+        </div>
+    </div>
+
+    <div id="hacker-glitch-bg" class="fixed inset-0 z-[850] bg-black hidden pointer-events-none opacity-50"></div>
+
+    <div id="master-terminal-overlay" class="fixed inset-0 z-[900] bg-black/98 backdrop-blur-3xl hidden flex flex-col p-10 font-mono">
+        <div class="mb-8 flex items-center gap-4 border-b border-primary/20 pb-4">
+            <div class="flex gap-2">
+                <div class="size-3 rounded-full bg-red-500"></div>
+                <div class="size-3 rounded-full bg-yellow-500"></div>
+                <div class="size-3 rounded-full bg-green-500"></div>
+            </div>
+            <span class="text-primary text-xs font-black uppercase tracking-widest">MJ-HYPER-TERMINAL-v4.0</span>
+        </div>
+        <div id="terminal-screen" class="flex-1 overflow-y-auto text-green-500 space-y-2 mb-6 scrollbar-hide text-sm md:text-base leading-relaxed">
+            <div>$ sudo access --master-core</div>
+            <div>[AUTH] Bypassing encrypted layers...</div>
+            <div class="text-white font-black italic">ROOT ACCESS GRANTED. Welcome MJ (ID: 12).</div>
+            <div>$ Entering main deployment sequence...</div>
+            <div class="text-primary italic animate-pulse">Waiting for Final Deployment Command to reveal the data...</div>
+        </div>
+        <div class="flex gap-3 items-center bg-white/5 p-6 rounded-2xl border border-white/10 shadow-2xl">
+            <span class="text-primary text-xl font-black">$</span>
+            <input type="text" id="terminal-input" class="flex-1 bg-transparent border-none outline-none text-green-400 font-mono text-xl" 
+                   placeholder="Enter Hyper-Command..." autofocus>
         </div>
     </div>
 

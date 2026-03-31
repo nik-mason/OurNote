@@ -520,8 +520,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             try {
+                const isAnonymous = document.getElementById('post-anonymous')?.checked || false;
                 const endpoint = category === 'homework' ? '/api/homework' : '/api/posts';
-                const bodyObj = { title, category, author: currentUser.name, role: currentUser.role, date: new Date().toLocaleDateString() };
+                const bodyObj = { 
+                    title, 
+                    category, 
+                    author: currentUser.name, 
+                    role: currentUser.role, 
+                    date: new Date().toLocaleDateString(),
+                    is_anonymous: isAnonymous
+                };
                 
                 if (category === 'homework') {
                     const taskInputs = document.querySelectorAll('.hw-task-input');
@@ -783,6 +791,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.className = 'ultra-card post-card-v4';
             card.style.transitionDelay = `${index * 0.1}s`;
+            
+            // Anonymous Author Logic
+            let displayAuthor = post.author;
+            if (post.is_anonymous) {
+                if (currentUser.role === 'teacher') {
+                    displayAuthor = `익명 (${post.author})`;
+                } else {
+                    displayAuthor = '익명';
+                }
+            }
+
             card.innerHTML = `
                 <div class="flex justify-between items-start mb-6">
                     <span class="px-4 py-1.5 rounded-full bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest">${post.category}</span>
@@ -792,7 +811,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <p class="text-text-dim line-clamp-4 mb-8">${post.content}</p>
                 <div class="flex items-center gap-3 mt-auto pt-6 border-t border-white/5">
                     <div class="size-8 rounded-full bg-white/10 flex items-center justify-center"><span class="material-symbols-outlined text-sm">person</span></div>
-                    <div class="flex flex-col"><span class="text-xs font-bold">${post.author}</span><span class="text-[9px] text-text-dim uppercase tracking-widest">${post.role}</span></div>
+                    <div class="flex flex-col flex-1">
+                        <span class="text-xs font-bold text-white">${displayAuthor}</span>
+                        <span class="text-[9px] text-text-dim uppercase tracking-widest">${post.is_anonymous ? 'Member' : post.role}</span>
+                    </div>
                     ${currentUser.role === 'teacher' ? `<button onclick="deletePostV4(${post.id}, this)" class="ml-auto text-text-dim hover:text-accent"><span class="material-symbols-outlined text-[20px]">delete</span></button>` : ''}
                 </div>`;
             container.appendChild(card);

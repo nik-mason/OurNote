@@ -557,26 +557,34 @@
 
     <div id="hacker-glitch-bg" class="fixed inset-0 z-[850] bg-black hidden pointer-events-none opacity-50"></div>
 
-    <div id="master-terminal-overlay" class="fixed inset-0 z-[900] bg-black/98 backdrop-blur-3xl hidden flex flex-col p-10 font-mono">
-        <div class="mb-8 flex items-center gap-4 border-b border-primary/20 pb-4">
-            <div class="flex gap-2">
-                <div class="size-3 rounded-full bg-red-500"></div>
-                <div class="size-3 rounded-full bg-yellow-500"></div>
-                <div class="size-3 rounded-full bg-green-500"></div>
+    <div id="master-terminal-overlay" class="fixed inset-0 z-[900] bg-red-950/98 backdrop-blur-3xl hidden flex flex-col p-10 font-mono border-[20px] border-red-600 animate-pulse">
+        <div class="mb-8 flex items-center justify-between border-b border-white/20 pb-4">
+            <div class="flex items-center gap-4">
+                <div class="size-4 rounded-full bg-white animate-ping"></div>
+                <span class="text-white text-xl font-black uppercase tracking-tighter">CRITICAL_SYSTEM_TAKEOVER_ACTIVE</span>
             </div>
-            <span class="text-primary text-xs font-black uppercase tracking-widest">MJ-HYPER-TERMINAL-v4.0</span>
+            <span class="text-white/60 text-xs">ROOT@MJ-INFECTED:~$</span>
         </div>
-        <div id="terminal-screen" class="flex-1 overflow-y-auto text-green-500 space-y-2 mb-6 scrollbar-hide text-sm md:text-base leading-relaxed">
-            <div>$ sudo access --master-core</div>
-            <div>[AUTH] Bypassing encrypted layers...</div>
-            <div class="text-white font-black italic">ROOT ACCESS GRANTED. Welcome MJ (ID: 12).</div>
-            <div>$ Entering main deployment sequence...</div>
-            <div class="text-primary italic animate-pulse">Waiting for Final Deployment Command to reveal the data...</div>
+        
+        <div id="terminal-screen" class="flex-1 overflow-y-auto text-red-500 space-y-4 mb-6 scrollbar-hide text-lg font-bold leading-relaxed">
+            <div class="text-9xl font-black text-white italic tracking-tighter mb-10 opacity-30 select-none">VIRUS_VIRUS_VIRUS</div>
+            <div class="p-6 bg-white/10 rounded-3xl border-2 border-red-500 text-red-400">
+                [SYSTEM_WARNING] ALL DATA HAS BEEN ENCRYPTED BY 'MJ_SLAYER_v1.2'. 
+                RECOVERY IS IMPOSSIBLE WITHOUT IMMEDIATE ACTION.
+            </div>
+            <!-- Dynamic Logs Injected Here -->
         </div>
-        <div class="flex gap-3 items-center bg-white/5 p-6 rounded-2xl border border-white/10 shadow-2xl">
-            <span class="text-primary text-xl font-black">$</span>
-            <input type="text" id="terminal-input" class="flex-1 bg-transparent border-none outline-none text-green-400 font-mono text-xl" 
-                   placeholder="Enter Hyper-Command..." autofocus>
+
+        <div class="flex flex-col md:flex-row gap-6 mt-auto">
+            <div class="flex-1 flex gap-3 items-center bg-black/60 p-6 rounded-2xl border border-red-500 shadow-2xl">
+                <span class="text-red-500 text-xl font-black">$</span>
+                <input type="text" id="terminal-input" class="flex-1 bg-transparent border-none outline-none text-red-300 font-mono text-xl" 
+                       placeholder="Enter Command (Disabled)...">
+            </div>
+            <button onclick="location.href='/'" 
+                    class="px-10 py-6 bg-red-600 hover:bg-white hover:text-red-600 text-white font-black text-2xl border-4 border-white shadow-[10px_10px_0px_#000] active:shadow-none active:translate-x-1 active:translate-y-1 transition-all">
+                [ 시스템 전체 삭제 후 탈출 ]
+            </button>
         </div>
     </div>
 

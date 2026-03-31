@@ -411,7 +411,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const title = document.getElementById('post-title').value.trim();
             const content = document.getElementById('post-content').value.trim();
             const category = document.getElementById('post-category').value;
-            if (!title || !content) return showToast('내용을 모두 채워주세요!', 'error');
+            
+            // For homework, content is skipped, but we check title and tasks later
+            if (!title || (category !== 'homework' && !content)) {
+                return showToast('내용을 모두 채워주세요!', 'error');
+            }
+            
             try {
                 const endpoint = category === 'homework' ? '/api/homework' : '/api/posts';
                 const bodyObj = { title, category, author: currentUser.name, role: currentUser.role, date: new Date().toLocaleDateString() };

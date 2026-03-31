@@ -200,7 +200,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (!id || !name) throw new Error('정보를 모두 입력해주세요.');
                     const res = await fetch('/api/students');
                     const students = await res.json();
-                    const student = students.find(s => s.id === id && s.name === name);
+                    
+                    // Resilient Matching Logic: Handles IDs like '12' vs '012', and trims names
+                    const student = students.find(s => 
+                        (String(s.id).padStart(2, '0') === id.padStart(2, '0')) && 
+                        (s.name.trim() === name)
+                    );
+                    
                     if (student) handleLoginSuccess({ name: student.name, role: 'student', id: student.id, settings: student.settings || null });
                     else throw new Error('학생 정보를 찾을 수 없습니다.');
                 } else {

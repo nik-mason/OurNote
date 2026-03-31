@@ -180,12 +180,23 @@
                         <input type="hidden" id="post-category" value="dashboard">
                     </div>
 
-                    <div id="homework-target-container" class="hidden relative">
+                    <div id="homework-target-container" class="hidden relative z-40">
                         <label class="text-xs font-black text-primary uppercase tracking-widest ml-4 mb-2 block">수신 학생 선택 (전체 또는 개별)</label>
-                        <select id="homework-target-student" class="w-full bg-white/5 border-b-2 border-white/10 p-4 text-xl font-bold focus:border-primary outline-none transition-all placeholder:text-white/20 rounded-xl">
-                            <option value="all">🌍 전체 공개 (All Students)</option>
-                            <!-- Students will be injected here -->
-                        </select>
+                        <div id="student-select-trigger" class="w-full bg-white/5 border-b-2 border-white/10 p-4 text-xl font-bold focus:border-primary cursor-pointer transition-all rounded-xl flex items-center justify-between">
+                            <span id="selected-student-name">🌍 전체 공개 (All Students)</span>
+                            <span class="material-symbols-outlined">expand_more</span>
+                        </div>
+                        <div id="custom-student-options" class="custom-options ultra-glass mt-2">
+                             <div class="p-3 border-b border-white/10 sticky top-0 bg-black/80 backdrop-blur-md">
+                                <input type="text" id="student-search-box" placeholder="학생 이름 검색..." 
+                                       class="w-full bg-white/5 border border-white/10 p-2 rounded-lg text-sm outline-none focus:border-primary transition-all">
+                             </div>
+                             <div id="student-options-list" class="max-h-60 overflow-y-auto">
+                                <div class="custom-option p-4 hover:bg-primary transition-colors cursor-pointer" data-value="all">🌍 전체 공개</div>
+                                <!-- Students injected here -->
+                             </div>
+                        </div>
+                        <input type="hidden" id="homework-target-student-val" value="all">
                     </div>
 
                     <div class="relative">

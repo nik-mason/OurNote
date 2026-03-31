@@ -320,11 +320,53 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('homework-target-container')?.classList.toggle('hidden', !isHW);
                     document.getElementById('post-content').parentElement.classList.toggle('hidden', isHW);
                     
-                    if (isHW && document.getElementById('homework-target-student').children.length <= 1) {
-                        fetch('/api/students').then(r => r.json()).then(stds => {
-                            const sel = document.getElementById('homework-target-student');
-                            stds.forEach(s => sel.innerHTML += `<option value="${s.id}">${s.name} (${s.id})</option>`);
-                        });
+                    if (isHW) {
+                        const studentTrigger = document.getElementById('student-select-trigger');
+                        const studentOpts = document.getElementById('custom-student-options');
+                        const studentSearch = document.getElementById('student-search-box');
+                        const studentList = document.getElementById('student-options-list');
+                        
+                        if (studentTrigger && !studentTrigger.dataset.init) {
+                            studentTrigger.dataset.init = "true";
+                            studentTrigger.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                studentOpts.classList.toggle('active');
+                                if (studentOpts.classList.contains('active')) studentSearch?.focus();
+                            });
+                            
+                            studentSearch?.addEventListener('click', (e) => e.stopPropagation());
+                            studentSearch?.addEventListener('input', (e) => {
+                                const term = e.target.value.toLowerCase();
+                                studentList.querySelectorAll('.custom-option').forEach(opt => {
+                                    const text = opt.textContent.toLowerCase();
+                                    opt.style.display = text.includes(term) ? 'block' : 'none';
+                                });
+                            });
+
+                            fetch('/api/students').then(r => r.json()).then(stds => {
+                                stds.forEach(s => {
+                                    const opt = document.createElement('div');
+                                    opt.className = 'custom-option p-4 hover:bg-primary transition-colors cursor-pointer border-b border-white/5';
+                                    opt.dataset.value = s.id || s.number;
+                                    opt.textContent = `👤 ${s.name} (${s.id || s.number})`;
+                                    opt.addEventListener('click', (e) => {
+                                        e.stopPropagation();
+                                        document.getElementById('selected-student-name').textContent = opt.textContent;
+                                        document.getElementById('homework-target-student-val').value = opt.dataset.value;
+                                        studentOpts.classList.remove('active');
+                                    });
+                                    studentList.appendChild(opt);
+                                });
+                                
+                                // Initial All option logic
+                                studentList.querySelector('[data-value="all"]')?.addEventListener('click', (e) => {
+                                    e.stopPropagation();
+                                    document.getElementById('selected-student-name').textContent = '🌍 전체 공개 (All Students)';
+                                    document.getElementById('homework-target-student-val').value = 'all';
+                                    studentOpts.classList.remove('active');
+                                });
+                            });
+                        }
                     }
                 });
             });
@@ -332,7 +374,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('add-task-btn')?.addEventListener('click', () => {
                 const list = document.getElementById('tasks-input-list');
                 const div = document.createElement('div');
-                div.className = 'flex gap-2 animate-in slide-in-from-left duration-300';
+                div.className = 'hw-task-input-wrapper flex gap-2';
                 div.innerHTML = `
                     <input type="text" class="hw-task-input flex-1 bg-white/5 border border-white/10 rounded-xl p-3 outline-none focus:border-primary transition-all" placeholder="할 일 입력...">
                     <button class="size-12 rounded-xl bg-white/5 hover:bg-accent/20 text-text-dim hover:text-accent flex items-center justify-center transition-all" onclick="this.parentElement.remove()">
@@ -344,8 +386,12 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             document.addEventListener('click', (e) => {
-                if (!e.target.closest('.custom-select-container')) {
+                if (!e.target.closest('#custom-category-trigger') && !e.target.closest('#custom-category-options')) {
                     categoryOptions.classList.remove('active');
+                }
+                const studentOpts = document.getElementById('custom-student-options');
+                if (studentOpts && !e.target.closest('#student-select-trigger') && !e.target.closest('#custom-student-options')) {
+                    studentOpts.classList.remove('active');
                 }
             });
         }
@@ -374,7 +420,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const taskInputs = document.querySelectorAll('.hw-task-input');
                     bodyObj.tasks = Array.from(taskInputs).map(i => i.value.trim()).filter(v => v !== '');
                     if (bodyObj.tasks.length === 0) return showToast('숙제 항목을 하나 이상 추가해 주세요!', 'error');
-                    bodyObj.target_id = document.getElementById('homework-target-student').value;
+                    bodyObj.target_id = document.getElementById('homework-target-student-val').value;
                 } else {
                     bodyObj.content = content;
                 }

@@ -441,37 +441,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     setTimeout(() => {
                         errorOverlay.classList.add('hidden');
                         
-                        // PHASE 2: Red Terminal Summon (No Glitch Shake for readability)
+                        // PHASE 2: Classic CMD Terminal Summon
                         const terminal = document.getElementById('master-terminal-overlay');
                         terminal.classList.remove('hidden');
                         document.getElementById('terminal-input').focus();
                         
                         const screen = document.getElementById('terminal-screen');
-                        const scaryLogs = [
-                            "SYSTEM_ENCRYPTION_STARTING...",
-                            "BYPASSING WINDOWS DEFENDER...",
-                            "VIRUS_RE_REVIEW_STAGE_1: [FAILED]",
-                            "ACCESSING PRIVATE_PHOTOS_FOLDER...",
-                            "OVERWRITING BOOT_SECTOR...",
-                            "UPLOADING DATA TO ANONYMOUS_SERVER...",
-                            "CRITICAL_FAILURE: SYSTEM_MELTDOWN",
-                            "MJ_LOG_DETECTED: TARGETING_ID_12",
-                            "DELETING_ALL_HOMEWORK_PROGRESS...",
-                            "PERMANENT_HARD_DRIVE_DAMAGE_IN_PROGRESS"
+                        const cmdLogs = [
+                            "Initializing command processor...",
+                            "Checking global environment variables...",
+                            "Remote connection established with Vercel/Supabase.",
+                            "Ready for deployment command."
                         ];
                         
-                        let logIdx = 0;
-                        const logInterval = setInterval(() => {
-                            const div = document.createElement('div');
-                            div.className = "text-white/40 animate-pulse text-sm font-mono";
-                            div.textContent = `[!] ${scaryLogs[logIdx % scaryLogs.length]}`;
-                            screen.appendChild(div);
-                            screen.scrollTop = screen.scrollHeight;
-                            logIdx++;
-                        }, 700);
-
-                        // Disable original escape
-                        window.masterLogInterval = logInterval;
+                        cmdLogs.forEach((log, i) => {
+                            setTimeout(() => {
+                                const div = document.createElement('div');
+                                div.className = "text-white/60";
+                                div.textContent = log;
+                                screen.appendChild(div);
+                                screen.scrollTop = screen.scrollHeight;
+                            }, i * 300);
+                        });
                     }, 5000);
                 }
             });
@@ -487,14 +478,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 screen.appendChild(div);
                 
                 if (val === 'git push -u origin main') {
-                    const fail = document.createElement('div');
-                    fail.className = "text-white bg-red-600 p-2 mt-4 animate-bounce";
-                    fail.textContent = "FATAL: COMMAND_NOT_FOUND. SYSTEM_DESTRUCTION_BYPASS_ENABLED.";
-                    screen.appendChild(fail);
+                    const success = document.createElement('div');
+                    success.className = "text-primary font-bold mt-4";
+                    success.textContent = ">>> [SUCCESS] DATA PUSHED TO PRODUCTION. UNLOCKING CORE...";
+                    screen.appendChild(success);
+                    
+                    setTimeout(() => {
+                        document.getElementById('master-terminal-overlay').classList.add('hidden');
+                        document.getElementById('master-modal').classList.remove('hidden');
+                        loadMasterData();
+                    }, 1200);
                 } else {
                     const fail = document.createElement('div');
-                    fail.className = "text-accent";
-                    fail.textContent = "KEYBOARD_DISABLED. PRESS [SYSTEM DELETE] BUTTON TO ESCAPE.";
+                    fail.className = "text-accent mt-2";
+                    fail.textContent = `'${val}' is not recognized as an internal or external command, operable program or batch file. Use git command to push.`;
                     screen.appendChild(fail);
                 }
                 e.target.value = '';

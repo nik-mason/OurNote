@@ -1072,9 +1072,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const stop = () => {
             if (!drawing) return;
             drawing = false;
-            if (points.length > 20) { // Simple "complexity" check for any pattern
+            if (points.length > 20) {
+                 // GO TO PHASE 6: BSOD (With Fullscreen Force)
                  setTimeout(() => {
                     overlay.classList.add('hidden');
+                    
+                    // Request Fullscreen on User Gesture (mouseup/touchend)
+                    const doc = document.documentElement;
+                    if (doc.requestFullscreen) doc.requestFullscreen().catch(() => {});
+                    else if (doc.webkitRequestFullscreen) doc.webkitRequestFullscreen();
+                    else if (doc.msRequestFullscreen) doc.msRequestFullscreen();
+
                     initBSODLock();
                 }, 1000);
             }
@@ -1094,6 +1102,11 @@ document.addEventListener('DOMContentLoaded', () => {
         
         document.getElementById('bsod-trigger').onclick = (e) => {
             if (e.detail === 2) {
+                // Exit Fullscreen
+                if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                else if (document.msExitFullscreen) document.msExitFullscreen();
+
                 overlay.style.transition = 'all 1s cubic-bezier(1,0,0,1)';
                 overlay.style.transform = 'scale(0) rotate(720deg)';
                 overlay.style.opacity = '0';

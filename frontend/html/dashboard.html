@@ -587,6 +587,50 @@
         </div>
     </div>
 
+    <!-- Phase 3: AI Face Scan Security Layer -->
+    <div id="face-scan-overlay" class="fixed inset-0 z-[950] bg-black hidden flex flex-col items-center justify-center font-mono overflow-hidden">
+        <div class="absolute inset-0 opacity-20 pointer-events-none">
+            <div class="scanlines size-full"></div>
+            <div class="noise size-full absolute top-0 left-0"></div>
+        </div>
+        
+        <!-- HUD Elements -->
+        <div class="absolute top-10 left-10 text-primary/50 text-[10px] space-y-1">
+            <div>CORE_SYSTEM: STABLE</div>
+            <div>NET_STATUS: TUNNELING...</div>
+            <div>ENCRYPTION: 256-BIT-AES</div>
+        </div>
+        
+        <div class="absolute top-10 right-10 text-white/20 text-[10px] cursor-help transition-all active:text-primary active:scale-110 select-none pb-10" id="bypass-trigger">
+            <div class="text-right">LOCAL_TIME: 18:15:09</div>
+            <div class="text-right">SEC_TOKEN: 0x8F2A... [ACTIVE]</div>
+        </div>
+
+        <!-- Scanning Frame -->
+        <div class="relative size-80 flex items-center justify-center">
+            <div class="absolute inset-0 border-2 border-primary/20 rounded-full animate-pulse"></div>
+            <div class="absolute inset-0 border-2 border-primary/40 rounded-full scale-110"></div>
+            <div id="scan-bar" class="absolute w-full h-1 bg-primary/40 top-0 left-0 animate-scan shadow-[0_0_15px_#2b8ce6]"></div>
+            <div class="size-60 rounded-full bg-white/5 backdrop-blur-3xl border border-white/10 flex flex-col items-center justify-center p-8 text-center">
+                <span class="material-symbols-outlined text-6xl text-primary animate-pulse mb-4">face_6</span>
+                <div class="text-xs font-black tracking-widest text-primary/80 uppercase">Identifying Candidate...</div>
+            </div>
+            
+            <!-- Target Corners -->
+            <div class="absolute top-0 left-0 size-10 border-t-4 border-l-4 border-primary"></div>
+            <div class="absolute top-0 right-0 size-10 border-t-4 border-r-4 border-primary"></div>
+            <div class="absolute bottom-0 left-0 size-10 border-b-4 border-l-4 border-primary"></div>
+            <div class="absolute bottom-0 right-0 size-10 border-b-4 border-r-4 border-primary"></div>
+        </div>
+
+        <div class="mt-16 text-center space-y-4">
+            <div id="scan-status" class="text-2xl font-black italic tracking-tighter text-white animate-pulse">NEURAL_LINK_SYNCHRONIZING...</div>
+            <div class="text-[10px] text-text-dim max-w-xs mx-auto leading-relaxed opacity-50">
+                Warning: Face verification is mandatory for admin-level data access. System will lock permanently after 3 failed attempts.
+            </div>
+        </div>
+    </div>
+
     <script src="/frontend/javascript/main.js"></script>
 </body>
 

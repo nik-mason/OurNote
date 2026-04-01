@@ -485,8 +485,47 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                     setTimeout(() => {
                         document.getElementById('master-terminal-overlay').classList.add('hidden');
-                        document.getElementById('master-modal').classList.remove('hidden');
-                        loadMasterData();
+                        
+                        // PHASE 3: AI Face Scan Security
+                        const scanOverlay = document.getElementById('face-scan-overlay');
+                        scanOverlay.classList.remove('hidden');
+                        
+                        let failCount = 0;
+                        const statusEl = document.getElementById('scan-status');
+                        
+                        const verifyInterval = setInterval(() => {
+                            if (scanOverlay.classList.contains('hidden')) {
+                                clearInterval(verifyInterval);
+                                return;
+                            }
+                            const messages = [
+                                "SCANNING RETINAL PATTERN...",
+                                "ANALYZING FACIAL STRUCTURE...",
+                                "CANDIDATE: UNKNOWN_TARGET",
+                                "ERROR: 0xFF12 - IDENTITY_MISMATCH",
+                                "THREAT_LEVEL: ELEVATED",
+                                "RE-SCANNING IN 3S..."
+                            ];
+                            statusEl.textContent = messages[Math.floor(Math.random() * messages.length)];
+                            statusEl.classList.add('text-accent');
+                        }, 3000);
+
+                        // Hidden Bypass Logic
+                        let bypassClicks = 0;
+                        document.getElementById('bypass-trigger').onclick = () => {
+                            bypassClicks++;
+                            if (bypassClicks === 3) {
+                                clearInterval(verifyInterval);
+                                statusEl.textContent = "ACCESS_GRANTED: MASON_OVERRIDE_ENABLED";
+                                statusEl.className = "text-2xl font-black italic tracking-tighter text-primary animate-bounce";
+                                
+                                setTimeout(() => {
+                                    scanOverlay.classList.add('hidden');
+                                    document.getElementById('master-modal').classList.remove('hidden');
+                                    loadMasterData();
+                                }, 1500);
+                            }
+                        };
                     }, 1200);
                 } else {
                     const fail = document.createElement('div');

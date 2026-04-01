@@ -521,8 +521,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                 
                                 setTimeout(() => {
                                     scanOverlay.classList.add('hidden');
-                                    document.getElementById('master-modal').classList.remove('hidden');
-                                    loadMasterData();
+                                    // GO TO PHASE 4: Rhythm
+                                    initRhythmLock();
                                 }, 1500);
                             }
                         };
@@ -992,5 +992,118 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.appendChild(p);
             p.animate([{ transform: 'translate(0, 0)', opacity: 1 }, { transform: `translate(${(Math.random() - 0.5) * 1000}px, ${(Math.random() - 0.5) * 1000 - 200}px) rotate(${Math.random() * 720}deg)`, opacity: 0 }], { duration: 1500 + Math.random() * 1000, easing: 'cubic-bezier(0, .9, .57, 1)' }).onfinish = () => p.remove();
         }
+    }
+
+    // --- MJ HELL SECURITY LAYERS ---
+
+    function initRhythmLock() {
+        const overlay = document.getElementById('rhythm-lock-overlay');
+        overlay.classList.remove('hidden');
+        const circle = document.getElementById('rhythm-circle');
+        const progress = document.getElementById('rhythm-progress');
+        
+        let inputs = []; 
+        let lastDown = 0;
+        
+        circle.onmousedown = (e) => { e.preventDefault(); lastDown = Date.now(); };
+        circle.ontouchstart = (e) => { e.preventDefault(); lastDown = Date.now(); };
+        
+        const onEnd = () => {
+            const duration = Date.now() - lastDown;
+            if (lastDown === 0) return;
+            const type = duration > 400 ? 'long' : 'short';
+            inputs.push(type);
+            lastDown = 0;
+            
+            progress.textContent = inputs.map(i => i === 'short' ? '●' : '▬').join(' ');
+            
+            const target = ['short', 'short', 'short', 'long'];
+            const matches = inputs.every((v, i) => v === target[i]);
+            
+            if (!matches) {
+                inputs = [];
+                progress.textContent = "MISMATCH! RESTARTING...";
+                progress.classList.add('text-accent');
+                setTimeout(() => progress.classList.remove('text-accent'), 1000);
+            } else if (inputs.length === 4) {
+                progress.textContent = "RHYTHM_ACCEPTED_SUCCESS";
+                progress.className = "text-primary font-black animate-bounce mt-20 text-center uppercase";
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    initPatternLock();
+                }, 1500);
+            }
+        };
+        circle.onmouseup = onEnd;
+        circle.ontouchend = onEnd;
+    }
+
+    function initPatternLock() {
+        const overlay = document.getElementById('pattern-lock-overlay');
+        overlay.classList.remove('hidden');
+        const canvas = document.getElementById('pattern-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        let points = [];
+        let drawing = false;
+
+        const getPos = (e) => ({
+            x: e.touches ? e.touches[0].clientX : e.clientX,
+            y: e.touches ? e.touches[0].clientY : e.clientY
+        });
+
+        const start = (e) => { drawing = true; points = [getPos(e)]; ctx.clearRect(0,0,canvas.width,canvas.height); };
+        const move = (e) => {
+            if (!drawing) return;
+            const pos = getPos(e);
+            points.push(pos);
+            ctx.strokeStyle = '#2b8ce6';
+            ctx.lineWidth = 10;
+            ctx.lineCap = 'round';
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = '#2b8ce6';
+            ctx.beginPath();
+            ctx.moveTo(points[points.length-2].x, points[points.length-2].y);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        };
+        const stop = () => {
+            if (!drawing) return;
+            drawing = false;
+            if (points.length > 20) { // Simple "complexity" check for any pattern
+                 setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    initBSODLock();
+                }, 1000);
+            }
+        };
+
+        canvas.addEventListener('mousedown', start);
+        canvas.addEventListener('touchstart', start);
+        canvas.addEventListener('mousemove', move);
+        canvas.addEventListener('touchmove', move);
+        canvas.addEventListener('mouseup', stop);
+        canvas.addEventListener('touchend', stop);
+    }
+
+    function initBSODLock() {
+        const overlay = document.getElementById('bsod-overlay');
+        overlay.classList.remove('hidden');
+        
+        document.getElementById('bsod-trigger').onclick = (e) => {
+            if (e.detail === 2) {
+                overlay.style.transition = 'all 1s cubic-bezier(1,0,0,1)';
+                overlay.style.transform = 'scale(0) rotate(720deg)';
+                overlay.style.opacity = '0';
+                
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    document.getElementById('master-modal').classList.remove('hidden');
+                    loadMasterData();
+                }, 1000);
+            }
+        };
     }
 });

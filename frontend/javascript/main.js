@@ -1113,9 +1113,96 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 setTimeout(() => {
                     overlay.classList.add('hidden');
+                    // GO TO PHASE 7: Binary
+                    initBinaryLock();
+                }, 1000);
+            }
+        };
+    }
+
+    function initBinaryLock() {
+        const overlay = document.getElementById('binary-lock-overlay');
+        overlay.classList.remove('hidden', 'flex');
+        overlay.classList.add('flex');
+        const buttons = document.querySelectorAll('.binary-btn');
+        let currentVal = 0;
+
+        buttons.forEach(btn => {
+            btn.onclick = () => {
+                btn.classList.toggle('bg-primary');
+                btn.classList.toggle('shadow-[0_0_15px_var(--primary-glow)]');
+                const bit = parseInt(btn.dataset.bit);
+                if (btn.classList.contains('bg-primary')) currentVal += bit;
+                else currentVal -= bit;
+
+                if (currentVal === 12) {
+                    setTimeout(() => {
+                        overlay.classList.add('hidden');
+                        initCornerLock();
+                    }, 800);
+                }
+            };
+        });
+    }
+
+    function initCornerLock() {
+        const overlay = document.getElementById('corner-lock-overlay');
+        overlay.classList.remove('hidden');
+        const sequence = ['tl', 'tr', 'br', 'bl'];
+        let currentStep = 0;
+
+        overlay.querySelectorAll('[data-id]').forEach(corner => {
+            corner.onclick = () => {
+                const id = corner.dataset.id;
+                if (id === sequence[currentStep]) {
+                    currentStep++;
+                    corner.classList.add('bg-primary/20');
+                    if (currentStep === sequence.length) {
+                        setTimeout(() => {
+                            overlay.classList.add('hidden');
+                            initAbortLock();
+                        }, 500);
+                    }
+                } else {
+                    currentStep = 0;
+                    overlay.querySelectorAll('[data-id]').forEach(c => c.classList.remove('bg-primary/20'));
+                }
+            };
+        });
+    }
+
+    function initAbortLock() {
+        const overlay = document.getElementById('abort-lock-overlay');
+        overlay.classList.remove('hidden', 'flex');
+        overlay.classList.add('flex');
+        const btn = document.getElementById('abort-btn');
+        const timerEl = document.getElementById('abort-timer');
+        let clicks = 0;
+        let timeLeft = 5.0;
+
+        const timer = setInterval(() => {
+            timeLeft -= 0.1;
+            timerEl.textContent = timeLeft.toFixed(1);
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                alert("SYSTEM PURGED. RESTARTING PRANK...");
+                location.reload();
+            }
+        }, 100);
+
+        btn.onclick = () => {
+            clicks++;
+            btn.textContent = `ABORT [${clicks}/10]`;
+            if (clicks >= 10) {
+                clearInterval(timer);
+                btn.textContent = "MISSION_STOPPED_SUCCESS";
+                btn.className = "px-20 py-10 bg-primary text-white text-4xl rounded-full animate-bounce";
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
                     document.getElementById('master-modal').classList.remove('hidden');
                     loadMasterData();
-                }, 1000);
+                    triggerConfetti();
+                }, 1500);
             }
         };
     }

@@ -1130,6 +1130,8 @@ document.addEventListener('DOMContentLoaded', () => {
         buttons.forEach(btn => {
             btn.onclick = () => {
                 btn.classList.toggle('bg-primary');
+                btn.classList.toggle('text-white');
+                btn.classList.toggle('border-primary');
                 btn.classList.toggle('shadow-[0_0_15px_var(--primary-glow)]');
                 const bit = parseInt(btn.dataset.bit);
                 if (btn.classList.contains('bg-primary')) currentVal += bit;

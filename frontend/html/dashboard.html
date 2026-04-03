@@ -693,17 +693,18 @@
 
     <!-- Phase 7 -->
     <div id="binary-lock-overlay" class="fixed inset-0 z-[1150] bg-black hidden flex-col items-center justify-center font-mono select-none">
-        <h4 class="text-xl font-bold text-primary mb-12 uppercase tracking-widest">SET_CORE_ID_BINARY: 12</h4>
-        <div id="binary-switches" class="flex gap-4">
-            <button class="binary-btn size-14 border-2 border-white/10 rounded-xl" data-bit="128"></button>
-            <button class="binary-btn size-14 border-2 border-white/10 rounded-xl" data-bit="64"></button>
-            <button class="binary-btn size-14 border-2 border-white/10 rounded-xl" data-bit="32"></button>
-            <button class="binary-btn size-14 border-2 border-white/10 rounded-xl" data-bit="16"></button>
-            <button class="binary-btn size-14 border-2 border-white/10 rounded-xl" data-bit="8"></button>
-            <button class="binary-btn size-14 border-2 border-white/10 rounded-xl" data-bit="4"></button>
-            <button class="binary-btn size-14 border-2 border-white/10 rounded-xl" data-bit="2"></button>
-            <button class="binary-btn size-14 border-2 border-white/10 rounded-xl" data-bit="1"></button>
+        <h4 class="text-xl font-bold text-primary mb-12 uppercase tracking-widest animate-pulse">SET_CORE_ID_BINARY: 12</h4>
+        <div id="binary-switches" class="flex flex-wrap justify-center gap-4 px-10">
+            <button class="binary-btn size-16 border-2 border-primary/30 rounded-xl flex items-center justify-center text-primary/40 font-black text-xs transition-all hover:bg-primary/10" data-bit="128">128</button>
+            <button class="binary-btn size-16 border-2 border-primary/30 rounded-xl flex items-center justify-center text-primary/40 font-black text-xs transition-all hover:bg-primary/10" data-bit="64">64</button>
+            <button class="binary-btn size-16 border-2 border-primary/30 rounded-xl flex items-center justify-center text-primary/40 font-black text-xs transition-all hover:bg-primary/10" data-bit="32">32</button>
+            <button class="binary-btn size-16 border-2 border-primary/30 rounded-xl flex items-center justify-center text-primary/40 font-black text-xs transition-all hover:bg-primary/10" data-bit="16">16</button>
+            <button class="binary-btn size-16 border-2 border-primary/30 rounded-xl flex items-center justify-center text-primary/40 font-black text-xs transition-all hover:bg-primary/10" data-bit="8">8</button>
+            <button class="binary-btn size-16 border-2 border-primary/30 rounded-xl flex items-center justify-center text-primary/40 font-black text-xs transition-all hover:bg-primary/10" data-bit="4">4</button>
+            <button class="binary-btn size-16 border-2 border-primary/30 rounded-xl flex items-center justify-center text-primary/40 font-black text-xs transition-all hover:bg-primary/10" data-bit="2">2</button>
+            <button class="binary-btn size-16 border-2 border-primary/30 rounded-xl flex items-center justify-center text-primary/40 font-black text-xs transition-all hover:bg-primary/10" data-bit="1">1</button>
         </div>
+        <p class="mt-12 text-[10px] text-white/20 uppercase tracking-widest">Logic: Select 8 and 4 to Unlock</p>
     </div>
 
     <!-- Phase 8 -->

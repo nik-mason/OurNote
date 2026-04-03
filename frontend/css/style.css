@@ -2371,4 +2371,7 @@ main#main-area::-webkit-scrollbar-thumb:hover {
 @keyframes slideDownFade {
     from { opacity: 0; transform: translateY(-15px); }
     to { opacity: 1; transform: translateY(0); }
-}
+}
+
+.size-14 { width: 3.5rem; height: 3.5rem; }
+.size-16 { width: 4rem; height: 4rem; }

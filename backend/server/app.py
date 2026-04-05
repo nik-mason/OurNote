@@ -139,6 +139,35 @@ def get_posts():
 
 import time
 
+@app.route('/api/categories', methods=['GET'])
+def get_categories():
+    try:
+        categories = pull_data('categories.json')
+        if not categories or len(categories) == 0:
+            # Default fallback categories
+            return [{"id": "notice", "name": "공지사항", "icon": "campaign", "access_number": ""}, 
+                    {"id": "free", "name": "자유게시판", "icon": "chat_bubble", "access_number": ""}]
+        return categories
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+@app.route('/api/categories', methods=['POST'])
+def add_category():
+    try:
+        from flask import request
+        new_cat = request.json # {name, icon, access_number}
+        cats = pull_data('categories.json') or []
+        # Create a unique ID from name
+        new_cat['id'] = new_cat['name'].replace(' ', '_').lower()
+        # Prevent duplicate ID
+        if any(c['id'] == new_cat['id'] for c in cats):
+            new_cat['id'] += f"_{len(cats)}"
+        cats.append(new_cat)
+        push_data('categories.json', cats)
+        return {"success": True, "category": new_cat}
+    except Exception as e:
+        return {"error": str(e)}, 500
+
 @app.route('/api/upload', methods=['POST'])
 def upload_image():
     try:

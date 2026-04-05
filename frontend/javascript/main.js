@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const isDashboard = window.location.pathname.includes('/dashboard');
     let currentCategory = 'all';
+    let unlockedRooms = new Set(); // To remember unlocked rooms in this session
 
     // UI Elements
     const ultraBar = document.getElementById('ultra-bar');
@@ -757,6 +758,110 @@ document.addEventListener('DOMContentLoaded', () => {
             if (glowSlider && currentUser.settings.glow) glowSlider.value = currentUser.settings.glow;
         }
 
+        // Dynamic Category Loading
+        const refreshCategories = async () => {
+            const sidebar = document.getElementById('dynamic-categories');
+            if(!sidebar) return;
+            try {
+                const res = await fetch('/api/categories');
+                const cats = await res.json();
+                sidebar.innerHTML = '';
+                
+                // Static "All" Category
+                const allLink = document.createElement('a');
+                allLink.href = '#';
+                allLink.className = `nav-link ${currentCategory === 'all' ? 'active' : ''}`;
+                allLink.innerHTML = `<span class="material-symbols-outlined">auto_awesome_motion</span><span>전체 게시판</span>`;
+                allLink.onclick = (e) => { e.preventDefault(); switchCategory('all'); };
+                sidebar.appendChild(allLink);
+
+                cats.forEach(cat => {
+                    const link = document.createElement('a');
+                    link.href = '#';
+                    link.className = `nav-link ${currentCategory === cat.id ? 'active' : ''}`;
+                    const lockIcon = (cat.access_number && !unlockedRooms.has(cat.id)) ? 'lock' : cat.icon;
+                    link.innerHTML = `<span class="material-symbols-outlined">${lockIcon}</span><span>${cat.name}</span>`;
+                    link.onclick = (e) => { 
+                        e.preventDefault(); 
+                        if(cat.access_number && !unlockedRooms.has(cat.id) && currentUser.role !== 'teacher') {
+                            promptRoomPassword(cat);
+                        } else {
+                            switchCategory(cat.id, cat.name);
+                        }
+                    };
+                    sidebar.appendChild(link);
+                });
+            } catch (e) { console.error("Cat load fail", e); }
+        };
+
+        const switchCategory = (id, name = '우리들 이야기') => {
+            currentCategory = id;
+            const titleEl = document.getElementById('current-category-title');
+            if(titleEl) titleEl.innerText = name === '우리들 이야기' && id === 'all' ? '전체 메뉴' : name;
+            refreshCategories();
+            loadPosts();
+        };
+
+        const promptRoomPassword = (cat) => {
+            const modal = document.getElementById('password-modal');
+            const input = document.getElementById('entry-pass');
+            const submit = document.getElementById('submit-pass');
+            
+            modal.classList.remove('hidden');
+            input.value = '';
+            input.focus();
+            
+            const verify = () => {
+                if(input.value === cat.access_number) {
+                    unlockedRooms.add(cat.id);
+                    modal.classList.add('hidden');
+                    showToast(`${cat.name} 입장 승인!🔓`);
+                    switchCategory(cat.id, cat.name);
+                } else {
+                    showToast('접속 번호가 틀렸습니다!', 'error');
+                    input.value = '';
+                }
+            };
+
+            submit.onclick = verify;
+            input.onkeydown = (e) => { if(e.key === 'Enter') verify(); };
+        };
+
+        // Room Creation (Teacher Only)
+        if(currentUser.role === 'teacher') {
+            document.getElementById('teacher-category-action')?.classList.remove('hidden');
+            document.getElementById('open-room-modal')?.addEventListener('click', () => {
+                document.getElementById('room-modal').classList.remove('hidden');
+            });
+            
+            document.getElementById('submit-room')?.addEventListener('click', async () => {
+                const name = document.getElementById('room-name').value.trim();
+                const access_number = document.getElementById('room-access-number').value.trim();
+                const icon = document.getElementById('room-icon').value.trim();
+                
+                if(!name) return showToast('방 이름을 입력하세요!', 'error');
+                
+                try {
+                    const res = await fetch('/api/categories', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, access_number, icon })
+                    });
+                    if(res.ok) {
+                        showToast('새로운 공간이 탄생했습니다! ✨');
+                        document.getElementById('room-modal').classList.add('hidden');
+                        refreshCategories();
+                    }
+                } catch (e) { showToast('방 생성 실패', 'error'); }
+            });
+        }
+
+        // Close Modals
+        document.getElementById('close-room-modal')?.addEventListener('click', () => document.getElementById('room-modal').classList.add('hidden'));
+        document.getElementById('cancel-room-modal')?.addEventListener('click', () => document.getElementById('room-modal').classList.add('hidden'));
+        document.getElementById('close-password-modal')?.addEventListener('click', () => document.getElementById('password-modal').classList.add('hidden'));
+
+        refreshCategories();
         loadPosts();
     }
     initScrollProgress();

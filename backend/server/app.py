@@ -164,6 +164,7 @@ def upload_image():
         # [IMPORTANT] Ensure 'images' bucket is created in Supabase Dashboard -> Storage
         # and set to 'Public'
         try:
+            storage = db.storage.from_("images")
             storage.upload(filename, file_bytes, {"content-type": mimetype})
             
             # Use direct standardized URL to avoid 404/mapping issues 

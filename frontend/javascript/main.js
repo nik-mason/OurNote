@@ -829,22 +829,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Room Creation (Teacher Only)
         if(currentUser && currentUser.role === 'teacher') {
-            console.log("Teacher Access Confirmed - Initializing Room Creation Logic");
             const teacherAction = document.getElementById('teacher-category-action');
             if(teacherAction) teacherAction.classList.remove('hidden');
             
+            // Hamburger Action
+            document.getElementById('hamburger-menu')?.addEventListener('click', () => {
+                showToast('사이브바 메뉴 확장 기능은 준비 중입니다! ☰', 'info');
+            });
+
+            // New Room Modal Open
             const openRoomBtn = document.getElementById('open-room-modal');
             if(openRoomBtn) {
-                console.log("Room Create Button Found!");
                 openRoomBtn.addEventListener('click', (e) => {
-                    console.log("Room Modal Triggered!");
+                    e.stopPropagation(); // Prevent event bubbling
                     const modal = document.getElementById('room-modal');
-                    if(modal) modal.classList.remove('hidden');
+                    if(modal) {
+                        modal.classList.remove('hidden');
+                        modal.style.zIndex = "10000"; // Ensure top layer
+                    }
                 });
-            } else {
-                console.warn("Room Create Button NOT FOUND in DOM!");
             }
             
+            // New Room Submit
             document.getElementById('submit-room')?.addEventListener('click', async () => {
                 const name = document.getElementById('room-name').value.trim();
                 const access_number = document.getElementById('room-access-number').value.trim();
@@ -867,10 +873,20 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Close Modals
-        document.getElementById('close-room-modal')?.addEventListener('click', () => document.getElementById('room-modal').classList.add('hidden'));
-        document.getElementById('cancel-room-modal')?.addEventListener('click', () => document.getElementById('room-modal').classList.add('hidden'));
-        document.getElementById('close-password-modal')?.addEventListener('click', () => document.getElementById('password-modal').classList.add('hidden'));
+        // Settings Modal Open
+        document.getElementById('open-settings-modal')?.addEventListener('click', () => {
+            const modal = document.getElementById('settings-modal');
+            if(modal) modal.classList.remove('hidden');
+        });
+
+        // Close Modals Logic
+        const closeAllModals = () => {
+            document.querySelectorAll('.modal-v4').forEach(m => m.classList.add('hidden'));
+        };
+
+        document.querySelectorAll('.modal-overlay-v4, #close-room-modal, #cancel-room-modal, #close-password-modal, #close-settings-modal').forEach(el => {
+            el.addEventListener('click', closeAllModals);
+        });
 
         refreshCategories();
         loadPosts();

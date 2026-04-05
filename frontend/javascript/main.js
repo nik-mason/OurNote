@@ -758,116 +758,162 @@ document.addEventListener('DOMContentLoaded', () => {
             if (glowSlider && currentUser.settings.glow) glowSlider.value = currentUser.settings.glow;
         }
 
-        // Dynamic Category Loading
+        // === SIDEBAR TOGGLE (Hamburger) ===
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const hamburger = document.getElementById('mobile-hamburger');
+        const sidebarClose = document.getElementById('sidebar-close');
+
+        const openSidebar = () => {
+            sidebar?.classList.add('open');
+            sidebar?.classList.remove('collapsed');
+            overlay?.classList.remove('hidden');
+        };
+        const closeSidebar = () => {
+            sidebar?.classList.remove('open');
+            sidebar?.classList.add('collapsed');
+            overlay?.classList.add('hidden');
+        };
+
+        hamburger?.addEventListener('click', openSidebar);
+        sidebarClose?.addEventListener('click', () => {
+            // On desktop: toggle collapsed class
+            if (window.innerWidth > 768) {
+                sidebar?.classList.toggle('collapsed');
+            } else {
+                closeSidebar();
+            }
+        });
+        overlay?.addEventListener('click', closeSidebar);
+
+        // === STATIC NAV LINKS ===
+        document.querySelectorAll('.nav-link[data-cat]').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const cat = link.dataset.cat;
+                if (cat === 'mobile') return; // handled elsewhere
+                switchCategory(cat, link.querySelector('span:last-child')?.textContent || cat);
+                if (window.innerWidth <= 768) closeSidebar();
+            });
+        });
+
+        // === DYNAMIC CATEGORY LOADING ===
         const refreshCategories = async () => {
-            const sidebar = document.getElementById('dynamic-categories');
-            if(!sidebar) return;
+            const container = document.getElementById('dynamic-categories');
+            if (!container) return;
             try {
                 const res = await fetch('/api/categories');
                 const cats = await res.json();
-                sidebar.innerHTML = '';
-                
-                // Static "All" Category
-                const allLink = document.createElement('a');
-                allLink.href = '#';
-                allLink.className = `nav-link ${currentCategory === 'all' ? 'active' : ''}`;
-                allLink.innerHTML = `<span class="material-symbols-outlined">auto_awesome_motion</span><span>전체 게시판</span>`;
-                allLink.onclick = (e) => { e.preventDefault(); switchCategory('all'); };
-                sidebar.appendChild(allLink);
-
+                container.innerHTML = '';
                 cats.forEach(cat => {
                     const link = document.createElement('a');
                     link.href = '#';
                     link.className = `nav-link ${currentCategory === cat.id ? 'active' : ''}`;
-                    const lockIcon = (cat.access_number && !unlockedRooms.has(cat.id)) ? 'lock' : cat.icon;
-                    link.innerHTML = `<span class="material-symbols-outlined">${lockIcon}</span><span>${cat.name}</span>`;
-                    link.onclick = (e) => { 
-                        e.preventDefault(); 
-                        if(cat.access_number && !unlockedRooms.has(cat.id) && currentUser.role !== 'teacher') {
+                    const isLocked = cat.access_number && !unlockedRooms.has(cat.id) && currentUser.role !== 'teacher';
+                    const icon = isLocked ? 'lock' : (cat.icon || 'forum');
+                    link.innerHTML = `<span class="material-symbols-outlined">${icon}</span><span>${cat.name}</span>`;
+                    link.onclick = (e) => {
+                        e.preventDefault();
+                        if (isLocked) {
                             promptRoomPassword(cat);
                         } else {
                             switchCategory(cat.id, cat.name);
+                            if (window.innerWidth <= 768) closeSidebar();
                         }
                     };
-                    sidebar.appendChild(link);
+                    container.appendChild(link);
                 });
             } catch (e) { console.error("Cat load fail", e); }
         };
 
-        const switchCategory = (id, name = '우리들 이야기') => {
+        const switchCategory = (id, name) => {
             currentCategory = id;
             const titleEl = document.getElementById('current-category-title');
-            if(titleEl) titleEl.innerText = name === '우리들 이야기' && id === 'all' ? '전체 메뉴' : name;
+            if (titleEl) titleEl.innerText = id === 'all' ? '전체 메뉴' : name;
+            // Update active state on static links
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            const staticLink = document.querySelector(`.nav-link[data-cat="${id}"]`);
+            if (staticLink) staticLink.classList.add('active');
             refreshCategories();
             loadPosts();
         };
 
+        // === PASSWORD PROMPT (Student Room Entry) ===
         const promptRoomPassword = (cat) => {
             const modal = document.getElementById('password-modal');
             const input = document.getElementById('entry-pass');
             const submit = document.getElementById('submit-pass');
-            
+            if (!modal || !input || !submit) return;
             modal.classList.remove('hidden');
             input.value = '';
-            input.focus();
-            
+            setTimeout(() => input.focus(), 100);
             const verify = () => {
-                if(input.value === cat.access_number) {
+                if (input.value === cat.access_number) {
                     unlockedRooms.add(cat.id);
                     modal.classList.add('hidden');
-                    showToast(`${cat.name} 입장 승인!🔓`);
+                    showToast(`${cat.name} 입장 승인! 🔓`);
                     switchCategory(cat.id, cat.name);
                 } else {
-                    showToast('접속 번호가 틀렸습니다!', 'error');
+                    showToast('번호가 틀렸습니다!', 'error');
                     input.value = '';
                 }
             };
-
             submit.onclick = verify;
-            input.onkeydown = (e) => { if(e.key === 'Enter') verify(); };
+            input.onkeydown = (e) => { if (e.key === 'Enter') verify(); };
         };
 
-        // Room Creation (Teacher Only) Inline Form
-        if(currentUser && currentUser.role === 'teacher') {
-            document.getElementById('teacher-category-action')?.classList.remove('hidden');
-            document.getElementById('teacher-inline-room-form')?.classList.remove('hidden');
-            
-            document.getElementById('inline-submit-room')?.addEventListener('click', async () => {
-                const name = document.getElementById('inline-room-name').value.trim();
-                const access_number = document.getElementById('inline-room-pass').value.trim();
-                const icon = "diversity_3"; // Default Icon for now
-                
-                if(!name) return showToast('방 이름을 입력해 주세요!', 'error');
-                
+        // === STUDENT JOIN ROOM BY CODE ===
+        document.getElementById('student-join-room')?.addEventListener('click', async () => {
+            const code = document.getElementById('student-room-code')?.value.trim();
+            if (!code) return showToast('방 번호를 입력하세요!', 'error');
+            try {
+                const res = await fetch('/api/categories');
+                const cats = await res.json();
+                const found = cats.find(c => c.access_number === code);
+                if (found) {
+                    unlockedRooms.add(found.id);
+                    showToast(`${found.name} 입장 성공! 🎉`);
+                    switchCategory(found.id, found.name);
+                    document.getElementById('student-room-code').value = '';
+                    if (window.innerWidth <= 768) closeSidebar();
+                } else {
+                    showToast('해당 번호의 게시판을 찾을 수 없습니다.', 'error');
+                }
+            } catch (e) { showToast('서버 연결 실패', 'error'); }
+        });
+
+        // === ROOM CREATION (Teacher Only) ===
+        if (currentUser && currentUser.role === 'teacher') {
+            document.getElementById('btn-add-room')?.classList.remove('hidden');
+            document.getElementById('btn-add-room')?.addEventListener('click', () => {
+                const modal = document.getElementById('room-modal');
+                if (modal) modal.classList.remove('hidden');
+            });
+
+            document.getElementById('submit-room')?.addEventListener('click', async () => {
+                const name = document.getElementById('room-name')?.value.trim();
+                const access_number = document.getElementById('room-access-number')?.value.trim();
+                if (!name) return showToast('게시판 이름을 입력하세요!', 'error');
                 try {
                     const res = await fetch('/api/categories', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name, access_number, icon })
+                        body: JSON.stringify({ name, access_number, icon: 'forum' })
                     });
-                    if(res.ok) {
-                        showToast('새로운 게시판이 생성되었습니다! ✨');
-                        document.getElementById('inline-room-name').value = '';
-                        document.getElementById('inline-room-pass').value = '';
+                    if (res.ok) {
+                        showToast('새 게시판이 생성되었습니다! ✨');
+                        document.getElementById('room-modal')?.classList.add('hidden');
+                        document.getElementById('room-name').value = '';
+                        document.getElementById('room-access-number').value = '';
                         refreshCategories();
                     }
-                } catch (e) { showToast('방 생성 실패', 'error'); }
+                } catch (e) { showToast('생성 실패', 'error'); }
             });
         }
 
-        // Settings Modal Open
+        // Settings Modal 
         document.getElementById('open-settings-modal')?.addEventListener('click', () => {
-            const modal = document.getElementById('settings-modal');
-            if(modal) modal.classList.remove('hidden');
-        });
-
-        // Close Modals Logic
-        const closeAllModals = () => {
-            document.querySelectorAll('.modal-v4').forEach(m => m.classList.add('hidden'));
-        };
-
-        document.querySelectorAll('.modal-overlay-v4, #close-room-modal, #cancel-room-modal, #close-password-modal, #close-settings-modal').forEach(el => {
-            el.addEventListener('click', closeAllModals);
+            document.getElementById('settings-modal')?.classList.remove('hidden');
         });
 
         refreshCategories();
@@ -1005,15 +1051,23 @@ document.addEventListener('DOMContentLoaded', () => {
             card.className = 'ultra-card post-card-v4';
             card.style.transitionDelay = `${index * 0.1}s`;
             
-            // Anonymous Author Logic
             let displayAuthor = post.author;
             if (post.is_anonymous) {
-                if (currentUser.role === 'teacher') {
-                    displayAuthor = `익명 (${post.author})`;
-                } else {
-                    displayAuthor = '익명';
-                }
+                displayAuthor = currentUser.role === 'teacher' ? `익명 (${post.author})` : '익명';
             }
+
+            const likes = post.likes || [];
+            const comments = post.comments || [];
+            const userId = String(currentUser.id || currentUser.name || '');
+            const isLiked = likes.includes(userId);
+
+            let commentsHtml = '';
+            comments.slice(-3).forEach(c => {
+                commentsHtml += `<div class="flex gap-2 items-start py-2 border-t border-white/5">
+                    <span class="text-[10px] font-bold text-primary whitespace-nowrap">${c.author}</span>
+                    <span class="text-xs text-text-dim">${c.text}</span>
+                </div>`;
+            });
 
             card.innerHTML = `
                 <div class="flex justify-between items-start mb-6">
@@ -1022,8 +1076,28 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <h3 class="post-title-v4 text-white">${post.title}</h3>
                 <p class="text-text-dim line-clamp-4 mb-4">${post.content}</p>
-                ${post.image_url ? `<img src="${post.image_url}" class="w-full max-h-60 object-contain rounded-xl border border-white/10 mb-8 shadow-[0_0_20px_rgba(43,140,238,0.15)]">` : '<div class="mb-8"></div>'}
-                <div class="flex items-center gap-3 mt-auto pt-6 border-t border-white/5">
+                ${post.image_url ? `<img src="${post.image_url}" class="w-full max-h-60 object-contain rounded-xl border border-white/10 mb-4" onerror="this.style.display='none'">` : ''}
+                
+                <div class="flex items-center gap-4 py-3 border-t border-b border-white/5 mb-3">
+                    <button onclick="toggleLikeV4(${post.id}, this)" class="flex items-center gap-1.5 text-sm transition-all ${isLiked ? 'text-red-400' : 'text-text-dim hover:text-red-400'}">
+                        <span class="material-symbols-outlined text-lg">${isLiked ? 'favorite' : 'favorite_border'}</span>
+                        <span class="like-count text-xs font-bold">${likes.length}</span>
+                    </button>
+                    <button onclick="this.closest('.post-card-v4').querySelector('.comment-section').classList.toggle('hidden')" class="flex items-center gap-1.5 text-sm text-text-dim hover:text-primary transition-all">
+                        <span class="material-symbols-outlined text-lg">chat_bubble_outline</span>
+                        <span class="text-xs font-bold">${comments.length}</span>
+                    </button>
+                </div>
+
+                <div class="comment-section hidden">
+                    <div class="max-h-32 overflow-y-auto mb-2">${commentsHtml}</div>
+                    <div class="flex gap-2">
+                        <input type="text" class="comment-input flex-1 bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-xs text-white placeholder:text-white/20 focus:outline-none focus:border-primary/30" placeholder="댓글 입력...">
+                        <button onclick="addCommentV4(${post.id}, this)" class="px-3 py-2 bg-primary/20 text-primary rounded-lg text-xs font-bold hover:bg-primary/30 transition-all">전송</button>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 mt-3 pt-3 border-t border-white/5">
                     <div class="size-8 rounded-full bg-white/10 flex items-center justify-center"><span class="material-symbols-outlined text-sm">person</span></div>
                     <div class="flex flex-col flex-1">
                         <span class="text-xs font-bold text-white">${displayAuthor}</span>
@@ -1035,6 +1109,56 @@ document.addEventListener('DOMContentLoaded', () => {
             requestAnimationFrame(() => setTimeout(() => card.classList.add('reveal'), 50));
         });
     }
+
+    // Like Toggle
+    window.toggleLikeV4 = async (postId, btn) => {
+        const userId = String(currentUser.id || currentUser.name || '');
+        try {
+            const res = await fetch(`/api/posts/${postId}/like`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                const icon = btn.querySelector('.material-symbols-outlined');
+                const count = btn.querySelector('.like-count');
+                if (data.liked) {
+                    icon.textContent = 'favorite';
+                    btn.classList.add('text-red-400');
+                    btn.classList.remove('text-text-dim');
+                } else {
+                    icon.textContent = 'favorite_border';
+                    btn.classList.remove('text-red-400');
+                    btn.classList.add('text-text-dim');
+                }
+                count.textContent = data.count;
+            }
+        } catch (e) { showToast('좋아요 실패', 'error'); }
+    };
+
+    // Add Comment
+    window.addCommentV4 = async (postId, btn) => {
+        const input = btn.closest('.comment-section').querySelector('.comment-input');
+        const text = input?.value.trim();
+        if (!text) return;
+        const author = currentUser.name || currentUser.id || '익명';
+        const now = new Date();
+        const date = `${now.getMonth()+1}/${now.getDate()} ${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+        try {
+            const res = await fetch(`/api/posts/${postId}/comments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ author, text, date })
+            });
+            if (res.ok) {
+                input.value = '';
+                loadPosts();
+                showToast('댓글이 등록되었습니다! 💬');
+            }
+        } catch (e) { showToast('댓글 실패', 'error'); }
+    };
+
 
     window.deletePostV4 = async (id, btn) => {
         if (!confirm('정말 삭제하시겠습니까?')) return;

@@ -216,11 +216,59 @@ def add_post():
         new_post = request.json
         posts = pull_data('posts.json')
         new_post['id'] = max([p['id'] for p in posts], default=0) + 1
+        new_post['likes'] = []
+        new_post['comments'] = []
         posts.insert(0, new_post)
         push_data('posts.json', posts)
         return {"success": True, "post": new_post}
     except Exception as e:
         return {"error": str(e)}, 500
+
+@app.route('/api/posts/<int:post_id>/like', methods=['POST'])
+def toggle_like(post_id):
+    try:
+        from flask import request
+        data = request.json
+        user_id = str(data.get('user_id', ''))
+        posts = pull_data('posts.json')
+        for p in posts:
+            if p['id'] == post_id:
+                likes = p.get('likes', [])
+                if user_id in likes:
+                    likes.remove(user_id)
+                    liked = False
+                else:
+                    likes.append(user_id)
+                    liked = True
+                p['likes'] = likes
+                push_data('posts.json', posts)
+                return {"success": True, "liked": liked, "count": len(likes)}
+        return {"error": "Post not found"}, 404
+    except Exception as e:
+        return {"error": str(e)}, 500
+
+@app.route('/api/posts/<int:post_id>/comments', methods=['POST'])
+def add_comment(post_id):
+    try:
+        from flask import request
+        data = request.json
+        posts = pull_data('posts.json')
+        for p in posts:
+            if p['id'] == post_id:
+                comments = p.get('comments', [])
+                comment = {
+                    "author": data.get('author', '익명'),
+                    "text": data.get('text', ''),
+                    "date": data.get('date', '')
+                }
+                comments.append(comment)
+                p['comments'] = comments
+                push_data('posts.json', posts)
+                return {"success": True, "comment": comment, "count": len(comments)}
+        return {"error": "Post not found"}, 404
+    except Exception as e:
+        return {"error": str(e)}, 500
+
 
 @app.route('/api/teacher/password', methods=['POST'])
 def change_teacher_password():

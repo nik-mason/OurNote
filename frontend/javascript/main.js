@@ -547,6 +547,25 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = '/';
         });
 
+        // Image Preview Handler
+        const imageInput = document.getElementById('post-image');
+        const imagePreview = document.getElementById('image-preview');
+        if (imageInput && imagePreview) {
+            imageInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        imagePreview.src = e.target.result;
+                        imagePreview.classList.remove('hidden');
+                    }
+                    reader.readAsDataURL(e.target.files[0]);
+                } else {
+                    imagePreview.src = '';
+                    imagePreview.classList.add('hidden');
+                }
+            });
+        }
+
         // Post Submission
         document.getElementById('submit-post')?.addEventListener('click', async () => {
             const title = document.getElementById('post-title').value.trim();
@@ -579,6 +598,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     bodyObj.content = content;
                 }
 
+                // Handle Image Upload
+                const imageInput = document.getElementById('post-image');
+                if (imageInput && imageInput.files.length > 0) {
+                    const file = imageInput.files[0];
+                    const formData = new FormData();
+                    formData.append('image', file);
+                    showToast('사진 업로드 중... 🚀', 'info');
+                    try {
+                        const uploadRes = await fetch('/api/upload', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        const uploadData = await uploadRes.json();
+                        if (uploadData.success && uploadData.url) {
+                            bodyObj.image_url = uploadData.url;
+                        } else {
+                            return showToast('사진 업로드에 실패했습니다.', 'error');
+                        }
+                    } catch (e) {
+                        return showToast('사진 업로드 중 오류가 발생했습니다.', 'error');
+                    }
+                }
+
                 const res = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -589,6 +631,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('close-write-modal').click();
                     document.getElementById('post-title').value = '';
                     document.getElementById('post-content').value = '';
+                    if (document.getElementById('post-image')) document.getElementById('post-image').value = '';
+                    if (document.getElementById('image-preview')) {
+                        document.getElementById('image-preview').src = '';
+                        document.getElementById('image-preview').classList.add('hidden');
+                    }
                     document.getElementById('tasks-input-list').innerHTML = '';
                     loadPosts();
                     triggerConfetti();
@@ -847,7 +894,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="text-xs text-text-dim">${post.date}</span>
                 </div>
                 <h3 class="post-title-v4 text-white">${post.title}</h3>
-                <p class="text-text-dim line-clamp-4 mb-8">${post.content}</p>
+                <p class="text-text-dim line-clamp-4 mb-4">${post.content}</p>
+                ${post.image_url ? `<img src="${post.image_url}" class="w-full max-h-60 object-contain rounded-xl border border-white/10 mb-8 shadow-[0_0_20px_rgba(43,140,238,0.15)]">` : '<div class="mb-8"></div>'}
                 <div class="flex items-center gap-3 mt-auto pt-6 border-t border-white/5">
                     <div class="size-8 rounded-full bg-white/10 flex items-center justify-center"><span class="material-symbols-outlined text-sm">person</span></div>
                     <div class="flex flex-col flex-1">

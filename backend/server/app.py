@@ -136,6 +136,36 @@ def get_teacher():
 def get_posts():
     return pull_data('posts.json')
 
+import time
+
+@app.route('/api/upload', methods=['POST'])
+def upload_image():
+    try:
+        from flask import request
+        if 'image' not in request.files:
+            return {"success": False, "error": "No image part"}, 400
+            
+        file = request.files['image']
+        if file.filename == '':
+            return {"success": False, "error": "No selected file"}, 400
+            
+        db = get_db()
+        if not db:
+            return {"success": False, "error": "Supabase DB connection failed"}, 500
+            
+        file_bytes = file.read()
+        filename = f"{int(time.time())}_{file.filename.replace(' ', '_')}"
+        
+        # Ensure the bucket exists (assuming it is created in Supabase dashboard)
+        # We upload to 'images' bucket
+        res = db.storage.from_("images").upload(filename, file_bytes, {"content-type": file.content_type})
+        
+        # Get public url
+        public_url = db.storage.from_("images").get_public_url(filename)
+        return {"success": True, "url": public_url}
+    except Exception as e:
+        return {"success": False, "error": str(e)}, 500
+
 @app.route('/api/posts', methods=['POST'])
 def add_post():
     try:

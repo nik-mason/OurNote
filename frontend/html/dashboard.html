@@ -211,6 +211,15 @@
                             placeholder="내용을 입력하세요..."></textarea>
                     </div>
 
+                    <!-- Image Upload -->
+                    <div class="relative mt-2">
+                        <div class="w-full bg-white/5 border-b-2 border-white/10 p-4 text-sm font-bold flex items-center gap-4 transition-all rounded-xl focus-within:border-primary">
+                            <span class="material-symbols-outlined text-primary">add_photo_alternate</span>
+                            <input type="file" id="post-image" accept="image/*" class="text-sm text-text-dim file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-black file:bg-primary/20 file:text-primary hover:file:bg-primary/30 outline-none w-full cursor-pointer transition-all">
+                        </div>
+                        <img id="image-preview" src="" class="hidden mt-4 w-full max-h-80 object-cover rounded-2xl border border-white/10 shadow-[0_0_30px_rgba(43,140,238,0.2)]">
+                    </div>
+
                     <div id="homework-tasks-container" class="hidden space-y-4 p-6 bg-white/5 rounded-3xl border border-white/10">
                         <div class="flex justify-between items-center mb-4">
                             <h4 class="font-bold text-primary flex items-center gap-2">

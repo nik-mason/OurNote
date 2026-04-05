@@ -164,17 +164,14 @@ def upload_image():
         # [IMPORTANT] Ensure 'images' bucket is created in Supabase Dashboard -> Storage
         # and set to 'Public'
         try:
-            storage = db.storage.from_("images")
             storage.upload(filename, file_bytes, {"content-type": mimetype})
             
-            # Use standardized public URL path
-            public_url = storage.get_public_url(filename)
+            # Use direct standardized URL to avoid 404/mapping issues 
+            # Format: [SUPABASE_URL]/storage/v1/object/public/[BUCKET]/[FILENAME]
+            clean_url = f"{SUPABASE_URL}/storage/v1/object/public/images/{filename}"
             
-            # Sometimes get_public_url needs a bit of help with the final path
-            if isinstance(public_url, dict): public_url = public_url.get('publicURL') or public_url.get('url')
-            
-            # Simple cache-busting for smoother rendering
-            final_url = f"{public_url}?t={int(time.time())}"
+            # Cache-busting
+            final_url = f"{clean_url}?t={int(time.time())}"
             return {"success": True, "url": final_url}
         except Exception as storage_err:
             return {"success": False, "error": f"Storage Error: {str(storage_err)}. Please ensure 'images' bucket exists and is Public."}, 500

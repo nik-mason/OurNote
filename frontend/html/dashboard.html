@@ -77,7 +77,7 @@
                 </button>
                 
                 <div id="teacher-category-action" class="hidden">
-                    <button id="open-room-modal" class="size-10 flex items-center justify-center text-primary hover:text-white transition-all bg-primary/10 rounded-xl border border-primary/20 group">
+                    <button id="open-room-modal" onclick="openRoomCreator()" class="size-10 flex items-center justify-center text-primary hover:text-white transition-all bg-primary/10 rounded-xl border border-primary/20 group cursor-pointer">
                         <span class="material-symbols-outlined group-hover:scale-125 transition-transform">add_box</span>
                     </button>
                 </div>
@@ -739,7 +739,7 @@
 
     <script src="/frontend/javascript/main.js"></script>
     <!-- New Room Modal -->
-    <div id="room-modal" class="modal-v4 hidden">
+    <div id="room-modal" class="modal-v4 hidden" style="z-index: 99999 !important;">
         <div class="modal-overlay-v4" id="close-room-modal"></div>
         <div class="modal-content-v4 w-[400px]">
             <div class="flex flex-col gap-6 p-10">

@@ -828,13 +828,24 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         // Room Creation (Teacher Only)
+        window.openRoomCreator = () => {
+            console.log("Global Remote Trigger: Opening Room Modal");
+            const modal = document.getElementById('room-modal');
+            if(modal) {
+                modal.classList.remove('hidden');
+                modal.style.display = "flex"; // Force display flex
+            } else {
+                showToast('방 생성 모달을 찾을 수 없습니다!', 'error');
+            }
+        };
+
         if(currentUser && currentUser.role === 'teacher') {
             const teacherAction = document.getElementById('teacher-category-action');
             if(teacherAction) teacherAction.classList.remove('hidden');
             
             // Hamburger Action
             document.getElementById('hamburger-menu')?.addEventListener('click', () => {
-                showToast('사이브바 메뉴 확장 기능은 준비 중입니다! ☰', 'info');
+                showToast('메뉴 확장 준비 중... ☰', 'info');
             });
 
             // New Room Modal Open

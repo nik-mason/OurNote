@@ -143,26 +143,32 @@ def upload_image():
     try:
         from flask import request
         if 'image' not in request.files:
-            return {"success": False, "error": "No image part"}, 400
+            return {"success": False, "error": "No image file provided"}, 400
             
         file = request.files['image']
         if file.filename == '':
-            return {"success": False, "error": "No selected file"}, 400
+            return {"success": False, "error": "Empty filename"}, 400
             
         db = get_db()
         if not db:
-            return {"success": False, "error": "Supabase DB connection failed"}, 500
+            return {"success": False, "error": "Supabase Connection Missing"}, 500
             
         file_bytes = file.read()
-        filename = f"{int(time.time())}_{file.filename.replace(' ', '_')}"
+        file_ext = file.filename.split('.')[-1]
+        filename = f"post_{int(time.time())}.{file_ext}"
         
-        # Ensure the bucket exists (assuming it is created in Supabase dashboard)
-        # We upload to 'images' bucket
-        res = db.storage.from_("images").upload(filename, file_bytes, {"content-type": file.content_type})
-        
-        # Get public url
-        public_url = db.storage.from_("images").get_public_url(filename)
-        return {"success": True, "url": public_url}
+        # [IMPORTANT] Ensure 'images' bucket is created in Supabase Dashboard -> Storage
+        # and set to 'Public'
+        try:
+            storage = db.storage.from_("images")
+            res = storage.upload(filename, file_bytes, {"content-type": file.mimetype})
+            
+            # Simple way to get public URL
+            public_url = storage.get_public_url(filename)
+            return {"success": True, "url": public_url}
+        except Exception as storage_err:
+            return {"success": False, "error": f"Storage Error: {str(storage_err)}. Please ensure 'images' bucket exists and is Public."}, 500
+            
     except Exception as e:
         return {"success": False, "error": str(e)}, 500
 

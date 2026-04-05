@@ -598,37 +598,46 @@ document.addEventListener('DOMContentLoaded', () => {
                     bodyObj.content = content;
                 }
 
-                // Handle Image Upload
+                // Handle Image Upload First
                 const imageInput = document.getElementById('post-image');
                 if (imageInput && imageInput.files.length > 0) {
                     const file = imageInput.files[0];
                     const formData = new FormData();
                     formData.append('image', file);
-                    showToast('사진 업로드 중... 🚀', 'info');
+                    
+                    showToast('사진을 클라우드에 전송 중... 🚀', 'info');
+                    
                     try {
                         const uploadRes = await fetch('/api/upload', {
                             method: 'POST',
                             body: formData
                         });
                         const uploadData = await uploadRes.json();
+                        
                         if (uploadData.success && uploadData.url) {
                             bodyObj.image_url = uploadData.url;
+                            console.log("Image Linked:", uploadData.url);
                         } else {
-                            return showToast('사진 업로드에 실패했습니다.', 'error');
+                            throw new Error(uploadData.error || "Upload failed");
                         }
-                    } catch (e) {
-                        return showToast('사진 업로드 중 오류가 발생했습니다.', 'error');
+                    } catch (err) {
+                        console.error("Upload Logic Error:", err);
+                        return showToast(`사진 업로드 실패: ${err.message}`, 'error');
                     }
                 }
 
+                // Final Post Submission
                 const res = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(bodyObj)
                 });
+                
                 if (res.ok) {
                     showToast('성공적으로 게시되었습니다! ✨');
                     document.getElementById('close-write-modal').click();
+                    
+                    // Reset Form
                     document.getElementById('post-title').value = '';
                     document.getElementById('post-content').value = '';
                     if (document.getElementById('post-image')) document.getElementById('post-image').value = '';
@@ -636,11 +645,15 @@ document.addEventListener('DOMContentLoaded', () => {
                         document.getElementById('image-preview').src = '';
                         document.getElementById('image-preview').classList.add('hidden');
                     }
+                    
                     document.getElementById('tasks-input-list').innerHTML = '';
                     loadPosts();
                     triggerConfetti();
                 }
-            } catch (e) { showToast('게시물 등록 실패', 'error'); }
+            } catch (e) { 
+                console.error("Critical Post Error:", e);
+                showToast('게시물 등록 실패: ' + e.message, 'error'); 
+            }
         });
 
         // Settings Tabs Logic

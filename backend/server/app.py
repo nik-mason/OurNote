@@ -45,11 +45,12 @@ if not SUPABASE_URL:
     SUPABASE_URL = (os.environ.get('SUPABASE_URL') or os.environ.get('SUPABASE_REST_API_URL') or os.environ.get('NEXT_PUBLIC_SUPABASE_URL') or "").strip()
 
 for env_key in os.environ:
-    if env_key.endswith('_SUPABASE_ANON_KEY'):
+    if env_key.endswith('_SUPABASE_ANON_KEY') or env_key.endswith('_SUPABASE_SERVICE_ROLE_KEY'):
         SUPABASE_KEY = os.environ[env_key].strip()
-        break
+        # Prioritize Service Role key if it contains the word 'SERVICE'
+        if 'SERVICE' in env_key: break
 if not SUPABASE_KEY:
-    SUPABASE_KEY = (os.environ.get('SUPABASE_KEY') or os.environ.get('SUPABASE_ANON_KEY') or os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY') or "").strip()
+    SUPABASE_KEY = (os.environ.get('SUPABASE_SERVICE_ROLE_KEY') or os.environ.get('SUPABASE_KEY') or os.environ.get('SUPABASE_ANON_KEY') or os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY') or "").strip()
 
 def get_db():
     if not SUPABASE_URL or not SUPABASE_KEY:

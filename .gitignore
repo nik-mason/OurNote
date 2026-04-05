@@ -1,11 +1,14 @@
-# Environments
+# Environments & Secrets
 .env
+.env.*
 .venv
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+*.local
+credentials.json
 
 # Node / Frontend
 node_modules/
@@ -43,13 +46,19 @@ htmlcov/
 .tox/
 .nox/
 
+# Database / Data (Optional: prevent local dev data sync)
+# backend/data/*.json
+
 # IDE / Editor
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+.gemini/
+.agent/
 
 # OS
 .DS_Store
 Thumbs.db
+Desktop.ini

@@ -828,11 +828,22 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         // Room Creation (Teacher Only)
-        if(currentUser.role === 'teacher') {
-            document.getElementById('teacher-category-action')?.classList.remove('hidden');
-            document.getElementById('open-room-modal')?.addEventListener('click', () => {
-                document.getElementById('room-modal').classList.remove('hidden');
-            });
+        if(currentUser && currentUser.role === 'teacher') {
+            console.log("Teacher Access Confirmed - Initializing Room Creation Logic");
+            const teacherAction = document.getElementById('teacher-category-action');
+            if(teacherAction) teacherAction.classList.remove('hidden');
+            
+            const openRoomBtn = document.getElementById('open-room-modal');
+            if(openRoomBtn) {
+                console.log("Room Create Button Found!");
+                openRoomBtn.addEventListener('click', (e) => {
+                    console.log("Room Modal Triggered!");
+                    const modal = document.getElementById('room-modal');
+                    if(modal) modal.classList.remove('hidden');
+                });
+            } else {
+                console.warn("Room Create Button NOT FOUND in DOM!");
+            }
             
             document.getElementById('submit-room')?.addEventListener('click', async () => {
                 const name = document.getElementById('room-name').value.trim();

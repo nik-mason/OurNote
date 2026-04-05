@@ -827,47 +827,17 @@ document.addEventListener('DOMContentLoaded', () => {
             input.onkeydown = (e) => { if(e.key === 'Enter') verify(); };
         };
 
-        // Room Creation (Teacher Only)
-        window.openRoomCreator = () => {
-            console.log("Global Remote Trigger: Opening Room Modal");
-            const modal = document.getElementById('room-modal');
-            if(modal) {
-                modal.classList.remove('hidden');
-                modal.style.display = "flex"; // Force display flex
-            } else {
-                showToast('방 생성 모달을 찾을 수 없습니다!', 'error');
-            }
-        };
-
+        // Room Creation (Teacher Only) Inline Form
         if(currentUser && currentUser.role === 'teacher') {
-            const teacherAction = document.getElementById('teacher-category-action');
-            if(teacherAction) teacherAction.classList.remove('hidden');
+            document.getElementById('teacher-category-action')?.classList.remove('hidden');
+            document.getElementById('teacher-inline-room-form')?.classList.remove('hidden');
             
-            // Hamburger Action
-            document.getElementById('hamburger-menu')?.addEventListener('click', () => {
-                showToast('메뉴 확장 준비 중... ☰', 'info');
-            });
-
-            // New Room Modal Open
-            const openRoomBtn = document.getElementById('open-room-modal');
-            if(openRoomBtn) {
-                openRoomBtn.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Prevent event bubbling
-                    const modal = document.getElementById('room-modal');
-                    if(modal) {
-                        modal.classList.remove('hidden');
-                        modal.style.zIndex = "10000"; // Ensure top layer
-                    }
-                });
-            }
-            
-            // New Room Submit
-            document.getElementById('submit-room')?.addEventListener('click', async () => {
-                const name = document.getElementById('room-name').value.trim();
-                const access_number = document.getElementById('room-access-number').value.trim();
-                const icon = document.getElementById('room-icon').value.trim();
+            document.getElementById('inline-submit-room')?.addEventListener('click', async () => {
+                const name = document.getElementById('inline-room-name').value.trim();
+                const access_number = document.getElementById('inline-room-pass').value.trim();
+                const icon = "diversity_3"; // Default Icon for now
                 
-                if(!name) return showToast('방 이름을 입력하세요!', 'error');
+                if(!name) return showToast('방 이름을 입력해 주세요!', 'error');
                 
                 try {
                     const res = await fetch('/api/categories', {
@@ -876,8 +846,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         body: JSON.stringify({ name, access_number, icon })
                     });
                     if(res.ok) {
-                        showToast('새로운 공간이 탄생했습니다! ✨');
-                        document.getElementById('room-modal').classList.add('hidden');
+                        showToast('새로운 게시판이 생성되었습니다! ✨');
+                        document.getElementById('inline-room-name').value = '';
+                        document.getElementById('inline-room-pass').value = '';
                         refreshCategories();
                     }
                 } catch (e) { showToast('방 생성 실패', 'error'); }

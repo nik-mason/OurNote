@@ -135,7 +135,7 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    z-index: 200;
+    z-index: 500;
     display: flex;
     flex-direction: column;
     background: var(--card-bg);
@@ -183,7 +183,7 @@ body {
 .sidebar-overlay {
     position: fixed;
     inset: 0;
-    z-index: 150;
+    z-index: 450;
     background: rgba(0,0,0,0.6);
     backdrop-filter: blur(4px);
 }
@@ -207,7 +207,7 @@ body {
     .content-area {
         margin-left: 0 !important;
         padding: 1rem;
-        padding-top: 4.5rem;
+        padding-top: 5.5rem;
     }
     .post-container {
         grid-template-columns: 1fr !important;

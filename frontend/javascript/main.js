@@ -835,11 +835,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     link.className = `nav-link ${currentCategory === cat.id ? 'active' : ''}`;
                     const icon = cat.icon || 'forum';
                     
+                    // Protected Category IDs that cannot be deleted
+                    const protectedIds = ['notice', 'event', 'homework', 'all'];
+                    const isProtected = protectedIds.includes(cat.id);
+                    
                     link.innerHTML = `
                         <span class="material-symbols-outlined">${icon}</span>
                         <div class="flex flex-1 items-center justify-between">
                             <span>${cat.name}</span>
-                            ${currentUser.role === 'teacher' ? `
+                            ${(currentUser.role === 'teacher' && !isProtected) ? `
                                 <button class="delete-room-btn size-5 opacity-0 group-hover:opacity-100 hover:text-accent transition-all" data-id="${cat.id}">
                                     <span class="material-symbols-outlined text-[14px]">delete</span>
                                 </button>

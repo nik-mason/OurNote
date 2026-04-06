@@ -143,10 +143,8 @@ import time
 def get_categories():
     try:
         categories = pull_data('categories.json')
-        if not categories or len(categories) == 0:
-            # Default fallback categories
-            return [{"id": "notice", "name": "공지사항", "icon": "campaign", "access_number": ""}, 
-                    {"id": "free", "name": "자유게시판", "icon": "chat_bubble", "access_number": ""}]
+        if not categories:
+            return []
         return categories
     except Exception as e:
         return {"error": str(e)}, 500

@@ -318,6 +318,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupModal('mobile-modal', 'nav-mobile', 'close-mobile-modal');
         setupModal('settings-modal', 'open-settings-modal', 'close-settings-modal');
         setupModal('write-modal', 'open-write-modal', 'close-write-modal');
+        setupModal('write-modal', 'open-write-modal-sidebar', 'close-write-modal');
 
         // Custom Select Dropdown Logic
         const categoryTrigger = document.getElementById('custom-category-trigger');
@@ -588,6 +589,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const title = document.getElementById('post-title').value.trim();
             const content = document.getElementById('post-content').value.trim();
             const category = document.getElementById('post-category').value;
+            
+            // Check if current user is allowed to post in this category
+            const restrictedCategories = ['notice', 'event', 'homework'];
+            if (currentUser.role !== 'teacher' && restrictedCategories.includes(category)) {
+                return showToast('이 게시판은 선생님만 작성할 수 있습니다!', 'error');
+            }
             
             // For homework, content is skipped, but we check title and tasks later
             if (!title || (category !== 'homework' && !content)) {

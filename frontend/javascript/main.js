@@ -887,7 +887,22 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('btn-add-room')?.classList.remove('hidden');
             document.getElementById('btn-add-room')?.addEventListener('click', () => {
                 const modal = document.getElementById('room-modal');
-                if (modal) modal.classList.remove('hidden');
+                const content = modal?.querySelector('.modal-content-v4');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    modal.style.opacity = '0';
+                    setTimeout(() => {
+                        modal.style.transition = 'opacity 0.4s ease';
+                        modal.style.opacity = '1';
+                        if (content) {
+                            content.style.transform = 'scale(0.8)';
+                            setTimeout(() => {
+                                content.style.transition = 'transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                                content.style.transform = 'scale(1)';
+                            }, 10);
+                        }
+                    }, 10);
+                }
             });
 
             document.getElementById('submit-room')?.addEventListener('click', async () => {

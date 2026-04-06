@@ -379,6 +379,20 @@ def delete_homework(hw_id):
     except Exception as e:
         return {"error": str(e)}, 500
 
+@app.route('/api/categories/<cat_id>', methods=['DELETE'])
+def delete_category(cat_id):
+    try:
+        cats = pull_data('categories.json')
+        cats = [c for c in cats if c['id'] != cat_id]
+        push_data('categories.json', cats)
+        # Optional: Delete posts in this category too
+        posts = pull_data('posts.json')
+        posts = [p for p in posts if p['category'] != cat_id]
+        push_data('posts.json', posts)
+        return {"success": True}
+    except Exception as e:
+        return {"error": str(e)}, 500
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=6273)

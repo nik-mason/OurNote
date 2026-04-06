@@ -828,6 +828,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await fetch('/api/categories');
                 const cats = await res.json();
                 container.innerHTML = '';
+                
                 cats.forEach(cat => {
                     const link = document.createElement('a');
                     link.href = '#';
@@ -858,6 +859,28 @@ document.addEventListener('DOMContentLoaded', () => {
                     };
                     container.appendChild(link);
                 });
+
+                // Update Write Modal Dropdown with dynamic rooms
+                const writeModalOptions = document.getElementById('custom-category-options');
+                if (writeModalOptions) {
+                    writeModalOptions.querySelectorAll('[data-dynamic="true"]').forEach(el => el.remove());
+                    cats.forEach(cat => {
+                        const opt = document.createElement('div');
+                        opt.className = 'custom-option p-4 hover:bg-primary transition-colors cursor-pointer border-t border-white/5';
+                        opt.dataset.value = cat.id;
+                        opt.dataset.dynamic = "true";
+                        opt.textContent = `📁 ${cat.name}`;
+                        opt.onclick = () => {
+                            document.getElementById('post-category').value = cat.id;
+                            document.getElementById('selected-category-text').textContent = `📁 ${cat.name}`;
+                            writeModalOptions.classList.remove('active');
+                            document.getElementById('homework-tasks-container')?.classList.add('hidden');
+                            document.getElementById('homework-target-container')?.classList.add('hidden');
+                            document.getElementById('post-content').parentElement.classList.remove('hidden');
+                        };
+                        writeModalOptions.appendChild(opt);
+                    });
+                }
             } catch (e) { console.error("Cat load fail", e); }
         };
 
@@ -866,11 +889,14 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const res = await fetch(`/api/categories/${id}`, { method: 'DELETE' });
                 if (res.ok) {
-                    showToast('방이 삭제되었습니다.');
+                    showToast('방이 삭제되었습니다! ✨');
                     if (currentCategory === id) switchCategory('all', '전체 메뉴');
-                    else refreshCategories();
+                    refreshCategories();
+                } else {
+                    const err = await res.json();
+                    showToast(err.error || '삭제 실패', 'error');
                 }
-            } catch (e) { showToast('삭제 실패', 'error'); }
+            } catch (e) { showToast('서버 연결 실패', 'error'); }
         };
 
         const switchCategory = (id, name) => {

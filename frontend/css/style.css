@@ -188,32 +188,7 @@ body {
     backdrop-filter: blur(4px);
 }
 
-/* Modal fix */
-.modal-v4 {
-    position: fixed;
-    inset: 0;
-    z-index: 99999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.modal-v4.hidden { display: none !important; }
-.modal-overlay-v4 {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(8px);
-}
-.modal-content-v4 {
-    position: relative;
-    z-index: 10;
-    background: var(--card-bg);
-    backdrop-filter: blur(40px) saturate(200%);
-    -webkit-backdrop-filter: blur(40px) saturate(200%);
-    border: 1px solid var(--glass-border);
-    border-radius: 1.5rem;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-}
+
 
 /* Mobile Responsive */
 @media (max-width: 768px) {

@@ -178,6 +178,35 @@
         </div>
     </main>
 
+    <!-- Color Auth Modal -->
+    <div id="color-auth-modal" class="fixed inset-0 z-[1000] hidden flex items-center justify-center p-6">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-xl"></div>
+        <div class="ultra-card max-w-sm w-full p-10 relative modal-v4 active text-center">
+            <h3 class="text-3xl font-black text-white mb-2">자신임을 인증하세요!</h3>
+            <p class="text-text-dim text-sm mb-8">나만의 색깔 비밀번호 3개를 입력하세요.<br><span id="auth-attempts" class="text-accent font-bold">기회: 3번</span></p>
+            
+            <div id="color-input-display" class="flex justify-center gap-3 mb-10 h-10">
+                <!-- Dots show here -->
+                <div class="size-6 rounded-full border-2 border-white/10"></div>
+                <div class="size-6 rounded-full border-2 border-white/10"></div>
+                <div class="size-6 rounded-full border-2 border-white/10"></div>
+            </div>
+
+            <div class="grid grid-cols-4 gap-4 mb-8">
+                <button data-color="red" class="size-14 rounded-2xl bg-[#ff4b4b] shadow-[0_0_15px_rgba(255,75,75,0.3)] hover:scale-110 active:scale-95 transition-all"></button>
+                <button data-color="orange" class="size-14 rounded-2xl bg-[#ff8c00] shadow-[0_0_15px_rgba(255,140,0,0.3)] hover:scale-110 active:scale-95 transition-all"></button>
+                <button data-color="yellow" class="size-14 rounded-2xl bg-[#ffdb4d] shadow-[0_0_15px_rgba(255,219,77,0.3)] hover:scale-110 active:scale-95 transition-all"></button>
+                <button data-color="green" class="size-14 rounded-2xl bg-[#4ade80] shadow-[0_0_15px_rgba(74,222,128,0.3)] hover:scale-110 active:scale-95 transition-all"></button>
+                <button data-color="blue" class="size-14 rounded-2xl bg-[#3b82f6] shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:scale-110 active:scale-95 transition-all"></button>
+                <button data-color="purple" class="size-14 rounded-2xl bg-[#a855f7] shadow-[0_0_15px_rgba(168,85,247,0.3)] hover:scale-110 active:scale-95 transition-all"></button>
+                <button data-color="black" class="size-14 rounded-2xl bg-[#1a1a1a] border border-white/10 shadow-[0_0_15px_rgba(0,0,0,0.3)] hover:scale-110 active:scale-95 transition-all"></button>
+                <button data-color="white" class="size-14 rounded-2xl bg-[#ffffff] shadow-[0_0_15px_rgba(255,255,255,0.3)] hover:scale-110 active:scale-95 transition-all"></button>
+            </div>
+
+            <button id="cancel-color-auth" class="text-text-dim hover:text-white transition-all text-sm font-bold">취소하기</button>
+        </div>
+    </div>
+
     <div id="toast-container" class="fixed bottom-10 right-10 z-[300] flex flex-col gap-4"></div>
 
     <script src="/frontend/javascript/main.js"></script>

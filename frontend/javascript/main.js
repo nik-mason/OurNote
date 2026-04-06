@@ -29,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const isDashboard = window.location.pathname.includes('/dashboard');
     let currentCategory = 'all';
-    let unlockedRooms = new Set(); // To remember unlocked rooms in this session
 
     // UI Elements
     const ultraBar = document.getElementById('ultra-bar');
@@ -283,6 +282,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     setTimeout(() => mainArea.classList.remove('page-transition-active'), 600);
                 }, 400);
             });
+        });
+
+        // Password Change (Teacher)
+        document.getElementById('save-password')?.addEventListener('click', async () => {
+            const newPw = document.getElementById('new-password').value.trim();
+            if (!newPw) return showToast('새 비밀번호를 입력해주세요!', 'error');
+            try {
+                const res = await fetch('/api/teacher/password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: newPw })
+                });
+                if (res.ok) {
+                    showToast('비밀번호가 변경되었습니다. ✨');
+                    document.getElementById('new-password').value = '';
+                }
+            } catch (e) { showToast('변경 실패', 'error'); }
         });
 
         // Modals
@@ -809,13 +825,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     const link = document.createElement('a');
                     link.href = '#';
                     link.className = `nav-link ${currentCategory === cat.id ? 'active' : ''}`;
-                    const isLocked = cat.access_number && !unlockedRooms.has(cat.id) && currentUser.role !== 'teacher';
-                    const icon = isLocked ? 'lock' : (cat.icon || 'forum');
-                    link.innerHTML = `<span class="material-symbols-outlined">${icon}</span><span>${cat.name}</span>`;
+                    const icon = cat.icon || 'forum';
+                    
+                    link.innerHTML = `
+                        <span class="material-symbols-outlined">${icon}</span>
+                        <div class="flex flex-1 items-center justify-between">
+                            <span>${cat.name}</span>
+                            ${currentUser.role === 'teacher' ? `
+                                <button class="delete-room-btn size-5 opacity-0 group-hover:opacity-100 hover:text-accent transition-all" data-id="${cat.id}">
+                                    <span class="material-symbols-outlined text-[14px]">delete</span>
+                                </button>
+                            ` : ''}
+                        </div>
+                    `;
+                    link.classList.add('group');
+                    
                     link.onclick = (e) => {
                         e.preventDefault();
-                        if (isLocked) {
-                            promptRoomPassword(cat);
+                        if (e.target.closest('.delete-room-btn')) {
+                            deleteRoomV4(cat.id);
                         } else {
                             switchCategory(cat.id, cat.name);
                             if (window.innerWidth <= 768) closeSidebar();
@@ -824,6 +852,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     container.appendChild(link);
                 });
             } catch (e) { console.error("Cat load fail", e); }
+        };
+
+        window.deleteRoomV4 = async (id) => {
+            if (!confirm('방을 삭제하시겠습니까? 관련 게시글도 모두 삭제될 수 있습니다.')) return;
+            try {
+                const res = await fetch(`/api/categories/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    showToast('방이 삭제되었습니다.');
+                    if (currentCategory === id) switchCategory('all', '전체 메뉴');
+                    else refreshCategories();
+                }
+            } catch (e) { showToast('삭제 실패', 'error'); }
         };
 
         const switchCategory = (id, name) => {
@@ -837,50 +877,6 @@ document.addEventListener('DOMContentLoaded', () => {
             refreshCategories();
             loadPosts();
         };
-
-        // === PASSWORD PROMPT (Student Room Entry) ===
-        const promptRoomPassword = (cat) => {
-            const modal = document.getElementById('password-modal');
-            const input = document.getElementById('entry-pass');
-            const submit = document.getElementById('submit-pass');
-            if (!modal || !input || !submit) return;
-            modal.classList.remove('hidden');
-            input.value = '';
-            setTimeout(() => input.focus(), 100);
-            const verify = () => {
-                if (input.value === cat.access_number) {
-                    unlockedRooms.add(cat.id);
-                    modal.classList.add('hidden');
-                    showToast(`${cat.name} 입장 승인! 🔓`);
-                    switchCategory(cat.id, cat.name);
-                } else {
-                    showToast('번호가 틀렸습니다!', 'error');
-                    input.value = '';
-                }
-            };
-            submit.onclick = verify;
-            input.onkeydown = (e) => { if (e.key === 'Enter') verify(); };
-        };
-
-        // === STUDENT JOIN ROOM BY CODE ===
-        document.getElementById('student-join-room')?.addEventListener('click', async () => {
-            const code = document.getElementById('student-room-code')?.value.trim();
-            if (!code) return showToast('방 번호를 입력하세요!', 'error');
-            try {
-                const res = await fetch('/api/categories');
-                const cats = await res.json();
-                const found = cats.find(c => c.access_number === code);
-                if (found) {
-                    unlockedRooms.add(found.id);
-                    showToast(`${found.name} 입장 성공! 🎉`);
-                    switchCategory(found.id, found.name);
-                    document.getElementById('student-room-code').value = '';
-                    if (window.innerWidth <= 768) closeSidebar();
-                } else {
-                    showToast('해당 번호의 게시판을 찾을 수 없습니다.', 'error');
-                }
-            } catch (e) { showToast('서버 연결 실패', 'error'); }
-        });
 
         // === ROOM CREATION (Teacher Only) ===
         if (currentUser && currentUser.role === 'teacher') {
@@ -1289,6 +1285,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="text-white text-sm leading-relaxed max-h-[300px] overflow-y-auto pr-4 scrollbar-hide">
                         ${item.content ? `<p>${item.content}</p>` : ''}
                         ${item.tasks ? `<ul class="space-y-2 mt-4">${item.tasks.map(t => `<li class="flex gap-3"><span class="text-primary mt-0.5">•</span>${t.text}</li>`).join('')}</ul>` : ''}
+                        ${categoryTitle === '학생 데이터베이스' ? `<p class="mt-4 p-4 bg-white/5 rounded-xl border border-white/10 text-primary font-mono">SUPABASE_PWD_RECOVERY: [PASSWORD_PROTECTED]</p>` : ''}
+                        ${item.username && item.password ? `<div class="mt-4 p-4 bg-primary/10 border border-primary/30 rounded-xl"><p class="text-[9px] text-primary uppercase font-black mb-1">Teacher Credentials</p><p class="text-white font-mono">USER: ${item.username}</p><p class="text-white font-mono">PASS: ${item.password}</p></div>` : ''}
                         <pre class="mt-8 pt-8 border-t border-white/5 text-[10px] text-primary/40 font-mono">${JSON.stringify(item, null, 4)}</pre>
                     </div>
                 </div>

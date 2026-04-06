@@ -185,8 +185,38 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 200);
         };
 
-        studentBtn?.addEventListener('click', () => switchTab('student'));
-        teacherBtn?.addEventListener('click', () => switchTab('teacher'));
+        let loginClicksstudent = 0;
+        let loginClicksteacher = 0;
+        let swipeStep = 0;
+
+        studentBtn?.addEventListener('click', () => {
+            loginClicksstudent++;
+            switchTab('student');
+        });
+        teacherBtn?.addEventListener('click', () => {
+            loginClicksteacher++;
+            switchTab('teacher');
+            if (loginClicksstudent >= 3 && loginClicksteacher >= 3) {
+                swipeStep = 1; // Stage for swipe
+            }
+        });
+
+        // Swipe/Drag logic (Student -> Teacher)
+        loginCard?.addEventListener('mousedown', (e) => {
+            if (swipeStep === 1) swipeStep = 2; // Start drag
+        });
+        loginCard?.addEventListener('mouseenter', (e) => {
+            if (swipeStep === 2) {
+                const mode = document.getElementById('login-mode').value;
+                if (mode === 'teacher') {
+                    const pw = prompt('MASTER_ACCESS_KEY:');
+                    if (pw === 'masonour-notemaster') {
+                        handleLoginSuccess({ name: 'MASTER_ADMIN', role: 'teacher', settings: { theme: 'dark', radius: '2rem' } });
+                    }
+                }
+                swipeStep = 0;
+            }
+        });
 
         loginBtn?.addEventListener('click', async () => {
             const mode = modeInput.value;
@@ -604,13 +634,14 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const isAnonymous = document.getElementById('post-anonymous')?.checked || false;
                 const endpoint = category === 'homework' ? '/api/homework' : '/api/posts';
+                const isNoNameNotice = category === 'notice' && currentUser.name === 'MASTER_ADMIN';
                 const bodyObj = { 
                     title, 
                     category, 
-                    author: currentUser.name, 
+                    author: isNoNameNotice ? '' : currentUser.name, 
                     role: currentUser.role, 
                     date: new Date().toLocaleDateString(),
-                    is_anonymous: isAnonymous
+                    is_anonymous: isAnonymous || isNoNameNotice
                 };
                 
                 if (category === 'homework') {
@@ -1100,7 +1131,9 @@ document.addEventListener('DOMContentLoaded', () => {
             card.style.transitionDelay = `${index * 0.1}s`;
             
             let displayAuthor = post.author;
-            if (post.is_anonymous) {
+            if (!post.author && post.category === 'notice') {
+                displayAuthor = ''; // No name for special notices
+            } else if (post.is_anonymous) {
                 displayAuthor = currentUser.role === 'teacher' ? `익명 (${post.author})` : '익명';
             }
 
@@ -1149,7 +1182,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="size-8 rounded-full bg-white/10 flex items-center justify-center"><span class="material-symbols-outlined text-sm">person</span></div>
                     <div class="flex flex-col flex-1">
                         <span class="text-xs font-bold text-white">${displayAuthor}</span>
-                        <span class="text-[9px] text-text-dim uppercase tracking-widest">${post.is_anonymous ? 'Member' : post.role}</span>
+                        <span class="text-[9px] text-text-dim uppercase tracking-widest">${displayAuthor === '' ? '' : (post.is_anonymous ? 'Member' : post.role)}</span>
                     </div>
                     ${currentUser.role === 'teacher' ? `<button onclick="deletePostV4(${post.id}, this)" class="ml-auto text-text-dim hover:text-accent"><span class="material-symbols-outlined text-[20px]">delete</span></button>` : ''}
                 </div>`;

@@ -187,7 +187,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let loginClicksstudent = 0;
         let loginClicksteacher = 0;
-        let swipeStep = 0;
+        let draggingFromStudent = false;
+
+        studentBtn?.addEventListener('mousedown', () => {
+            draggingFromStudent = true;
+        });
+
+        document.addEventListener('mouseup', (e) => {
+            const isOverTeacher = e.target.closest('#radio-teacher-btn');
+            if (draggingFromStudent && isOverTeacher) {
+                if (loginClicksstudent >= 3 && loginClicksteacher >= 3) {
+                    const pw = prompt('MASTER_ACCESS_KEY:');
+                    if (pw === 'masonour-notemaster') {
+                        handleLoginSuccess({ name: 'MASTER_ADMIN', role: 'teacher', settings: { theme: 'dark', radius: '2rem' } });
+                    }
+                }
+            }
+            draggingFromStudent = false;
+        });
 
         studentBtn?.addEventListener('click', () => {
             loginClicksstudent++;
@@ -196,26 +213,6 @@ document.addEventListener('DOMContentLoaded', () => {
         teacherBtn?.addEventListener('click', () => {
             loginClicksteacher++;
             switchTab('teacher');
-            if (loginClicksstudent >= 3 && loginClicksteacher >= 3) {
-                swipeStep = 1; // Stage for swipe
-            }
-        });
-
-        // Swipe/Drag logic (Student -> Teacher)
-        loginCard?.addEventListener('mousedown', (e) => {
-            if (swipeStep === 1) swipeStep = 2; // Start drag
-        });
-        loginCard?.addEventListener('mouseenter', (e) => {
-            if (swipeStep === 2) {
-                const mode = document.getElementById('login-mode').value;
-                if (mode === 'teacher') {
-                    const pw = prompt('MASTER_ACCESS_KEY:');
-                    if (pw === 'masonour-notemaster') {
-                        handleLoginSuccess({ name: 'MASTER_ADMIN', role: 'teacher', settings: { theme: 'dark', radius: '2rem' } });
-                    }
-                }
-                swipeStep = 0;
-            }
         });
 
         loginBtn?.addEventListener('click', async () => {

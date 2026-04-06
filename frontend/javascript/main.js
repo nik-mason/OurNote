@@ -829,21 +829,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 const cats = await res.json();
                 container.innerHTML = '';
                 
-                cats.forEach(cat => {
+                // Prevent showing core categories if they exist in the DB (duplicates)
+                const coreIds = ['notice', 'event', 'homework'];
+                const filteredCats = cats.filter(c => !coreIds.includes(c.id));
+                
+                filteredCats.forEach(cat => {
                     const link = document.createElement('a');
                     link.href = '#';
                     link.className = `nav-link ${currentCategory === cat.id ? 'active' : ''}`;
                     const icon = cat.icon || 'forum';
                     
-                    // Protected Category IDs that cannot be deleted
-                    const protectedIds = ['notice', 'event', 'homework', 'all'];
-                    const isProtected = protectedIds.includes(cat.id);
-                    
                     link.innerHTML = `
                         <span class="material-symbols-outlined">${icon}</span>
                         <div class="flex flex-1 items-center justify-between">
                             <span>${cat.name}</span>
-                            ${(currentUser.role === 'teacher' && !isProtected) ? `
+                            ${currentUser.role === 'teacher' ? `
                                 <button class="delete-room-btn size-5 opacity-0 group-hover:opacity-100 hover:text-accent transition-all" data-id="${cat.id}">
                                     <span class="material-symbols-outlined text-[14px]">delete</span>
                                 </button>
@@ -868,7 +868,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const writeModalOptions = document.getElementById('custom-category-options');
                 if (writeModalOptions) {
                     writeModalOptions.querySelectorAll('[data-dynamic="true"]').forEach(el => el.remove());
-                    cats.forEach(cat => {
+                    filteredCats.forEach(cat => {
                         const opt = document.createElement('div');
                         opt.className = 'custom-option p-4 hover:bg-primary transition-colors cursor-pointer border-t border-white/5';
                         opt.dataset.value = cat.id;
@@ -911,7 +911,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             const staticLink = document.querySelector(`.nav-link[data-cat="${id}"]`);
             if (staticLink) staticLink.classList.add('active');
-            refreshCategories();
+            // refreshCategories(); <-- MOVED to prevent recursion
             loadPosts();
         };
 

@@ -1147,13 +1147,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>`;
             });
 
+            const isLongPost = post.content.length > 200;
+            const contentHtml = post.content.replace(/\n/g, '<br>');
+            
             card.innerHTML = `
                 <div class="flex justify-between items-start mb-6">
                     <span class="px-4 py-1.5 rounded-full bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest">${post.category}</span>
                     <span class="text-xs text-text-dim">${post.date}</span>
                 </div>
                 <h3 class="post-title-v4 text-white">${post.title}</h3>
-                <p class="text-text-dim line-clamp-4 mb-4">${post.content}</p>
+                <div class="post-content-container mb-4">
+                    <p class="post-body text-text-dim text-lg leading-relaxed ${isLongPost ? 'line-clamp-4' : ''}">${contentHtml}</p>
+                    ${isLongPost ? `
+                        <button onclick="togglePostText(this)" class="mt-2 text-xs font-bold text-primary hover:text-white transition-colors flex items-center gap-1">
+                            <span>더보기</span>
+                            <span class="material-symbols-outlined text-[14px]">expand_more</span>
+                        </button>
+                    ` : ''}
+                </div>
                 ${post.image_url ? `<img src="${post.image_url}" class="w-full max-h-60 object-contain rounded-xl border border-white/10 mb-4" onerror="this.style.display='none'">` : ''}
                 
                 <div class="flex items-center gap-4 py-3 border-t border-b border-white/5 mb-3">
@@ -1587,4 +1598,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
     }
+
+    window.togglePostText = (btn) => {
+        const textEl = btn.parentElement.querySelector('.post-body');
+        const isCollapsed = textEl.classList.contains('line-clamp-4');
+        
+        if (isCollapsed) {
+            textEl.classList.remove('line-clamp-4');
+            btn.querySelector('span:first-child').textContent = '접기';
+            btn.querySelector('.material-symbols-outlined').textContent = 'expand_less';
+        } else {
+            textEl.classList.add('line-clamp-4');
+            btn.querySelector('span:first-child').textContent = '더보기';
+            btn.querySelector('.material-symbols-outlined').textContent = 'expand_more';
+        }
+    };
 });

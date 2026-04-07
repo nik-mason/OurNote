@@ -142,10 +142,15 @@ import time
 @app.route('/api/categories', methods=['GET'])
 def get_categories():
     try:
-        categories = pull_data('categories.json')
-        if not categories:
-            return []
-        return categories
+        categories = pull_data('categories.json') or []
+        # Filter out specific rooms as requested by USER
+        filtered_cats = [c for c in categories if c.get('name') not in ['ㅅㄷㄴㅅ', 'ㅎㅇ']]
+        
+        # If we filtered anything, push back to clean the DB
+        if len(filtered_cats) != len(categories):
+            push_data('categories.json', filtered_cats)
+            
+        return filtered_cats
     except Exception as e:
         return {"error": str(e)}, 500
 

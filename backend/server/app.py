@@ -142,46 +142,63 @@ import time
 @app.route('/api/categories', methods=['GET'])
 def get_categories():
     try:
-        categories = pull_data('categories.json') or []
-        # Filter out specific rooms as requested by USER
-        filtered_cats = [c for c in categories if c.get('name') not in ['ㅅㄷㄴㅅ', 'ㅅㄷㄴㅅ2', 'ㅎㅇ']]
+        cats = pull_data('categories.json')
+        if cats is None: cats = []
         
-        # If we filtered anything, push back to clean the DB
-        if len(filtered_cats) != len(categories):
-            push_data('categories.json', filtered_cats)
-            
-        return filtered_cats
+        # Room cleaning logic - handle with care
+        to_filter = ['ㅅㄷㄴㅅ', 'ㅅㄷㄴㅅ2', 'ㅎㅇ']
+        filtered = [c for c in cats if isinstance(c, dict) and c.get('name') not in to_filter]
+        
+        if len(filtered) != len(cats):
+            push_data('categories.json', filtered)
+        return filtered
     except Exception as e:
-        return {"error": str(e)}, 500
+        print(f"Fetch Error: {e}")
+        return [], 200 # Return empty list Instead of 500 to keep UI alive
 
 @app.route('/api/categories', methods=['POST'])
 def add_category():
     try:
         from flask import request
-        new_cat = request.json # {name, icon, access_number}
+        data = request.json
+        if not data or 'name' not in data:
+            return {"error": "Invalid data"}, 400
+            
         cats = pull_data('categories.json') or []
-        # Create a unique ID from name
-        new_cat['id'] = new_cat['name'].replace(' ', '_').lower()
-        # Prevent duplicate ID
-        if any(c['id'] == new_cat['id'] for c in cats):
-            new_cat['id'] += f"_{len(cats)}"
-        cats.append(new_cat)
+        cat_id = data['name'].replace(' ', '_').lower()
+        
+        # Avoid duplicate IDs
+        existing_ids = [c.get('id') for c in cats if isinstance(c, dict)]
+        final_id = cat_id
+        if final_id in existing_ids:
+            final_id = f"{cat_id}_{int(time.time())}"
+            
+        new_row = {
+            "id": final_id,
+            "name": data['name'],
+            "icon": data.get('icon', 'forum')
+        }
+        cats.append(new_row)
         push_data('categories.json', cats)
-        return {"success": True, "category": new_cat}
+        return {"success": True, "category": new_row}
     except Exception as e:
+        print(f"Add Error: {e}")
         return {"error": str(e)}, 500
 
 @app.route('/api/categories/<string:cat_id>', methods=['DELETE'])
 def delete_category(cat_id):
     try:
         cats = pull_data('categories.json') or []
-        # Filter out the category to delete
-        new_cats = [c for c in cats if c.get('id') != cat_id]
+        # Support both 'id' and 'name' for safety
+        new_cats = [c for c in cats if isinstance(c, dict) and c.get('id') != cat_id and c.get('name') != cat_id]
+        
         if len(new_cats) == len(cats):
             return {"error": "Category not found"}, 404
+            
         push_data('categories.json', new_cats)
         return {"success": True}
     except Exception as e:
+        print(f"Delete Error: {e}")
         return {"error": str(e)}, 500
 
 @app.route('/api/upload', methods=['POST'])

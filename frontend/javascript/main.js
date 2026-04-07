@@ -448,28 +448,16 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        document.getElementById('nav-mobile')?.addEventListener('click', () => {
+        document.getElementById('nav-mobile')?.addEventListener('click', (e) => {
+            e.preventDefault();
             const productionURL = "https://our-note.vercel.app";
             const qrImg = document.getElementById('qr-code-img');
-            qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(productionURL)}`;
-            document.getElementById('mobile-link-text').textContent = productionURL;
+            if (qrImg) qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(productionURL)}&color=0078d7&bgcolor=ffffff`;
             
-            // Exclusive Access for ID 12 (서민준) - TRIPLE CLICK TRIGGER
-            const secretInput = document.getElementById('master-secret-input');
-            if (secretInput) {
-                secretInput.classList.add('hidden'); // Ensure hidden initially
-                let clickCount = 0;
-                qrImg.onclick = () => {
-                    if (String(currentUser.id) === "12") {
-                        clickCount++;
-                        if (clickCount === 3) {
-                            secretInput.classList.remove('hidden');
-                            secretInput.focus();
-                            showToast('SECRET_LINK_ESTABLISHED...', 'info');
-                        }
-                    }
-                };
-            }
+            const linkText = document.getElementById('mobile-link-text');
+            if (linkText) linkText.textContent = productionURL;
+            
+            document.getElementById('mobile-modal')?.classList.remove('hidden');
         });
 
         // Master Secret Trigger - CINEMATIC SEQUENCE

@@ -187,6 +187,18 @@ body {
     box-shadow: 0 15px 40px var(--primary-glow);
 }
 
+/* Specific Mobile Modal Fix - Ensure Perfect Centering */
+#mobile-modal.fixed {
+    display: none; /* Controlled by JS class toggle */
+    z-index: 2000 !important;
+}
+
+#mobile-modal:not(.hidden) {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+}
+
 /* Sidebar Overlay (mobile) */
 .sidebar-overlay {
     position: fixed;

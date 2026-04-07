@@ -215,78 +215,6 @@ document.addEventListener('DOMContentLoaded', () => {
             switchTab('teacher');
         });
 
-        const STUDENT_COLOR_KEYS = {
-            "01": ["red", "yellow", "blue"], "02": ["orange", "green", "black"], "03": ["purple", "white", "red"],
-            "04": ["yellow", "blue", "purple"], "05": ["white", "orange", "green"], "06": ["black", "red", "yellow"],
-            "12": ["blue", "red", "orange"], "07": ["blue", "purple", "white"], "08": ["green", "orange", "black"],
-            "09": ["red", "green", "blue"], "10": ["purple", "yellow", "orange"], "11": ["black", "white", "green"],
-            "13": ["yellow", "purple", "black"], "14": ["white", "yellow", "green"], "15": ["orange", "red", "purple"],
-            "16": ["green", "blue", "black"], "17": ["red", "white", "yellow"], "18": ["blue", "orange", "purple"],
-            "19": ["purple", "green", "red"], "20": ["yellow", "black", "white"], "21": ["orange", "blue", "green"],
-            "22": ["green", "purple", "yellow"], "23": ["white", "red", "black"], "24": ["black", "orange", "blue"],
-            "25": ["purple", "white", "green"], "26": ["red", "yellow", "orange"]
-        };
-
-        const startColorAuth = (student) => {
-            const modal = document.getElementById('color-auth-modal');
-            const display = document.getElementById('color-input-display');
-            const attemptsEl = document.getElementById('auth-attempts');
-            modal.classList.remove('hidden');
-            
-            let currentColorInput = [];
-            let attempts = 3;
-            const targetKey = STUDENT_COLOR_KEYS[String(student.id).padStart(2, '0')] || ["red", "red", "red"];
-
-            const updateDisplay = () => {
-                display.innerHTML = '';
-                for (let i = 0; i < 3; i++) {
-                    const dot = document.createElement('div');
-                    dot.className = `size-6 rounded-full border-2 border-white/20 transition-all duration-300`;
-                    if (currentColorInput[i]) {
-                        dot.style.backgroundColor = getHex(currentColorInput[i]);
-                        dot.style.borderColor = 'transparent';
-                        dot.style.transform = 'scale(1.2)';
-                    }
-                    display.appendChild(dot);
-                }
-            };
-
-            const getHex = (c) => {
-                const colors = { red: '#ff4b4b', orange: '#ff8c00', yellow: '#ffdb4d', green: '#4ade80', blue: '#3b82f6', purple: '#a855f7', black: '#1a1a1a', white: '#ffffff' };
-                return colors[c];
-            };
-
-            const buttons = modal.querySelectorAll('[data-color]');
-            buttons.forEach(btn => {
-                btn.onclick = async () => {
-                    if (currentColorInput.length < 3) {
-                        currentColorInput.push(btn.dataset.color);
-                        updateDisplay();
-                        
-                        if (currentColorInput.length === 3) {
-                            if (JSON.stringify(currentColorInput) === JSON.stringify(targetKey)) {
-                                showToast('인증 성공! ✨');
-                                setTimeout(() => handleLoginSuccess(student), 500);
-                            } else {
-                                attempts--;
-                                if (attempts > 0) {
-                                    showToast(`인증 실패! 남은 기회: ${attempts}번`, 'error');
-                                    attemptsEl.textContent = `기회: ${attempts}번`;
-                                    currentColorInput = [];
-                                    setTimeout(updateDisplay, 500);
-                                } else {
-                                    showToast('인증 횟수 초과! 처음부터 다시 하세요.', 'error');
-                                    location.reload();
-                                }
-                            }
-                        }
-                    }
-                };
-            });
-
-            document.getElementById('cancel-color-auth').onclick = () => location.reload();
-        };
-
         loginBtn?.addEventListener('click', async () => {
             const mode = modeInput.value;
             loginBtn.disabled = true;
@@ -306,8 +234,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     );
                     
                     if (student) {
-                        // Color Auth Trigger
-                        startColorAuth({ name: student.name, role: 'student', id: student.id, settings: student.settings || null });
+                        // Direct Login without Color Auth
+                        handleLoginSuccess({ name: student.name, role: 'student', id: student.id, settings: student.settings || null });
                     } else throw new Error('학생 정보를 찾을 수 없습니다.');
                 } else {
                     const id = document.getElementById('teacher-id').value.trim();

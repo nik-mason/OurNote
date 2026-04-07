@@ -1271,6 +1271,31 @@ body.dark-mode .card-footer {
 }
 
 /* Custom Dropdown Styling */
+.modal-v4 {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 999999 !important;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+}
+
+.modal-v4.active, .modal-v4:not(.hidden) {
+    display: flex !important;
+}
+
+.modal-overlay-v4 {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.85); /* Darker backdrop for focus */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
 .custom-select-container {
     position: relative;
     width: 100%;

@@ -144,7 +144,7 @@ def get_categories():
     try:
         categories = pull_data('categories.json') or []
         # Filter out specific rooms as requested by USER
-        filtered_cats = [c for c in categories if c.get('name') not in ['ㅅㄷㄴㅅ', 'ㅎㅇ']]
+        filtered_cats = [c for c in categories if c.get('name') not in ['ㅅㄷㄴㅅ', 'ㅅㄷㄴㅅ2', 'ㅎㅇ']]
         
         # If we filtered anything, push back to clean the DB
         if len(filtered_cats) != len(categories):

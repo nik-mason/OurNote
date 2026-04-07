@@ -160,23 +160,31 @@ body {
     margin-left: 0;
 }
 
-/* Mobile Hamburger */
+/* Mobile & Desktop Hamburger */
 .mobile-hamburger {
-    display: none;
+    display: flex; /* Visible on all screens now */
     position: fixed;
-    top: 1rem;
-    left: 1rem;
-    z-index: 300;
-    width: 44px;
-    height: 44px;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 180; /* Behind sidebar but above content */
+    width: 48px;
+    height: 48px;
     align-items: center;
     justify-content: center;
     background: var(--card-bg);
     backdrop-filter: blur(20px);
     border: 1px solid var(--glass-border);
-    border-radius: 12px;
+    border-radius: 16px;
     color: var(--text-white);
     cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.mobile-hamburger:hover {
+    transform: scale(1.05);
+    border-color: var(--primary);
+    box-shadow: 0 15px 40px var(--primary-glow);
 }
 
 /* Sidebar Overlay (mobile) */

@@ -329,24 +329,31 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (e) { showToast('변경 실패', 'error'); }
         });
 
-        // Modals
-        const setupModal = (modalId, triggerId, closeId) => {
+        // Simple Modal Toggle
+        const setupModalV4 = (modalId, triggerId, closeId) => {
             const modal = document.getElementById(modalId);
-            const overlay = modal?.querySelector('.modal-overlay');
-            const body = modal?.querySelector('.modal-v4');
-            document.getElementById(triggerId)?.addEventListener('click', () => {
-                modal.classList.remove('hidden');
-                setTimeout(() => { overlay.style.opacity = '1'; body.classList.add('active'); }, 10);
+            const trigger = document.getElementById(triggerId);
+            const closeBtn = document.getElementById(closeId);
+            const overlay = document.getElementById(`${modalId}-overlay`); // Optional individual overlay
+            
+            trigger?.addEventListener('click', () => {
+                modal?.classList.remove('hidden');
+                modal?.classList.add('active'); // CSS focus
             });
-            document.getElementById(closeId)?.addEventListener('click', () => {
-                body.classList.remove('active'); overlay.style.opacity = '0';
-                setTimeout(() => modal.classList.add('hidden'), 500);
-            });
+            
+            const close = () => {
+                modal?.classList.add('hidden');
+                modal?.classList.remove('active');
+            };
+            
+            closeBtn?.addEventListener('click', close);
+            overlay?.addEventListener('click', close);
         };
-        setupModal('mobile-modal', 'nav-mobile', 'close-mobile-modal');
-        setupModal('settings-modal', 'open-settings-modal', 'close-settings-modal');
-        setupModal('write-modal', 'open-write-modal', 'close-write-modal');
-        setupModal('write-modal', 'open-write-modal-sidebar', 'close-write-modal');
+
+        setupModalV4('mobile-modal', 'nav-mobile', 'close-mobile-modal');
+        setupModalV4('settings-modal', 'open-settings-modal', 'close-settings-modal');
+        setupModalV4('write-modal', 'open-write-modal', 'close-write-modal');
+        setupModalV4('write-modal', 'open-write-modal-sidebar', 'close-write-modal');
 
         // Custom Select Dropdown Logic
         const categoryTrigger = document.getElementById('custom-category-trigger');

@@ -932,6 +932,18 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (e) { showToast('서버 연결 실패', 'error'); }
         };
 
+        const deleteRoomV4 = async (id) => {
+            if (!confirm('해당 게시판을 영구 삭제하시겠습니까?')) return;
+            try {
+                const res = await fetch(`/api/categories/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    showToast('게시판이 삭제되었습니다. 🗑️');
+                    refreshCategories();
+                    if (currentCategory === id) switchCategory('all', '전체 메뉴');
+                }
+            } catch (e) { showToast('삭제 실패', 'error'); }
+        };
+
         const switchCategory = (id, name) => {
             currentCategory = id;
             const titleEl = document.getElementById('current-category-title');

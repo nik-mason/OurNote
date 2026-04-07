@@ -31,8 +31,6 @@ import json
 import tempfile
 import shutil
 import os
-from supabase import create_client, Client
-
 # Advanced Auto-detection for various Vercel/Supabase Integration name patterns
 SUPABASE_URL = ""
 SUPABASE_KEY = ""
@@ -53,6 +51,7 @@ if not SUPABASE_KEY:
     SUPABASE_KEY = (os.environ.get('SUPABASE_SERVICE_ROLE_KEY') or os.environ.get('SUPABASE_KEY') or os.environ.get('SUPABASE_ANON_KEY') or os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY') or "").strip()
 
 def get_db():
+    from supabase import create_client, Client
     if not SUPABASE_URL or not SUPABASE_KEY:
         raise ValueError("SUPABASE_URL or SUPABASE_KEY environment variables are missing from Vercel.")
     return create_client(SUPABASE_URL, SUPABASE_KEY)

@@ -103,13 +103,26 @@ def get_categories():
 
 @app.route('/api/categories', methods=['POST'])
 def add_category():
-    from flask import request
-    new_cat = request.json
-    cats = pull_data('categories.json') or []
-    new_cat['id'] = new_cat['name'].replace(' ', '_').lower()
-    cats.append(new_cat)
-    push_data('categories.json', cats)
-    return {"success": True}
+    try:
+        from flask import request
+        data = request.json
+        if not data or 'name' not in data:
+            return {"error": "Invalid data"}, 400
+            
+        cats = pull_data('categories.json') or []
+        # Create unique ID
+        cat_id = data['name'].replace(' ', '_').lower() + f"_{int(time.time())}"
+        
+        new_row = {
+            "id": cat_id,
+            "name": data['name'],
+            "icon": data.get('icon', 'forum')
+        }
+        cats.append(new_row)
+        push_data('categories.json', cats)
+        return {"success": True, "category": new_row}
+    except Exception as e:
+        return {"error": str(e)}, 500
 
 @app.route('/api/posts', methods=['POST'])
 def add_post():

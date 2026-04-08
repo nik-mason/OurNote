@@ -28,15 +28,29 @@ def serve_assets(filename):
 
 from supabase import create_client, Client
 
-# Autodetect Supabase Keys
-SUPABASE_URL = (os.environ.get('SUPABASE_URL') or os.environ.get('SUPABASE_REST_API_URL') or "").strip()
-SUPABASE_KEY = (os.environ.get('SUPABASE_SERVICE_ROLE_KEY') or os.environ.get('SUPABASE_KEY') or os.environ.get('SUPABASE_ANON_KEY') or "").strip()
+# Robust Supabase Configuration Detection
+def get_supabase_envs():
+    url = (os.environ.get('SUPABASE_URL') or os.environ.get('SUPABASE_REST_API_URL') or os.environ.get('NEXT_PUBLIC_SUPABASE_URL') or "").strip()
+    key = (os.environ.get('SUPABASE_SERVICE_ROLE_KEY') or os.environ.get('SUPABASE_KEY') or os.environ.get('SUPABASE_ANON_KEY') or os.environ.get('NEXT_PUBLIC_SUPABASE_ANON_KEY') or "").strip()
+    
+    # Fallback to scanning all env keys if not found (Vercel Integration sometimes uses suffixes)
+    if not url or not key:
+        for k, v in os.environ.items():
+            if k.endswith('_SUPABASE_URL'): url = v.strip()
+            if k.endswith('_SUPABASE_ANON_KEY') or k.endswith('_SUPABASE_SERVICE_ROLE_KEY'): key = v.strip()
+    
+    return url, key
+
+# Initialize global holders but use get_db for live checks
+SUPABASE_URL, SUPABASE_KEY = get_supabase_envs()
 
 def get_db():
-    if not SUPABASE_URL or not SUPABASE_KEY:
+    from supabase import create_client, Client
+    url, key = get_supabase_envs() # Re-verify inside function for safety
+    if not url or not key:
         return None
     try:
-        return create_client(SUPABASE_URL, SUPABASE_KEY)
+        return create_client(url, key)
     except: return None
 
 def pull_data(filename):

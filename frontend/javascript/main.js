@@ -48,35 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function initFlyingElements() {
-        const container = document.getElementById('flying-particles');
-        if (!container) return;
-
-        // Simplified, calmer splash effects
-        const fragment = document.createDocumentFragment();
-        for (let i = 0; i < 15; i++) { // Reduced count
-            const feather = document.createElement('div');
-            feather.className = 'feather';
-            const startX = Math.random() * 100 + 'vw';
-            feather.style.setProperty('--startX', startX);
-            feather.style.setProperty('--endX', (Math.random() * 60 - 30) + 'vw');
-            feather.style.setProperty('--duration', (Math.random() * 3 + 2.5) + 's'); // Slower
-            feather.style.animationDelay = Math.random() * 2 + 's';
-            fragment.appendChild(feather);
-        }
-
-        for (let i = 0; i < 5; i++) { // Reduced count
-            const streak = document.createElement('div');
-            streak.className = 'light-streak';
-            const top = Math.random() * 100 + 'vh';
-            streak.style.setProperty('--top', top);
-            streak.style.setProperty('--midTop', (parseFloat(top) + (Math.random() * 10 - 5)) + 'vh');
-            streak.style.setProperty('--endTop', (parseFloat(top) + (Math.random() * 20 - 10)) + 'vh');
-            streak.style.setProperty('--angle', (Math.random() * 20 - 10) + 'deg');
-            streak.style.setProperty('--duration', (Math.random() * 0.8 + 0.6) + 's');
-            streak.style.animationDelay = Math.random() * 2 + 's';
-            fragment.appendChild(streak);
-        }
-        container.appendChild(fragment);
+        // Extreme minimalism: No particles, just a clean focus on the logo.
+        return;
     }
 
     // --- 1. CUSTOM CURSOR ENGINE ---

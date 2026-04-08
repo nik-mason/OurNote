@@ -302,7 +302,55 @@ document.addEventListener('DOMContentLoaded', () => {
             } catch (e) { showToast('변경 실패', 'error'); }
         });
 
-        // Modals
+        // Load and Render Categories
+        const sidebarNav = document.getElementById('sidebar-nav');
+        async function loadCategories() {
+            try {
+                const res = await fetch('/api/categories');
+                const cats = await res.json();
+                
+                // Keep static items (Dashboard, Divider, etc) and append dynamic ones
+                const staticItems = Array.from(sidebarNav.querySelectorAll('.static-nav'));
+                sidebarNav.innerHTML = '';
+                staticItems.forEach(item => sidebarNav.appendChild(item));
+
+                cats.forEach(cat => {
+                    const link = document.createElement('a');
+                    link.href = "#";
+                    link.className = "nav-link group relative flex items-center justify-between px-6 py-4 rounded-2xl transition-all duration-300 hover:bg-white/10";
+                    link.id = `nav-${cat.id}`;
+                    
+                    link.innerHTML = `
+                        <div class="flex items-center gap-4">
+                            <span class="material-symbols-outlined text-text-dim group-hover:text-primary transition-colors">${cat.icon || 'forum'}</span>
+                            <span class="font-bold tracking-tighter text-text-dim group-hover:text-white transition-colors">${cat.name}</span>
+                        </div>
+                        ${currentUser.role === 'teacher' ? `
+                            <button onclick="event.stopPropagation(); window.deleteRoomV4('${cat.id}', '${cat.name}')" 
+                                class="size-8 rounded-lg bg-red-500/10 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 hover:text-white flex items-center justify-center">
+                                <span class="material-symbols-outlined text-sm">close</span>
+                            </button>
+                        ` : ''}
+                    `;
+
+                    link.onclick = (e) => {
+                        e.preventDefault();
+                        const mainArea = document.querySelector('.content-area');
+                        mainArea.classList.add('page-transition-active');
+                        setTimeout(() => {
+                            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                            link.classList.add('active');
+                            currentCategory = cat.id;
+                            document.getElementById('current-category-title').textContent = cat.name;
+                            loadPosts();
+                            setTimeout(() => mainArea.classList.remove('page-transition-active'), 600);
+                        }, 400);
+                    };
+                    sidebarNav.appendChild(link);
+                });
+            } catch (e) { console.error('Failed to load cats', e); }
+        }
+        loadCategories();
         const setupModal = (modalId, triggerId, closeId) => {
             const modal = document.getElementById(modalId);
             const overlay = modal?.querySelector('.modal-overlay') || document.getElementById(`close-${modalId}-overlay`);

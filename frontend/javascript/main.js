@@ -332,16 +332,18 @@ document.addEventListener('DOMContentLoaded', () => {
         // Modals
         const setupModal = (modalId, triggerId, closeId) => {
             const modal = document.getElementById(modalId);
-            const overlay = modal?.querySelector('.modal-overlay');
+            const overlay = modal?.querySelector('.modal-overlay') || document.getElementById(`close-${modalId}-overlay`);
             const body = modal?.querySelector('.modal-v4');
             document.getElementById(triggerId)?.addEventListener('click', () => {
                 modal.classList.remove('hidden');
                 setTimeout(() => { if(overlay) overlay.style.opacity = '1'; if(body) body.classList.add('active'); }, 10);
             });
-            document.getElementById(closeId)?.addEventListener('click', () => {
+            const close = () => {
                 if(body) body.classList.remove('active'); if(overlay) overlay.style.opacity = '0';
                 setTimeout(() => modal.classList.add('hidden'), 500);
-            });
+            };
+            document.getElementById(closeId)?.addEventListener('click', close);
+            overlay?.addEventListener('click', close);
         };
         setupModal('mobile-modal', 'nav-mobile', 'close-mobile-modal');
         setupModal('settings-modal', 'open-settings-modal', 'close-settings-modal');

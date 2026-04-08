@@ -4,11 +4,18 @@
 export function initSplash() {
     const splash = document.getElementById('splash-screen');
     if (splash) {
+        // Calmer, faster transition
         setTimeout(() => {
-            splash.classList.add('fade-out');
+            splash.style.transition = 'opacity 1s ease-out, visibility 1s';
+            splash.style.opacity = '0';
+            splash.style.visibility = 'hidden';
             document.body.classList.add('ready');
-            setTimeout(() => splash.remove(), 1200);
-        }, 3500);
+            
+            // Ensure it's removed from DOM after fade
+            setTimeout(() => {
+                if (splash.parentNode) splash.remove();
+            }, 1000);
+        }, 2000); // Wait for 2 seconds instead of 3.5
     } else {
         document.body.classList.add('ready');
     }

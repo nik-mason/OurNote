@@ -5,7 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OurNote - 대시보드</title>
-    <link rel="stylesheet" href="/frontend/css/style.css">
+    <!-- Modular CSS -->
+    <link rel="stylesheet" href="/frontend/css/modules/base.css">
+    <link rel="stylesheet" href="/frontend/css/modules/layout.css">
+    <link rel="stylesheet" href="/frontend/css/modules/components.css">
+    <link rel="stylesheet" href="/frontend/css/modules/modals.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" as="style" crossorigin
@@ -799,7 +803,7 @@
         <button id="abort-btn" class="px-20 py-10 bg-white text-red-700 text-4xl rounded-full">ABORT [0/10]</button>
     </div>
 
-    <script src="/frontend/javascript/main.js"></script>
+    <script type="module" src="/frontend/javascript/main.js"></script>
 
     <!-- Room Creation Modal (Teacher Only) -->
     <div id="room-modal" class="modal-v4 hidden" style="z-index:99999;">

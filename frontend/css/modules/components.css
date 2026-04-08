@@ -1,0 +1,72 @@
+/* ---------------------------------------------------------
+   OURNOTE COMPONENT STYLES (CARDS, BUTTONS, ETC)
+--------------------------------------------------------- */
+.ultra-glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.ultra-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--card-radius, 2rem);
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.ultra-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    border-color: var(--primary);
+    box-shadow: 0 20px 40px var(--primary-glow);
+    background: var(--glass-bg);
+}
+
+.mobile-hamburger {
+    display: flex;
+    position: fixed;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 180;
+    width: 48px;
+    height: 48px;
+    align-items: center;
+    justify-content: center;
+    background: var(--card-bg);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    color: var(--text-white);
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.mobile-hamburger:hover {
+    transform: scale(1.05);
+    border-color: var(--primary);
+    box-shadow: 0 15px 40px var(--primary-glow);
+}
+
+.liquid-btn {
+    position: relative;
+    overflow: hidden;
+    padding: 1.25rem 2.5rem;
+    border-radius: 1.5rem;
+    background: rgba(43, 140, 238, 0.15);
+    backdrop-filter: blur(20px) saturate(180%);
+    color: white;
+    font-weight: 900;
+    letter-spacing: -0.05em;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.4s ease;
+}
+
+.liquid-btn:hover {
+    background: var(--primary);
+    box-shadow: 0 20px 40px var(--primary-glow);
+    transform: translateY(-5px);
+}

@@ -1,0 +1,110 @@
+/* ---------------------------------------------------------
+   OURNOTE LAYOUT STYLES (SIDEBAR & CONTENT)
+--------------------------------------------------------- */
+.main-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar-v4, #sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+    background: var(--card-bg);
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    border-right: 1px solid var(--glass-border);
+    transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.sidebar-v4.collapsed {
+    transform: translateX(-100%);
+}
+
+.content-area {
+    margin-left: var(--sidebar-width);
+    flex: 1;
+    padding: 2rem;
+    transition: margin-left 0.4s ease;
+}
+
+.sidebar-v4.collapsed ~ .content-area {
+    margin-left: 0;
+}
+
+/* Sidebar Overlay (mobile) */
+.sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 450;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+}
+
+/* Sidebar Elements */
+.sidebar-logo {
+    padding: 3rem 1.5rem;
+    text-align: center;
+}
+
+.sidebar-logo h1 {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--primary), #ffffff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    text-decoration: none;
+    color: var(--text-dim);
+    border-radius: 1.25rem;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    background: rgba(43, 140, 238, 0.3);
+    backdrop-filter: blur(10px);
+    color: white;
+    box-shadow: 0 10px 20px var(--primary-glow);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    :root {
+        --sidebar-width: 280px;
+    }
+    .sidebar-v4, #sidebar {
+        transform: translateX(-100%);
+    }
+    .sidebar-v4.open {
+        transform: translateX(0);
+    }
+    .content-area {
+        margin-left: 0 !important;
+        padding: 1rem;
+        padding-top: 5.5rem;
+    }
+}

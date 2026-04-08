@@ -1589,4 +1589,20 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.querySelector('.material-symbols-outlined').textContent = 'expand_more';
         }
     };
+    window.deleteRoomV4 = async (catId, catName) => {
+        if (!confirm(`'${catName}' 방을 정말 영구 삭제할까요?\n삭제된 데이터는 복구할 수 없습니다.`)) return;
+
+        try {
+            const res = await fetch(`/api/categories/${catId}`, { method: 'DELETE' });
+            if (res.ok) {
+                showToast(`'${catName}' 방이 삭제되었습니다.`);
+                // Return to dashboard and refresh
+                location.href = '/dashboard';
+            } else {
+                showToast('삭제 실패', 'error');
+            }
+        } catch (e) {
+            showToast('서버 통신 에러', 'error');
+        }
+    };
 });

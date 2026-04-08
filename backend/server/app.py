@@ -124,6 +124,21 @@ def add_category():
     except Exception as e:
         return {"error": str(e)}, 500
 
+@app.route('/api/categories/<string:cat_id>', methods=['DELETE'])
+def delete_category(cat_id):
+    try:
+        cats = pull_data('categories.json') or []
+        # Filter out the category
+        new_cats = [c for c in cats if isinstance(c, dict) and c.get('id') != cat_id and c.get('name') != cat_id]
+        
+        if len(new_cats) == len(cats):
+            return {"error": "Category not found"}, 404
+            
+        push_data('categories.json', new_cats)
+        return {"success": True}
+    except Exception as e:
+        return {"error": str(e)}, 500
+
 @app.route('/api/posts', methods=['POST'])
 def add_post():
     from flask import request

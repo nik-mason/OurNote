@@ -46,12 +46,11 @@
             position: fixed;
             width: 600px;
             height: 600px;
-            border-radius: 50%;
-            filter: blur(120px);
-            z-index: -10;
-            opacity: 0.15;
+            background: radial-gradient(circle, rgba(43, 140, 238, 0.15) 0%, transparent 70%);
+            filter: blur(80px);
+            z-index: -1;
+            animation: moveSlowly 10s infinite alternate ease-in-out;
             pointer-events: none;
-            animation: moveSlowly 25s infinite alternate ease-in-out;
         }
 
         @keyframes moveSlowly {
@@ -64,6 +63,18 @@
             }
         }
     </style>
+    <script>
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                if (splash) {
+                    splash.style.opacity = '0';
+                    document.body.classList.add('ready');
+                    setTimeout(() => splash.remove(), 600);
+                }
+            }, 1000); // Lifeboat: Force end splash 1s after load
+        });
+    </script>
 </head>
 
 <body class="overflow-x-hidden font-body bg-deep">

@@ -138,5 +138,39 @@ def toggle_like(post_id):
             return {"success": True, "likes": p['likes']}
     return {"error": "Not found"}, 404
 
+@app.route('/api/upload', methods=['POST'])
+def upload_image():
+    try:
+        from flask import request
+        if 'image' not in request.files:
+            return {"success": False, "error": "No image file provided"}, 400
+            
+        file = request.files['image']
+        if file.filename == '':
+            return {"success": False, "error": "Empty filename"}, 400
+            
+        db = get_db()
+        if not db:
+            return {"success": False, "error": "Supabase Connection Missing"}, 500
+            
+        file_bytes = file.read()
+        file_ext = file.filename.split('.')[-1]
+        filename = f"post_{int(time.time())}.{file_ext}"
+        
+        mimetype = getattr(file, 'mimetype', None) or getattr(file, 'content_type', 'image/jpeg')
+        
+        try:
+            storage = db.storage.from_("images")
+            storage.upload(filename, file_bytes, {"content-type": mimetype})
+            
+            clean_url = f"{SUPABASE_URL}/storage/v1/object/public/images/{filename}"
+            final_url = f"{clean_url}?t={int(time.time())}"
+            return {"success": True, "url": final_url}
+        except Exception as storage_err:
+            return {"success": False, "error": f"Storage Error: {str(storage_err)}"}, 500
+            
+    except Exception as e:
+        return {"success": False, "error": str(e)}, 500
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

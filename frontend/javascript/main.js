@@ -6,6 +6,16 @@ import { state, showToast } from './modules/common.js';
 import { initSplash, initCursor, initParticles, setupModal } from './modules/ui.js';
 import { loadPosts } from './modules/posts.js';
 
+// GLOBAL FAILSAFE: Ensure splash disappears even if script fails
+setTimeout(() => {
+    const splash = document.getElementById('splash-screen');
+    if (splash) {
+        splash.style.opacity = '0';
+        setTimeout(() => splash.remove(), 500);
+        document.body.classList.add('ready');
+    }
+}, 3000);
+
 document.addEventListener('DOMContentLoaded', () => {
     // 1. Initialize UI Elements
     initSplash();

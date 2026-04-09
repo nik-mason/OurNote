@@ -5,6 +5,7 @@
 import { state, showToast } from './modules/common.js';
 import { initSplash, initCursor, initParticles, setupModal } from './modules/ui.js';
 import { loadPosts } from './modules/posts.js';
+import { initAuth } from './modules/auth.js';
 
 // GLOBAL FAILSAFE: Ensure splash disappears even if script fails
 setTimeout(() => {
@@ -21,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initSplash();
     initCursor();
     initParticles();
+    initAuth();
 
     // 2. Setup Modals
     if (state.isDashboard) {

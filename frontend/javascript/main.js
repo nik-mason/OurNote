@@ -6,7 +6,7 @@ import { state, showToast } from './modules/common.js';
 import { initSplash, initCursor, initParticles, setupModal, initSidebar } from './modules/ui.js';
 import { loadPosts } from './modules/posts.js';
 import { initAuth } from './modules/auth.js';
-import { initNavigation } from './modules/navigation.js';
+import { initNavigation, setupRoomCreation } from './modules/navigation.js';
 
 // GLOBAL FAILSAFE: Ensure splash disappears even if script fails
 setTimeout(() => {
@@ -47,7 +47,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (state.currentUser?.role === 'teacher') {
             document.querySelectorAll('.hidden-by-role').forEach(el => el.classList.remove('hidden-by-role'));
             document.getElementById('btn-add-room')?.classList.remove('hidden');
-            setupModal('room-modal', 'btn-add-room', 'close-room-modal'); // Assuming IDs exist
+            setupModal('room-modal', 'btn-add-room', 'close-room-modal');
+            setupRoomCreation();
         }
     }
 

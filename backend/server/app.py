@@ -127,6 +127,9 @@ def add_category():
 @app.route('/api/categories/<string:cat_id>', methods=['DELETE'])
 def delete_category(cat_id):
     try:
+        import urllib.parse
+        cat_id = urllib.parse.unquote(cat_id)
+        
         cats = pull_data('categories.json') or []
         # Filter out the category
         new_cats = [c for c in cats if isinstance(c, dict) and c.get('id') != cat_id and c.get('name') != cat_id]

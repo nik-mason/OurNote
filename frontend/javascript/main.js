@@ -3,9 +3,10 @@
  * Final integrated entry point.
  */
 import { state, showToast } from './modules/common.js';
-import { initSplash, initCursor, initParticles, setupModal } from './modules/ui.js';
+import { initSplash, initCursor, initParticles, setupModal, initSidebar } from './modules/ui.js';
 import { loadPosts } from './modules/posts.js';
 import { initAuth } from './modules/auth.js';
+import { initNavigation } from './modules/navigation.js';
 
 // GLOBAL FAILSAFE: Ensure splash disappears even if script fails
 setTimeout(() => {
@@ -23,12 +24,15 @@ document.addEventListener('DOMContentLoaded', () => {
     initCursor();
     initParticles();
     initAuth();
+    initSidebar();
+    initNavigation();
 
     // 2. Setup Modals
     if (state.isDashboard) {
         setupModal('mobile-modal', 'nav-mobile', 'close-mobile-modal');
         setupModal('settings-modal', 'open-settings-modal', 'close-settings-modal');
         setupModal('write-modal', 'open-write-modal', 'close-write-modal');
+        setupModal('write-modal', 'open-write-modal-sidebar', 'close-write-modal');
         
         // Load initial data
         loadPosts();
@@ -37,6 +41,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const usernameDisplay = document.getElementById('display-username');
         if (usernameDisplay && state.currentUser) {
             usernameDisplay.textContent = state.currentUser.name;
+        }
+
+        // Teacher-only features
+        if (state.currentUser?.role === 'teacher') {
+            document.querySelectorAll('.hidden-by-role').forEach(el => el.classList.remove('hidden-by-role'));
+            document.getElementById('btn-add-room')?.classList.remove('hidden');
+            setupModal('room-modal', 'btn-add-room', 'close-room-modal'); // Assuming IDs exist
         }
     }
 

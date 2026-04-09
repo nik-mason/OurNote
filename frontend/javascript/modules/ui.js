@@ -97,3 +97,28 @@ export function setupModal(modalId, triggerId, closeId) {
     document.getElementById(closeId)?.addEventListener('click', close);
     overlay?.addEventListener('click', close);
 }
+
+export function initSidebar() {
+    const hamburger = document.getElementById('mobile-hamburger');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    const closeBtn = document.getElementById('sidebar-close');
+
+    const toggle = () => {
+        sidebar?.classList.toggle('open');
+        overlay?.classList.toggle('hidden');
+    };
+
+    hamburger?.addEventListener('click', toggle);
+    overlay?.addEventListener('click', toggle);
+    closeBtn?.addEventListener('click', toggle);
+
+    // Close on link click (mobile)
+    sidebar?.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                toggle();
+            }
+        });
+    });
+}

@@ -44,8 +44,14 @@ export async function loadCategories() {
         const cats = await res.json();
         
         container.innerHTML = '';
+        const writeModalOptions = document.getElementById('custom-category-options');
+        const dynamicWriteOptions = writeModalOptions ? Array.from(writeModalOptions.querySelectorAll('.dynamic-option')) : [];
+        dynamicWriteOptions.forEach(opt => opt.remove());
+
         cats.forEach(cat => {
             const isTeacher = state.currentUser?.role === 'teacher';
+            
+            // Sidebar Navigation
             const link = document.createElement('a');
             link.href = '#';
             link.className = 'nav-link flex justify-between group';
@@ -75,6 +81,20 @@ export async function loadCategories() {
             });
             
             container.appendChild(link);
+
+            // Write Modal Categories
+            if (writeModalOptions) {
+                const opt = document.createElement('div');
+                opt.className = 'custom-option dynamic-option p-4 hover:bg-primary transition-colors cursor-pointer';
+                opt.setAttribute('data-value', cat.id);
+                opt.innerHTML = `<span>💬 ${cat.name}</span>`;
+                opt.addEventListener('click', () => {
+                    document.getElementById('selected-category-text').textContent = `💬 ${cat.name}`;
+                    document.getElementById('post-category').value = cat.id;
+                    writeModalOptions.classList.add('hidden');
+                });
+                writeModalOptions.appendChild(opt);
+            }
         });
     } catch (err) {
         console.error('Failed to load categories', err);

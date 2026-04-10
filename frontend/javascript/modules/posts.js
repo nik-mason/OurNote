@@ -68,5 +68,133 @@ export function renderHomework(hws) {
 }
 
 window.toggleLikeV4 = async (postId, btn) => {
-    // Like logic...
+    try {
+        const res = await fetch(`/api/posts/${postId}/like`, { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            const span = btn.querySelector('span:last-child');
+            if (span) span.textContent = data.likes;
+            btn.classList.add('text-red-400');
+            btn.classList.remove('text-text-dim');
+            btn.querySelector('.material-symbols-outlined').textContent = 'favorite';
+        }
+    } catch (err) {
+        showToast('좋아요 처리에 실패했습니다.', 'error');
+    }
 };
+
+export function initPostForm() {
+    const submitBtn = document.getElementById('submit-post');
+    if (!submitBtn) return;
+
+    // Toggle Category specific fields
+    const catTrigger = document.getElementById('custom-category-trigger');
+    const catOptions = document.getElementById('custom-category-options');
+    const catInput = document.getElementById('post-category');
+    
+    if (catTrigger && catOptions) {
+        catTrigger.addEventListener('click', () => catOptions.classList.toggle('hidden'));
+        catOptions.querySelectorAll('.custom-option').forEach(opt => {
+            opt.addEventListener('click', () => {
+                const val = opt.getAttribute('data-value');
+                const text = opt.textContent;
+                document.getElementById('selected-category-text').textContent = text;
+                catInput.value = val;
+                catOptions.classList.add('hidden');
+                
+                // Show/Hide homework target container
+                const hwTarget = document.getElementById('homework-target-container');
+                const hwTasks = document.getElementById('homework-tasks-container');
+                if (val === 'homework') {
+                    hwTarget?.classList.remove('hidden');
+                    hwTasks?.classList.remove('hidden');
+                } else {
+                    hwTarget?.classList.add('hidden');
+                    hwTasks?.classList.add('hidden');
+                }
+            });
+        });
+    }
+
+    // Modal click-outside
+    document.addEventListener('click', (e) => {
+        if (!catTrigger?.contains(e.target)) catOptions?.classList.add('hidden');
+    });
+
+    // Image Preview
+    const imageInput = document.getElementById('post-image');
+    imageInput?.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        const preview = document.getElementById('image-preview');
+        if (file && preview) {
+            const reader = new FileReader();
+            reader.onload = (re) => {
+                preview.src = re.target.result;
+                preview.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    submitBtn.addEventListener('click', async () => {
+        const title = document.getElementById('post-title')?.value.trim();
+        const content = document.getElementById('post-content')?.value.trim();
+        const category = catInput.value;
+        const isAnonymous = document.getElementById('post-anonymous')?.checked;
+        const imageFile = imageInput?.files[0];
+
+        if (!title || !content) {
+            showToast('제목과 내용을 모두 입력해주세요.', 'error');
+            return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span>';
+
+        try {
+            let imageUrl = '';
+            if (imageFile) {
+                const formData = new FormData();
+                formData.append('image', imageFile);
+                const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData });
+                const uploadData = await uploadRes.json();
+                if (uploadData.success) imageUrl = uploadData.url;
+            }
+
+            const endpoint = category === 'homework' ? '/api/homework' : '/api/posts';
+            const payload = {
+                title, content, category, 
+                author: state.currentUser.name,
+                is_anonymous: isAnonymous,
+                image_url: imageUrl,
+                student_id: state.currentUser.id
+            };
+
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                showToast('이야기가 등록되었습니다! ✨');
+                // Reset form
+                document.getElementById('post-title').value = '';
+                document.getElementById('post-content').value = '';
+                document.getElementById('image-preview').classList.add('hidden');
+                imageInput.value = '';
+                // Close modal
+                const modal = document.getElementById('write-modal');
+                if(modal) modal.classList.add('hidden');
+                loadPosts();
+            } else {
+                showToast('게시물 등록에 실패했습니다.', 'error');
+            }
+        } catch (err) {
+            showToast('서버 오류가 발생했습니다.', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '게시물 등록하기';
+        }
+    });
+}

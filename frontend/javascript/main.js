@@ -4,7 +4,7 @@
  */
 import { state, showToast } from './modules/common.js';
 import { initSplash, initCursor, initParticles, setupModal, initSidebar } from './modules/ui.js';
-import { loadPosts } from './modules/posts.js';
+import { loadPosts, initPostForm } from './modules/posts.js';
 import { initAuth } from './modules/auth.js';
 import { initNavigation, setupRoomCreation } from './modules/navigation.js';
 
@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Load initial data
         loadPosts();
+        initPostForm();
         
         // Display user name
         const usernameDisplay = document.getElementById('display-username');

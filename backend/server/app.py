@@ -178,9 +178,33 @@ def toggle_like(post_id):
     posts = pull_data('posts.json')
     for p in posts:
         if p['id'] == post_id:
-            p['likes'] = (p.get('likes') or 0) + 1
+            # Handle likes as array or number
+            if isinstance(p.get('likes'), list):
+                # If we want to track WHO liked it, this would be better but for now let's stick to count as requested by app logic
+                p['likes'] = len(p['likes']) + 1
+            else:
+                p['likes'] = (p.get('likes') or 0) + 1
             push_data('posts.json', posts)
             return {"success": True, "likes": p['likes']}
+    return {"error": "Not found"}, 404
+
+@app.route('/api/posts/<int:post_id>/comments', methods=['POST'])
+def add_comment(post_id):
+    from flask import request
+    data = request.json
+    posts = pull_data('posts.json')
+    for p in posts:
+        if p['id'] == post_id:
+            if 'comments' not in p: p['comments'] = []
+            new_comment = {
+                "id": int(time.time()),
+                "author": data.get('author', 'Anonymous'),
+                "content": data.get('content', ''),
+                "date": time.strftime('%Y-%m-%d %H:%M')
+            }
+            p['comments'].append(new_comment)
+            push_data('posts.json', posts)
+            return {"success": True, "comment": new_comment}
     return {"error": "Not found"}, 404
 
 @app.route('/api/upload', methods=['POST'])

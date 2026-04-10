@@ -32,31 +32,77 @@ export function renderPosts(posts) {
     }
 
     filtered.forEach((post, index) => {
-        const card = document.createElement('div');
-        card.className = 'ultra-card post-card-v4';
+        const card = document.createElement('article');
+        card.className = 'group ultra-card p-0 overflow-hidden flex flex-col hover:border-primary/30 transition-all cursor-default';
         card.style.transitionDelay = `${index * 0.1}s`;
         
-        let displayAuthor = post.author;
+        let displayAuthor = post.author || '익명 사용자';
         if (post.is_anonymous) {
-            displayAuthor = state.currentUser.role === 'teacher' ? `익명 (${post.author})` : '익명';
+            displayAuthor = state.currentUser?.role === 'teacher' ? `익명 (${post.author})` : '익명';
         }
 
-        const likes = post.likes || [];
-        const isLiked = likes.includes(String(state.currentUser.id || state.currentUser.name || ''));
+        const likes = Array.isArray(post.likes) ? post.likes : [];
+        const isLiked = likes.includes(String(state.currentUser?.id || state.currentUser?.name || ''));
+        const commentCount = post.comments ? post.comments.length : 0;
 
         card.innerHTML = `
-            <div class="flex justify-between items-start mb-6">
-                <span class="px-4 py-1.5 rounded-full bg-primary/20 text-primary text-[10px] font-black uppercase tracking-widest">${post.category}</span>
-                <span class="text-xs text-text-dim">${post.date}</span>
-            </div>
-            <h3 class="post-title-v4 text-white">${post.title}</h3>
-            <p class="post-body text-text-dim text-lg mb-4 line-clamp-4">${post.content.replace(/\n/g, '<br>')}</p>
-            ${post.image_url ? `<img src="${post.image_url}" class="w-full max-h-60 object-contain rounded-xl mb-4" onerror="this.style.display='none'">` : ''}
-            <div class="flex items-center gap-4 py-3 border-t border-white/5">
-                <button onclick="window.toggleLikeV4(${post.id}, this)" class="flex items-center gap-2 ${isLiked ? 'text-red-400' : 'text-text-dim'}">
-                    <span class="material-symbols-outlined">${isLiked ? 'favorite' : 'favorite_border'}</span>
-                    <span>${likes.length}</span>
-                </button>
+            <div class="p-6">
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="size-10 rounded-full bg-slate-100 flex items-center justify-center text-primary shrink-0 border border-white/10">
+                         <span class="material-symbols-outlined text-[20px]">person</span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                             <span class="text-xs font-bold text-primary px-2 py-0.5 rounded-md bg-primary/10 tracking-tight">${post.category}</span>
+                             <span class="text-[10px] text-text-dim opacity-50">•</span>
+                             <span class="text-[11px] text-text-dim">${post.date}</span>
+                        </div>
+                        <p class="text-[11px] font-bold text-white/70 truncate mt-0.5">${displayAuthor}</p>
+                    </div>
+                </div>
+
+                <h3 class="text-lg font-bold text-white mb-3 leading-snug group-hover:text-primary transition-colors">${post.title}</h3>
+                <p class="text-sm text-text-dim leading-relaxed mb-4 whitespace-pre-wrap">${post.content}</p>
+                
+                ${post.image_url ? `
+                    <div class="mb-4 rounded-xl overflow-hidden border border-white/5">
+                        <img src="${post.image_url}" class="w-full max-h-[400px] object-cover hover:scale-105 transition-transform duration-500">
+                    </div>
+                ` : ''}
+
+                <div class="flex items-center justify-between pt-4 border-t border-white/5">
+                    <div class="flex items-center gap-4">
+                        <button onclick="window.toggleLikeV4(${post.id}, this)" class="flex items-center gap-1.5 ${isLiked ? 'text-red-400' : 'text-text-dim'} hover:scale-110 transition-all">
+                            <span class="material-symbols-outlined text-[20px]">${isLiked ? 'favorite' : 'favorite_border'}</span>
+                            <span class="text-xs font-bold">${Array.isArray(post.likes) ? post.likes.length : (post.likes || 0)}</span>
+                        </button>
+                        <button onclick="window.toggleComments(${post.id})" class="flex items-center gap-1.5 text-text-dim hover:text-primary transition-all">
+                            <span class="material-symbols-outlined text-[20px]">chat_bubble</span>
+                            <span class="text-xs font-bold">${commentCount}</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Comment Section -->
+                <div id="comments-${post.id}" class="hidden mt-6 pt-6 border-t border-white/5 space-y-4">
+                    <div class="comments-list space-y-3">
+                        ${(post.comments || []).map(c => `
+                            <div class="bg-white/[0.03] p-4 rounded-2xl border border-white/5">
+                                <div class="flex justify-between items-center mb-1.5">
+                                    <span class="text-xs font-bold text-primary">${c.author}</span>
+                                    <span class="text-[9px] text-text-dim uppercase tracking-tighter">${c.date}</span>
+                                </div>
+                                <p class="text-sm text-white/90 leading-relaxed">${c.content}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="flex gap-2 mt-6">
+                        <input type="text" placeholder="공감과 따뜻한 댓글을 한 마디..." class="comment-input flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:border-primary/50 outline-none transition-all placeholder:text-white/20">
+                        <button onclick="window.submitComment(${post.id})" class="size-10 flex items-center justify-center bg-primary text-white rounded-xl shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
+                            <span class="material-symbols-outlined text-[18px]">send</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         `;
         container.appendChild(card);
@@ -66,6 +112,42 @@ export function renderPosts(posts) {
 export function renderHomework(hws) {
     // Homework rendering logic...
 }
+
+window.toggleComments = (postId) => {
+    const el = document.getElementById(`comments-${postId}`);
+    if (el) el.classList.toggle('hidden');
+};
+
+window.submitComment = async (postId) => {
+    const container = document.getElementById(`comments-${postId}`);
+    const input = container?.querySelector('.comment-input');
+    const content = input?.value.trim();
+    
+    if (!content) return;
+    
+    try {
+        const res = await fetch(`/api/posts/${postId}/comments`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                author: state.currentUser?.name || 'Anonymous',
+                content: content
+            })
+        });
+        
+        if (res.ok) {
+            input.value = '';
+            loadPosts(); // Refresh to show new comment
+            // Re-open comments after refresh
+            setTimeout(() => {
+                const newEl = document.getElementById(`comments-${postId}`);
+                if (newEl) newEl.classList.remove('hidden');
+            }, 500);
+        }
+    } catch (err) {
+        showToast('댓글 등록에 실패했습니다.', 'error');
+    }
+};
 
 window.toggleLikeV4 = async (postId, btn) => {
     try {

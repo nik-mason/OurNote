@@ -1,0 +1,58 @@
+<!-- AI Face Scan Security Layer -->
+<div id="face-scan-overlay" class="fixed inset-0 z-[1600] bg-white hidden flex flex-col items-center justify-center font-mono overflow-hidden">
+    <!-- HUD Elements -->
+    <div class="absolute top-10 left-10 text-primary/50 text-[10px] space-y-1">
+        <div>CORE_SYSTEM: STABLE</div>
+        <div>ENCRYPTION: 256-BIT-AES</div>
+    </div>
+    
+    <div class="absolute top-10 right-10 text-text-secondary text-[10px] cursor-help" id="bypass-trigger">
+        <div class="text-right">LOCAL_TIME: ONLINE</div>
+    </div>
+
+    <!-- Scanning Frame -->
+    <div class="relative size-80 flex items-center justify-center">
+        <div class="absolute inset-0 border-2 border-primary/20 rounded-full animate-pulse"></div>
+        <div id="scan-bar" class="absolute w-full h-1 bg-primary/40 top-0 left-0 animate-scan shadow-[0_0_15px_#2b8ce6]"></div>
+        <div class="size-60 rounded-full bg-slate-50 border border-slate-200 flex flex-col items-center justify-center p-8 text-center shadow-2xl">
+            <span class="material-symbols-outlined text-6xl text-primary animate-pulse mb-4">face_6</span>
+            <div class="text-xs font-black tracking-widest text-primary uppercase">Identifying Candidate...</div>
+        </div>
+        
+        <!-- Target Corners -->
+        <div class="absolute top-0 left-0 size-10 border-t-4 border-l-4 border-primary"></div>
+        <div class="absolute top-0 right-0 size-10 border-t-4 border-r-4 border-primary"></div>
+        <div class="absolute bottom-0 left-0 size-10 border-b-4 border-l-4 border-primary"></div>
+        <div class="absolute bottom-0 right-0 size-10 border-b-4 border-r-4 border-primary"></div>
+    </div>
+
+    <div class="mt-16 text-center space-y-4">
+        <div id="scan-status" class="text-2xl font-black italic tracking-tighter text-text-main animate-pulse">NEURAL_LINK_SYNCHRONIZING...</div>
+    </div>
+</div>
+
+<!-- Rhythm Lock Security Layer -->
+<div id="rhythm-lock-overlay" class="fixed inset-0 z-[1700] bg-slate-50 hidden flex flex-col items-center justify-center font-mono overflow-hidden">
+    <div class="mb-20 text-center">
+        <h4 class="text-3xl font-black italic tracking-tighter text-text-main animate-pulse">ACOUSTIC_SIGNATURE_REQUIRED</h4>
+    </div>
+    <div id="rhythm-circle" class="relative size-60 rounded-full bg-primary/10 border-4 border-primary shadow-xl flex items-center justify-center cursor-pointer active:scale-95 transition-transform">
+        <span class="material-symbols-outlined text-7xl text-primary">fingerprint</span>
+    </div>
+</div>
+
+<!-- Pattern Lock Security Layer -->
+<div id="pattern-lock-overlay" class="fixed inset-0 z-[1800] bg-white hidden flex flex-col items-center justify-center font-mono cursor-crosshair overflow-hidden">
+    <canvas id="pattern-canvas" class="size-full absolute inset-0 touch-none"></canvas>
+    <div class="absolute top-16 w-full text-center z-10 px-10">
+        <h4 class="text-3xl font-black text-primary italic uppercase">Trace the Mnemonic Core</h4>
+    </div>
+</div>
+
+<!-- BSOD Fake Recovery Layer -->
+<div id="bsod-overlay" class="fixed inset-0 z-[1900] bg-[#0078d7] hidden flex flex-col p-10 md:p-24 text-white font-sans overflow-hidden cursor-default">
+    <div class="text-[120px] mb-10 select-none">:(</div>
+    <div class="text-3xl md:text-5xl font-light max-w-4xl leading-tight mb-12 select-none">
+        Your PC ran into a problem and needs to restart...
+    </div>
+</div>

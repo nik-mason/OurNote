@@ -18,7 +18,10 @@ setTimeout(() => {
     }
 }, 3000);
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // 0. Load Components
+    await loadComponents();
+
     // 1. Initialize Global UI
     initSplash();
     initCursor();
@@ -36,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setupModal('settings-modal', 'open-settings-modal', 'close-settings-modal');
         setupModal('write-modal', 'open-write-modal', 'close-write-modal');
         setupModal('write-modal', 'open-write-modal-sidebar', 'close-write-modal');
+        setupModal('master-modal', 'xxx', 'close-master-modal'); // Placeholder for master trigger if any
         
         // Load initial data
         loadPosts();
@@ -57,11 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Global Logout Logic
-    document.getElementById('logout-btn')?.addEventListener('click', () => {
-        localStorage.removeItem('currentUser');
-        window.location.href = '/';
-    });
+
 
     // Register Service Worker
     if ('serviceWorker' in navigator) {
@@ -97,3 +97,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     installBtns.forEach(btn => btn.addEventListener('click', triggerInstall));
 });
+
+async function loadComponents() {
+    const components = [
+        { id: 'modal-container', files: ['write-modal.html', 'settings-modal.html', 'master-modal.html', 'mobile-modal.html', 'system-modals.html'] },
+        { id: 'security-container', files: ['security-layers.html', 'prank-layers.html'] }
+    ];
+
+    for (const group of components) {
+        const container = document.getElementById(group.id);
+        if (!container) continue;
+
+        for (const file of group.files) {
+            try {
+                const response = await fetch(`/frontend/html/components/${file}`);
+                const html = await response.text();
+                container.insertAdjacentHTML('beforeend', html);
+            } catch (err) {
+                console.error(`Failed to load component: ${file}`, err);
+            }
+        }
+    }
+}

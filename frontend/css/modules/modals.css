@@ -32,13 +32,13 @@
 }
 
 /* Fixed Centered Modals (New Standard) */
-#write-modal, #settings-modal, #room-modal, #password-modal {
+#write-modal, #settings-modal, #room-modal, #password-modal, #master-modal, #mobile-modal {
     display: none;
     align-items: center;
     justify-content: center;
     position: fixed;
     inset: 0;
-    z-index: 1500;
+    z-index: 9999;
     width: 100vw;
     height: 100vh;
     background: rgba(0, 0, 0, 0.7);
@@ -46,7 +46,12 @@
     -webkit-backdrop-filter: blur(8px);
 }
 
-#write-modal:not(.hidden), #settings-modal:not(.hidden), #room-modal:not(.hidden), #password-modal:not(.hidden) {
+#write-modal:not(.hidden), 
+#settings-modal:not(.hidden), 
+#room-modal:not(.hidden), 
+#password-modal:not(.hidden),
+#master-modal:not(.hidden),
+#mobile-modal:not(.hidden) {
     display: flex !important;
 }
 

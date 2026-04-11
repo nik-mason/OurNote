@@ -38,30 +38,28 @@ export function initNavigation() {
 
     if (hamburger && mainNav) {
         hamburger.addEventListener('click', () => {
-            const isHidden = mainNav.classList.contains('hidden');
-            if (isHidden) {
+            const isForced = mainNav.classList.contains('forced-open');
+            if (!isForced) {
+                mainNav.classList.add('forced-open');
                 mainNav.classList.remove('hidden');
-                mainNav.classList.add('flex', 'flex-col', 'absolute', 'top-0', 'left-0', 'right-0', 'bg-white', 'p-6', 'z-[100]', 'animate-slideDownFade');
-                // Hide body scroll when menu open
                 document.body.style.overflow = 'hidden';
             } else {
+                mainNav.classList.remove('forced-open');
                 mainNav.classList.add('hidden');
-                mainNav.classList.remove('flex', 'flex-col', 'absolute', 'top-0', 'left-0', 'right-0', 'bg-white', 'p-6', 'z-[100]', 'animate-slideDownFade');
                 document.body.style.overflow = 'auto';
             }
         });
 
         document.getElementById('close-mobile-menu')?.addEventListener('click', () => {
+            mainNav.classList.remove('forced-open');
             mainNav.classList.add('hidden');
-            mainNav.classList.remove('flex', 'flex-col', 'absolute', 'top-0', 'left-0', 'right-0', 'bg-white', 'p-6', 'z-[100]', 'animate-slideDownFade');
             document.body.style.overflow = 'auto';
-            if (hamIcon) hamIcon.textContent = 'menu';
         });
     }
 
     // Unified Logout Logic
     const logoutAction = () => {
-        sessionStorage.clear();
+        localStorage.removeItem('currentUser');
         window.location.href = '/';
     };
 

@@ -1,0 +1,42 @@
+<!-- Room Creation Modal (Teacher Only) -->
+<div id="room-modal" class="fixed inset-0 z-[1500] hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md modal-overlay" id="close-room-modal-overlay"></div>
+    <div class="relative z-10 ultra-card p-10 w-full max-w-[440px] bg-white border border-slate-200">
+        <div class="flex flex-col gap-8">
+            <div class="flex flex-col items-center gap-4 text-center">
+                <div class="size-16 rounded-2xl bg-primary/20 flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-4xl font-light">add_home_work</span>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-black text-text-main italic tracking-tighter uppercase mb-1">NEW CATEGORY</h2>
+                    <p class="text-text-secondary text-xs font-medium">새로운 비밀 게시판을 생성합니다.</p>
+                </div>
+            </div>
+
+            <div class="space-y-5">
+                <div class="flex flex-col gap-2">
+                    <label class="text-[10px] font-black uppercase tracking-[3px] text-primary ml-1">Board Name</label>
+                    <input type="text" id="room-name" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-lg font-bold text-text-main placeholder:text-slate-300 focus:outline-none focus:border-primary/40 focus:bg-white transition-all" placeholder="예: 시크릿 게시판">
+                </div>
+            </div>
+
+            <div class="flex gap-4 pt-4">
+                <button id="close-room-modal" class="flex-1 py-4 rounded-2xl bg-slate-100 text-text-main font-black hover:bg-slate-200 transition-all uppercase tracking-widest text-[10px]">Cancel</button>
+                <button id="submit-room" class="flex-[2] py-4 rounded-2xl bg-primary text-white font-black shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all uppercase tracking-widest text-[10px]">Create Board</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Password Prompt Modal -->
+<div id="password-modal" class="fixed inset-0 z-[2000] hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md modal-overlay" id="close-password-modal-overlay"></div>
+    <div class="relative z-10 bg-white p-8 rounded-[2rem] shadow-2xl w-full max-w-[380px] border border-slate-200">
+        <div class="flex flex-col gap-5 p-8 text-center">
+            <span class="material-symbols-outlined text-5xl text-primary mb-2">lock</span>
+            <h2 class="text-xl font-black text-text-main">입장 번호를 입력하세요</h2>
+            <input type="password" id="entry-pass" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-4 text-2xl text-center font-black text-text-main tracking-[10px] placeholder:text-slate-300 focus:outline-none focus:border-primary/40" maxlength="8" placeholder="••••">
+            <button id="submit-pass" class="w-full py-4 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark transition-all text-sm shadow-lg shadow-primary/20">입장하기</button>
+        </div>
+    </div>
+</div>

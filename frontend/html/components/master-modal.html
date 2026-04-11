@@ -1,0 +1,19 @@
+<div id="master-modal" class="fixed inset-0 z-[600] hidden overflow-y-auto bg-white/95 backdrop-blur-3xl">
+    <div class="relative min-h-screen p-6 md:p-20">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex justify-between items-center mb-12">
+                <div>
+                    <h2 class="text-6xl font-black text-primary tracking-tighter italic uppercase">MASTER VIEW</h2>
+                    <p class="text-text-secondary mt-2 tracking-widest uppercase text-xs font-bold">System Administration & Real-time Data Sync</p>
+                </div>
+                <button id="close-master-modal" class="size-16 rounded-full bg-slate-100 hover:bg-accent hover:text-white flex items-center justify-center transition-all text-text-main group shadow-lg">
+                    <span class="material-symbols-outlined text-4xl group-hover:rotate-90 transition-transform">close</span>
+                </button>
+            </div>
+            
+            <div id="master-data-container" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Data Sections will be injected here -->
+            </div>
+        </div>
+    </div>
+</div>

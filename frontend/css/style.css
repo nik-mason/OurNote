@@ -562,7 +562,7 @@ button:not(.nav-link) {
 
 /* Hyper-Splash Screen (V4.1 Ultra) */
 #splash-screen {
-    background: radial-gradient(circle at center, #0a0a25 0%, #050510 100%);
+    background: #ffffff !important;
     overflow: hidden;
     z-index: 9999;
 }

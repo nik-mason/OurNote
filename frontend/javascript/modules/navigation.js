@@ -85,6 +85,7 @@ export async function loadCategories() {
 
         cats.forEach(cat => {
             const isTeacher = state.currentUser?.role === 'teacher';
+            console.log('OurNote: Rendering category', cat.id, 'Teacher:', isTeacher);
             
             // Header Navigation (Dynamic)
             const link = document.createElement('a');
@@ -93,15 +94,25 @@ export async function loadCategories() {
             link.setAttribute('data-cat', cat.id);
             link.innerHTML = `
                 <span class="truncate">${cat.name}</span>
-                ${isTeacher ? `<button class="delete-cat-btn hidden group-hover:block ml-2 text-red-500" data-id="${cat.id}"><span class="material-symbols-outlined text-[14px]">close</span></button>` : ''}
+                ${isTeacher ? `<button class="delete-cat-btn opacity-40 hover:opacity-100 ml-2 text-slate-400 hover:text-red-500 transition-all p-1 rounded-md hover:bg-red-50" data-id="${cat.id}"><span class="material-symbols-outlined text-[16px]">close</span></button>` : ''}
             `;
             
             container.appendChild(link);
 
+            // Add listener for delete button
+            const deleteBtn = link.querySelector('.delete-cat-btn');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation(); // Don't trigger navigation
+                    deleteCategory(cat.id);
+                });
+            }
+
             // Write Modal Categories
             if (writeModalOptions) {
                 const opt = document.createElement('div');
-                opt.className = 'custom-option dynamic-option p-4 hover:bg-primary transition-colors cursor-pointer border-b border-white/5';
+                opt.className = 'custom-option dynamic-option p-4 hover:bg-primary transition-colors cursor-pointer border-b border-slate-100';
                 opt.setAttribute('data-value', cat.id);
                 opt.innerHTML = `<span>💬 ${cat.name}</span>`;
                 opt.addEventListener('click', () => {

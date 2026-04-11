@@ -32,8 +32,8 @@ export function renderPosts(posts) {
     }
 
     filtered.forEach((post, index) => {
-        const card = document.createElement('article');
-        card.className = 'group ultra-card p-0 overflow-hidden flex flex-col hover:border-primary/30 transition-all cursor-default';
+        const card = document.createElement('div');
+        card.className = 'ultra-card overflow-hidden hover:border-primary/30 transition-all';
         card.style.transitionDelay = `${index * 0.1}s`;
         
         let displayAuthor = post.author || '익명 사용자';

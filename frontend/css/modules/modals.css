@@ -32,8 +32,28 @@
 }
 
 /* Fixed Centered Modals (New Standard) */
-.fixed.inset-0.flex {
+#write-modal, #settings-modal, #room-modal, #password-modal {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    inset: 0;
     z-index: 1500;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+#write-modal:not(.hidden), #settings-modal:not(.hidden), #room-modal:not(.hidden), #password-modal:not(.hidden) {
+    display: flex !important;
+}
+
+.modal-v4 {
+    margin: auto;
+    max-width: 90vw;
+    max-height: 90vh;
 }
 
 .scale-in-center {
@@ -41,6 +61,6 @@
 }
 
 @keyframes scale-in-center {
-    0% { transform: scale(0); opacity: 1; }
+    0% { transform: scale(0.5); opacity: 0; }
     100% { transform: scale(1); opacity: 1; }
 }

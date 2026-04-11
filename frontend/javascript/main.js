@@ -2,11 +2,11 @@
  * OURNOTE ULTRA-ENGINE (V4 Modular)
  * Final integrated entry point.
  */
-import { state, showToast } from './modules/common.js';
-import { initSplash, initCursor, initParticles, setupModal, initSidebar } from './modules/ui.js';
-import { loadPosts, initPostForm } from './modules/posts.js';
-import { initAuth } from './modules/auth.js';
-import { initNavigation, setupRoomCreation } from './modules/navigation.js';
+import { state, showToast } from './modules/common.js?v=4.0';
+import { initSplash, initCursor, initParticles, setupModal, initSidebar } from './modules/ui.js?v=4.0';
+import { loadPosts, initPostForm } from './modules/posts.js?v=4.0';
+import { initAuth } from './modules/auth.js?v=4.0';
+import { initNavigation, setupRoomCreation } from './modules/navigation.js?v=4.0';
 
 // GLOBAL FAILSAFE: Ensure splash disappears even if script fails
 setTimeout(() => {

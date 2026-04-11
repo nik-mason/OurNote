@@ -8,44 +8,59 @@
     transition: opacity 0.5s ease;
 }
 
+/* Base Modal Container - Forces Centering */
 #mobile-modal:not(.hidden), 
 #write-modal:not(.hidden), 
 #room-modal:not(.hidden), 
 #password-modal:not(.hidden),
-#master-modal:not(.hidden) {
-    display: grid !important;
-    place-items: center;
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+#master-modal:not(.hidden),
+#confirm-modal:not(.hidden) {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 9999 !important;
+    background: rgba(0, 0, 0, 0.7) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
 }
 
+/* Modal Body */
 .modal-v4 {
-    margin: auto;
     width: 90vw;
     max-width: 680px;
     height: auto;
-    max-height: 85vh;
+    max-height: 90vh;
     display: flex;
     flex-direction: column;
-    transform: scale(0.95) translateY(20px);
+    transform: scale(0.9) translateY(30px);
     opacity: 0;
-    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     pointer-events: auto;
     background: white;
     border-radius: 2.5rem;
     overflow: hidden;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 40px 100px -20px rgba(0, 0, 0, 0.5);
+    margin: 0 !important; /* Reset margin since flex handles it */
+}
+
+/* Centering insurance for Flex */
+.modal-v4 {
+    position: relative;
+    /* No need for left/top if parent is flex items-center justify-center */
 }
 
 .modal-v4.active {
     transform: scale(1) translateY(0);
     opacity: 1;
+}
+
+#confirm-modal .modal-v4 {
+    max-width: 420px;
 }
 
 #fake-error-overlay, #face-scan-overlay, #rhythm-lock-overlay, #pattern-lock-overlay, #bsod-overlay {

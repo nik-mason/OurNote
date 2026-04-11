@@ -28,3 +28,46 @@ export function showToast(message, type = 'success') {
         setTimeout(() => toast.remove(), 500);
     }, 3000);
 }
+
+export function showConfirm(message, title = '확인') {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('confirm-modal');
+        const okBtn = document.getElementById('confirm-ok-btn');
+        const cancelBtn = document.getElementById('confirm-cancel-btn');
+        const msgEl = document.getElementById('confirm-message');
+        const titleEl = document.getElementById('confirm-title');
+
+        if (!modal || !okBtn || !cancelBtn) {
+            resolve(confirm(message));
+            return;
+        }
+
+        msgEl.textContent = message;
+        titleEl.textContent = title;
+        modal.classList.remove('hidden');
+        
+        // Add active class for animation
+        const body = modal.querySelector('.modal-v4');
+        setTimeout(() => body?.classList.add('active'), 10);
+
+        const onOk = () => {
+            close();
+            resolve(true);
+        };
+
+        const onCancel = () => {
+            close();
+            resolve(false);
+        };
+
+        const close = () => {
+            body?.classList.remove('active');
+            setTimeout(() => modal.classList.add('hidden'), 400);
+            okBtn.removeEventListener('click', onOk);
+            cancelBtn.removeEventListener('click', onCancel);
+        };
+
+        okBtn.addEventListener('click', onOk);
+        cancelBtn.addEventListener('click', onCancel);
+    });
+}

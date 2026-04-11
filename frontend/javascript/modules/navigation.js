@@ -1,7 +1,7 @@
 /**
  * OURNOTE NAVIGATION MODULE
  */
-import { state } from './common.js';
+import { state, showConfirm } from './common.js';
 import { loadPosts } from './posts.js';
 
 export function initNavigation() {
@@ -168,7 +168,8 @@ export function setupRoomCreation() {
 }
 
 async function deleteCategory(id) {
-    if (!confirm('정말 이 게시판을 삭제하시겠습니까?')) return;
+    const ok = await showConfirm('정말 이 게시판을 삭제하시겠습니까? 게시글이 모두 사라집니다.', '게시판 삭제');
+    if (!ok) return;
     
     try {
         const res = await fetch(`/api/categories/${id}`, {

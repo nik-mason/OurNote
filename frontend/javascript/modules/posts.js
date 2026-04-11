@@ -63,30 +63,30 @@ export function renderPosts(posts) {
             </div>
 
             <!-- Content Overlay -->
-            <div class="absolute inset-0 z-10 p-6 flex flex-col justify-end" onclick="window.toggleComments(${post.id})">
-                <div class="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="px-2 py-0.5 bg-primary/20 backdrop-blur-md rounded-md text-[9px] font-black text-white uppercase tracking-widest border border-white/10">${post.category}</span>
-                        <span class="text-[9px] font-bold text-white/40">${post.date}</span>
+            <div class="absolute inset-0 z-10 p-5 flex flex-col justify-end" onclick="window.toggleComments(${post.id})">
+                <div class="transform translate-y-3 group-hover:translate-y-0 transition-transform duration-500">
+                    <div class="flex items-center gap-2 mb-1.5">
+                        <span class="px-1.5 py-0.5 bg-primary/20 backdrop-blur-md rounded-md text-[8px] font-black text-white uppercase tracking-widest border border-white/10">${post.category}</span>
+                        <span class="text-[8px] font-bold text-white/40">${post.date}</span>
                     </div>
-                    <h3 class="text-lg font-bold text-white tracking-tighter mb-2 line-clamp-2">${post.title}</h3>
-                    <p class="text-[11px] text-white/60 line-clamp-2 font-medium leading-relaxed mb-4 group-hover:text-white/80 transition-colors">${post.content}</p>
+                    <h3 class="text-base font-bold text-white tracking-tighter mb-1 line-clamp-2">${post.title}</h3>
+                    <p class="text-[10px] text-white/60 line-clamp-2 font-medium leading-tight mb-3 group-hover:text-white/80 transition-colors">${post.content}</p>
                     
-                    <div class="flex items-center justify-between pt-4 border-t border-white/10">
+                    <div class="flex items-center justify-between pt-3 border-t border-white/10">
                         <div class="flex items-center gap-2">
-                            <div class="size-7 rounded-lg bg-white/10 flex items-center justify-center text-white/40 ring-1 ring-white/10 uppercase font-black text-[8px] tracking-widest">
+                            <div class="size-6 rounded-lg bg-white/10 flex items-center justify-center text-white/40 ring-1 ring-white/10 uppercase font-black text-[7px] tracking-widest">
                                 ${displayAuthor.substring(0, 1)}
                             </div>
-                            <span class="text-[10px] font-bold text-white/80">${displayAuthor}</span>
+                            <span class="text-[9px] font-bold text-white/80">${displayAuthor}</span>
                         </div>
                         <div class="flex items-center gap-3">
                             <button onclick="event.stopPropagation(); window.toggleLikeV4(${post.id}, this)" class="flex items-center gap-1 ${isLiked ? 'text-red-500' : 'text-white/40 hover:text-red-400'}">
-                                <span class="material-symbols-outlined text-[16px]">${isLiked ? 'favorite' : 'favorite_border'}</span>
-                                <span class="text-[10px] font-black">${likes.length}</span>
+                                <span class="material-symbols-outlined text-[14px]">${isLiked ? 'favorite' : 'favorite_border'}</span>
+                                <span class="text-[9px] font-black">${likes.length}</span>
                             </button>
                             <div class="flex items-center gap-1 text-white/40">
-                                <span class="material-symbols-outlined text-[16px]">chat_bubble</span>
-                                <span class="text-[10px] font-black">${commentCount}</span>
+                                <span class="material-symbols-outlined text-[14px]">chat_bubble</span>
+                                <span class="text-[9px] font-black">${commentCount}</span>
                             </div>
                         </div>
                     </div>

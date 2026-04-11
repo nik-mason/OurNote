@@ -33,8 +33,9 @@ export function renderPosts(posts) {
 
     filtered.forEach((post, index) => {
         const card = document.createElement('article');
-        card.className = 'group w-full ultra-card bg-white border border-slate-100 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 overflow-hidden';
-        card.style.transitionDelay = `${index * 0.05}s`;
+        // Square Grid Card Style
+        card.className = 'group relative w-full aspect-square ultra-card bg-white border border-slate-100 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-700 overflow-hidden cursor-pointer';
+        card.style.transitionDelay = `${index * 0.03}s`;
         
         let displayAuthor = post.author || '익명 사용자';
         if (post.is_anonymous) {
@@ -45,88 +46,79 @@ export function renderPosts(posts) {
         const isLiked = likes.includes(String(state.currentUser?.id || state.currentUser?.name || ''));
         const commentCount = post.comments ? post.comments.length : 0;
 
+        // Content for Square Card
         card.innerHTML = `
-            <!-- Post Header -->
-            <div class="px-8 pt-8 pb-4 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="size-11 rounded-1.5xl bg-slate-50 border border-slate-100 flex items-center justify-center text-primary shadow-sm">
-                        <span class="material-symbols-outlined text-2xl">person</span>
+            <!-- Background Image (Square) -->
+            <div class="absolute inset-0 z-0">
+                ${post.image_url ? `
+                    <div class="size-full overflow-hidden">
+                        <img src="${post.image_url}" class="size-full object-cover transition-transform duration-1000 group-hover:scale-110" loading="lazy">
                     </div>
-                    <div>
+                ` : `
+                    <div class="size-full bg-gradient-to-br from-primary/10 to-slate-100 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-6xl text-primary/10">description</span>
+                    </div>
+                `}
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity"></div>
+            </div>
+
+            <!-- Content Overlay -->
+            <div class="absolute inset-0 z-10 p-6 flex flex-col justify-end" onclick="window.toggleComments(${post.id})">
+                <div class="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="px-2 py-0.5 bg-primary/20 backdrop-blur-md rounded-md text-[9px] font-black text-white uppercase tracking-widest border border-white/10">${post.category}</span>
+                        <span class="text-[9px] font-bold text-white/40">${post.date}</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-white tracking-tighter mb-2 line-clamp-2">${post.title}</h3>
+                    <p class="text-[11px] text-white/60 line-clamp-2 font-medium leading-relaxed mb-4 group-hover:text-white/80 transition-colors">${post.content}</p>
+                    
+                    <div class="flex items-center justify-between pt-4 border-t border-white/10">
                         <div class="flex items-center gap-2">
-                            <span class="text-[13px] font-black text-text-main tracking-tight">${displayAuthor}</span>
-                            <span class="size-1 rounded-full bg-slate-200"></span>
-                            <span class="text-[11px] font-bold text-primary uppercase tracking-wider">${post.category}</span>
+                            <div class="size-7 rounded-lg bg-white/10 flex items-center justify-center text-white/40 ring-1 ring-white/10 uppercase font-black text-[8px] tracking-widest">
+                                ${displayAuthor.substring(0, 1)}
+                            </div>
+                            <span class="text-[10px] font-bold text-white/80">${displayAuthor}</span>
                         </div>
-                        <p class="text-[11px] font-medium text-text-secondary mt-0.5">${post.date}</p>
+                        <div class="flex items-center gap-3">
+                            <button onclick="event.stopPropagation(); window.toggleLikeV4(${post.id}, this)" class="flex items-center gap-1 ${isLiked ? 'text-red-500' : 'text-white/40 hover:text-red-400'}">
+                                <span class="material-symbols-outlined text-[16px]">${isLiked ? 'favorite' : 'favorite_border'}</span>
+                                <span class="text-[10px] font-black">${likes.length}</span>
+                            </button>
+                            <div class="flex items-center gap-1 text-white/40">
+                                <span class="material-symbols-outlined text-[16px]">chat_bubble</span>
+                                <span class="text-[10px] font-black">${commentCount}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <button class="size-10 rounded-xl hover:bg-slate-50 transition-colors flex items-center justify-center text-text-secondary">
-                    <span class="material-symbols-outlined text-xl">more_horiz</span>
-                </button>
             </div>
 
-            <!-- Post Content -->
-            <div class="px-8 pb-4 cursor-pointer" onclick="window.toggleComments(${post.id})">
-                <h3 class="text-xl font-black text-text-main tracking-tighter mb-2 group-hover:text-primary transition-colors duration-300">${post.title}</h3>
-                <p class="text-[15px] leading-relaxed text-text-secondary line-clamp-3 whitespace-pre-wrap">${post.content}</p>
-            </div>
-
-            <!-- Post Image -->
-            ${post.image_url ? `
-                <div class="px-8 pb-6 cursor-pointer" onclick="window.toggleComments(${post.id})">
-                    <div class="rounded-3xl overflow-hidden border border-slate-100 shadow-sm relative group/img">
-                        <img src="${post.image_url}" class="w-full h-auto max-h-[500px] object-cover transition-transform duration-700 group-hover/img:scale-105" loading="lazy">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity duration-300"></div>
+            <!-- Comment Modal (Partial in Square) -->
+            <div id="comments-${post.id}" class="hidden absolute inset-0 z-20 bg-white/95 backdrop-blur-3xl animate-in fade-in duration-300">
+                <div class="h-full flex flex-col p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="text-xs font-black text-text-main uppercase tracking-widest">Comments</h4>
+                        <button onclick="window.toggleComments(${post.id})" class="size-8 rounded-full bg-slate-100 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-sm">close</span>
+                        </button>
                     </div>
-                </div>
-            ` : ''}
-
-            <!-- Post Footer/Actions -->
-            <div class="px-8 py-5 bg-slate-50/50 border-t border-slate-50 flex items-center justify-between">
-                <div class="flex items-center gap-6">
-                    <button onclick="event.stopPropagation(); window.toggleLikeV4(${post.id}, this)" 
-                            class="flex items-center gap-2 transition-all active:scale-95 ${isLiked ? 'text-red-500' : 'text-text-secondary hover:text-red-400'}">
-                        <span class="material-symbols-outlined text-2xl font-light">${isLiked ? 'favorite' : 'favorite_border'}</span>
-                        <span class="text-xs font-black tracking-tighter">${likes.length}</span>
-                    </button>
-                    <button onclick="window.toggleComments(${post.id})" class="flex items-center gap-2 text-text-secondary hover:text-primary transition-colors">
-                        <span class="material-symbols-outlined text-2xl font-light">chat_bubble</span>
-                        <span class="text-xs font-black tracking-tighter">${commentCount}</span>
-                    </button>
-                </div>
-                <div class="flex items-center gap-2 text-text-secondary/40">
-                    <span class="material-symbols-outlined text-lg">share</span>
-                </div>
-            </div>
-
-            <!-- Comment Section -->
-            <div id="comments-${post.id}" class="hidden bg-white border-t border-slate-100 animate-in slide-in-from-top-4 duration-300">
-                <div class="p-8 space-y-4">
-                    <div class="comments-list space-y-4 max-h-[300px] overflow-y-auto pr-2 scroll-slim">
+                    <div class="flex-1 overflow-y-auto space-y-3 pr-2 scroll-slim text-xs">
                         ${(post.comments || []).length > 0 ? (post.comments || []).map(c => `
-                            <div class="flex gap-3 items-start">
-                                <div class="size-8 rounded-lg bg-slate-50 flex items-center justify-center text-primary/40 shrink-0">
-                                    <span class="material-symbols-outlined text-sm">person</span>
+                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="font-bold text-primary">${c.author}</span>
+                                    <span class="text-[8px] text-text-secondary">${c.date}</span>
                                 </div>
-                                <div class="flex-1 bg-slate-50 rounded-2xl p-4">
-                                    <div class="flex justify-between items-center mb-1">
-                                        <span class="text-xs font-black text-text-main">${c.author}</span>
-                                        <span class="text-[10px] font-bold text-text-secondary uppercase">${c.date}</span>
-                                    </div>
-                                    <p class="text-xs text-text-secondary leading-normal">${c.content}</p>
-                                </div>
+                                <p class="text-text-secondary leading-tight line-clamp-2">${c.content}</p>
                             </div>
                         `).join('') : `
-                            <div class="text-center py-4 text-text-secondary/50 text-xs font-bold uppercase tracking-widest">No comments yet</div>
+                            <p class="text-center text-text-secondary/40 py-10 font-black uppercase text-[10px] tracking-widest">Quiet place...</p>
                         `}
                     </div>
-                    
-                    <div class="flex gap-3 pt-4 border-t border-slate-50" onclick="event.stopPropagation()">
-                        <input type="text" placeholder="Add a comment..." 
-                               class="comment-input flex-1 bg-slate-50 border border-slate-100 rounded-2xl px-6 py-3 text-xs font-bold text-text-main focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder:text-text-secondary/40 placeholder:uppercase placeholder:letter-spacing-widest">
-                        <button onclick="window.submitComment(${post.id})" class="px-6 bg-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg shadow-primary/20 active:scale-95">
-                            Post
+                    <div class="pt-4 flex gap-2" onclick="event.stopPropagation()">
+                        <input type="text" placeholder="..." class="comment-input flex-1 bg-slate-100 border border-slate-200 rounded-xl px-4 py-2 text-xs outline-none focus:border-primary/40">
+                        <button onclick="window.submitComment(${post.id})" class="size-8 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
+                            <span class="material-symbols-outlined text-sm">send</span>
                         </button>
                     </div>
                 </div>
@@ -196,41 +188,84 @@ export function initPostForm() {
     const submitBtn = document.getElementById('submit-post');
     if (!submitBtn) return;
 
-    // Toggle Category specific fields
-    const catTrigger = document.getElementById('custom-category-trigger');
-    const catOptions = document.getElementById('custom-category-options');
-    const catInput = document.getElementById('post-category');
-    
-    if (catTrigger && catOptions) {
-        catTrigger.addEventListener('click', () => catOptions.classList.toggle('hidden'));
-        catOptions.querySelectorAll('.custom-option').forEach(opt => {
-            opt.addEventListener('click', () => {
-                const val = opt.getAttribute('data-value');
-                const text = opt.textContent;
-                document.getElementById('selected-category-text').textContent = text;
-                catInput.value = val;
-                catOptions.classList.add('hidden');
-                
-                // Show/Hide homework target container
-                const hwTarget = document.getElementById('homework-target-container');
-                const hwTasks = document.getElementById('homework-tasks-container');
-                if (val === 'homework') {
-                    hwTarget?.classList.remove('hidden');
-                    hwTasks?.classList.remove('hidden');
-                } else {
-                    hwTarget?.classList.add('hidden');
-                    hwTasks?.classList.add('hidden');
-                }
-            });
-        });
-    }
+    const setupDropdown = (triggerId, optionsId, inputId, textId, onSelect = null) => {
+        const trigger = document.getElementById(triggerId);
+        const options = document.getElementById(optionsId);
+        const input = document.getElementById(inputId);
+        const textDisplay = document.getElementById(textId);
 
-    // Modal click-outside
-    document.addEventListener('click', (e) => {
-        if (!catTrigger?.contains(e.target)) catOptions?.classList.add('hidden');
+        if (!trigger || !options) return;
+
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Close other open dropdowns first
+            document.querySelectorAll('.custom-options').forEach(el => {
+                if(el.id !== optionsId) el.classList.add('hidden');
+            });
+            options.classList.toggle('hidden');
+        });
+
+        options.addEventListener('click', (e) => {
+            const opt = e.target.closest('.custom-option');
+            if (!opt) return;
+            
+            const val = opt.getAttribute('data-value');
+            const txt = opt.textContent;
+            
+            if(input) input.value = val;
+            if(textDisplay) textDisplay.textContent = txt;
+            options.classList.add('hidden');
+            
+            if (onSelect) onSelect(val, txt);
+        });
+    };
+
+    // Initialize Category Dropdown
+    setupDropdown('custom-category-trigger', 'custom-category-options', 'post-category', 'selected-category-text', (val) => {
+        const hwTarget = document.getElementById('homework-target-container');
+        const hwTasks = document.getElementById('homework-tasks-container');
+        if (val === 'homework') {
+            hwTarget?.classList.remove('hidden');
+            hwTasks?.classList.remove('hidden');
+            initStudentSelection(); // Load students when homework is selected
+        } else {
+            hwTarget?.classList.add('hidden');
+            hwTasks?.classList.add('hidden');
+        }
     });
 
-    // Image Preview
+    // Initialize Student Selection Dropdown (For Homework)
+    const initStudentSelection = async () => {
+        const list = document.getElementById('student-options-list');
+        if (!list) return;
+
+        try {
+            const res = await fetch('/api/students');
+            const students = await res.json();
+            
+            // Keep "All" option
+            list.innerHTML = '<div class="custom-option p-4 hover:bg-primary/10 transition-colors cursor-pointer border-b border-slate-100" data-value="all">🌍 전체 공개</div>';
+            
+            students.forEach(s => {
+                const opt = document.createElement('div');
+                opt.className = 'custom-option p-4 hover:bg-primary/10 transition-colors cursor-pointer border-b border-slate-100';
+                opt.setAttribute('data-value', s.id);
+                opt.innerHTML = `<span class="font-bold">${s.name}</span> <span class="text-[10px] opacity-40 ml-2">#${s.id}</span>`;
+                list.appendChild(opt);
+            });
+        } catch (err) {
+            console.error('Failed to load students', err);
+        }
+    };
+
+    setupDropdown('student-select-trigger', 'custom-student-options', 'homework-target-student-val', 'selected-student-name');
+
+    // Global Click-to-Close for all dropdowns
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.custom-options').forEach(el => el.classList.add('hidden'));
+    });
+
+    // Image Preview logic...
     const imageInput = document.getElementById('post-image');
     imageInput?.addEventListener('change', (e) => {
         const file = e.target.files[0];

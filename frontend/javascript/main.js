@@ -57,11 +57,43 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 3. Global Logout Logic
+    // Global Logout Logic
     document.getElementById('logout-btn')?.addEventListener('click', () => {
         localStorage.removeItem('currentUser');
         window.location.href = '/';
     });
-    
-    // Additional logic can be imported as needed...
+
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/frontend/sw.js').then(reg => {
+                console.log('OurNote: SW Registered');
+            }).catch(err => {
+                console.error('OurNote: SW Registration Failed', err);
+            });
+        });
+    }
+
+    // PWA Install Logic
+    let deferredPrompt;
+    const installBtns = document.querySelectorAll('#pwa-install-btn, #pwa-install-btn-mobile');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBtns.forEach(btn => btn.classList.remove('hidden'));
+    });
+
+    const triggerInstall = async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            console.log('User accepted the install prompt');
+        }
+        deferredPrompt = null;
+        installBtns.forEach(btn => btn.classList.add('hidden'));
+    };
+
+    installBtns.forEach(btn => btn.addEventListener('click', triggerInstall));
 });

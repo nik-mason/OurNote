@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OurNote - 로그인</title>
     <link rel="stylesheet" href="/frontend/css/style.css">
+    <link rel="manifest" href="/frontend/manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" as="style" crossorigin
@@ -99,6 +100,11 @@
         <div class="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/50 max-w-lg w-full p-12 relative border border-slate-100 login-card-v4 active">
             <!-- Decorative light -->
             <div class="absolute -top-12 -right-12 size-48 bg-primary/5 blur-[50px] rounded-full"></div>
+            
+            <button id="pwa-install-btn" class="hidden absolute top-6 right-6 lg:flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all text-[10px] font-black uppercase tracking-widest border border-primary/20">
+                <span class="material-symbols-outlined text-[16px]">download</span>
+                Install
+            </button>
 
             <div class="text-center mb-12">
                 <div class="size-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-primary/20">

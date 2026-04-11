@@ -18,6 +18,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Noto+Sans+KR:wght@300;400;700;900&family=Lexend:wght@400;500;700;900&display=swap"
         rel="stylesheet">
+    <link rel="manifest" href="/frontend/manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -95,7 +96,15 @@
                     </div>
                     
                     <!-- Main Navigation (Tablet/Desktop) -->
-                    <nav class="hidden sm:flex items-center gap-1 overflow-x-auto no-scrollbar max-w-[50vw] md:max-w-none" id="main-nav">
+                    <nav class="hidden sm:flex items-center gap-1 overflow-x-auto no-scrollbar max-w-[50vw] md:max-w-none min-h-screen sm:min-h-0" id="main-nav">
+                        <!-- Mobile Close Header -->
+                        <div class="sm:hidden flex items-center justify-between w-full mb-6 pb-4 border-b border-slate-100">
+                            <span class="text-lg font-bold text-primary">메뉴</span>
+                            <button id="close-mobile-menu" class="size-10 rounded-full bg-slate-100 flex items-center justify-center text-text-secondary">
+                                <span class="material-symbols-outlined">close</span>
+                            </button>
+                        </div>
+
                         <a class="nav-link px-3 py-2 text-primary font-bold text-sm bg-primary/5 rounded-lg flex items-center gap-1 whitespace-nowrap active" href="#" data-cat="all">
                             <span class="material-symbols-outlined text-[18px]">grid_view</span>
                             전체
@@ -106,10 +115,17 @@
                         <!-- Dynamic Categories Injected Here -->
                         <div id="dynamic-nav-container" class="flex flex-col sm:flex-row items-center gap-1 w-full sm:w-auto"></div>
                         
-                        <!-- Mobile Logout Button -->
-                        <button id="logout-btn-mobile" class="sm:hidden w-full mt-2 pt-2 border-t border-slate-100 text-center py-3 text-text-secondary hover:text-accent font-bold uppercase tracking-widest text-[11px] transition-colors">
-                            Logout
-                        </button>
+                        <!-- Mobile Logout Button Section (Updated) -->
+                        <div class="sm:hidden flex flex-col gap-2 p-4 mt-auto border-t border-slate-100 w-full">
+                             <button id="pwa-install-btn-mobile" class="hidden w-full py-4 rounded-xl bg-primary/10 text-primary font-bold text-sm flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined">download</span>
+                                앱 설치하기
+                            </button>
+                            <button id="logout-btn-mobile" class="w-full text-center py-4 text-accent font-bold uppercase tracking-widest text-xs transition-colors flex items-center justify-center gap-2">
+                                <span class="material-symbols-outlined text-[18px]">logout</span>
+                                로그아웃
+                            </button>
+                        </div>
                     </nav>
                 </div>
 
@@ -124,7 +140,10 @@
                     <div class="flex items-center gap-3 pl-4 border-l border-slate-100 ml-1">
                         <div class="hidden sm:flex flex-col items-end">
                             <span id="display-username" class="text-sm font-bold text-text-main">사용자</span>
-                            <button id="logout-btn" class="text-[10px] text-text-secondary hover:text-accent font-bold uppercase tracking-tighter">Logout</button>
+                            <button id="logout-btn" class="text-xs text-accent hover:underline font-bold flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[14px]">logout</span>
+                                Logout
+                            </button>
                         </div>
                         <button class="relative group" id="open-settings-modal">
                             <div id="user-avatar" class="size-9 rounded-full bg-slate-200 border-2 border-white ring-1 ring-slate-100 overflow-hidden bg-center bg-cover" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCc8d_xph_dBxBD0-svxObnHS49uQJVSWx-08y_oLdylQvZhFVqCCxBtuwB-0s8FQUzFudID1A_PjoIb2aDxSt_2mB7YO_564JWgLzEGvbjyJAgUcnbje7loxy2ZYLyDrHOg2Q-AhaYaEYk3Sqx5psExSPqp1wJvS_H-k_2kGZK23G4RyXRvVGKMnkihIU7O4KXBgAU2agqzCGLkMko1DuoJ3ISVAQRGUlSSVAxWU4qxDNupVNWbNdsFsvIqOZPjtxahyBNs1E-QnW2");'></div>
@@ -132,10 +151,17 @@
                         </button>
                     </div>
 
-                    <!-- Mobile Toggle -->
-                    <button id="mobile-hamburger" class="sm:hidden flex items-center justify-center size-9 rounded-lg bg-slate-100 text-text-secondary hover:text-primary transition-all">
-                        <span class="material-symbols-outlined">menu</span>
-                    </button>
+                    <!-- Install & Mobile Toggle -->
+                    <div class="flex items-center gap-2">
+                        <button id="pwa-install-btn" class="hidden lg:flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all text-xs font-bold border border-primary/20">
+                            <span class="material-symbols-outlined text-[18px]">download</span>
+                            설치
+                        </button>
+                        
+                        <button id="mobile-hamburger" class="sm:hidden flex items-center justify-center size-10 rounded-xl bg-slate-100 text-text-secondary hover:text-primary transition-all">
+                            <span class="material-symbols-outlined">menu</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </header>
@@ -186,9 +212,8 @@
 
     <!-- Modals -->
     <!-- Modals -->
-    <div id="write-modal" class="fixed inset-0 z-[1500] hidden flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-[#050510]/95 backdrop-blur-2xl modal-overlay" id="close-write-modal-overlay"></div>
-        <div class="ultra-card modal-v4 w-full max-w-2xl p-0 relative z-10 scale-in-center flex flex-col max-h-[90vh] overflow-hidden bg-white/5 border border-white/10 rounded-[2.5rem] shadow-2xl" style="margin: auto;">
+    <div id="write-modal" class="fixed inset-0 z-[1500] hidden flex items-center justify-center p-4 bg-black/60 backdrop-blur-md">
+        <div class="ultra-card modal-v4 w-full max-w-2xl p-0 relative z-10 scale-in-center flex flex-col max-h-[90vh] overflow-hidden bg-white border border-slate-200 shadow-2xl">
             
             <!-- Modal Header -->
             <div class="px-8 pt-8 pb-6 flex items-center justify-between border-b border-white/5">
@@ -331,7 +356,7 @@
             class="absolute inset-0 modal-overlay opacity-0 transition-opacity duration-500 bg-black/80 backdrop-blur-xl">
         </div>
         <div class="flex items-center justify-center min-h-screen p-4 md:p-10">
-            <div class="ultra-card w-full max-w-5xl h-[85vh] flex flex-col relative overflow-hidden">
+            <div class="ultra-card w-full max-w-5xl h-[85vh] flex flex-col relative z-10 overflow-hidden bg-white border border-slate-200">
                 <!-- Header -->
                 <div class="p-8 border-b border-white/10 flex justify-between items-center">
                     <div>

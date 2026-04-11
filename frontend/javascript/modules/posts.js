@@ -63,7 +63,17 @@ export function renderPosts(posts) {
 
             <div onclick="window.openPostDetail(${post.id})" class="flex-1 flex flex-col">
                 <h3 class="text-4xl font-black text-text-main tracking-tighter mb-4 line-clamp-2 leading-none group-hover:text-primary transition-colors">${post.title}</h3>
-                <p class="text-base text-slate-500 line-clamp-3 font-medium leading-relaxed mb-6">${post.content}</p>
+                
+                <div class="relative mb-6">
+                    <p id="content-short-${post.id}" class="text-base text-slate-500 font-medium leading-relaxed whitespace-pre-wrap line-clamp-[8]">${post.content}</p>
+                    <p id="content-full-${post.id}" class="hidden text-base text-slate-500 font-medium leading-relaxed whitespace-pre-wrap">${post.content}</p>
+                    
+                    ${post.content.split('\n').length > 8 || post.content.length > 200 ? `
+                        <button onclick="event.stopPropagation(); window.toggleCardExpand(${post.id})" id="expand-btn-${post.id}" class="mt-2 text-primary font-black text-sm hover:underline flex items-center gap-1">
+                            더보기 <span class="material-symbols-outlined text-sm">expand_more</span>
+                        </button>
+                    ` : ''}
+                </div>
                 
                 ${post.image_url ? `
                     <div class="w-full aspect-square bg-slate-50 rounded-3xl overflow-hidden border border-slate-100 mt-auto mb-6 flex items-center justify-center p-4">
@@ -98,6 +108,24 @@ export function renderPosts(posts) {
 export function renderHomework(hws) {
     // Homework rendering logic...
 }
+
+window.toggleCardExpand = (postId) => {
+    const short = document.getElementById(`content-short-${postId}`);
+    const full = document.getElementById(`content-full-${postId}`);
+    const btn = document.getElementById(`expand-btn-${postId}`);
+    
+    if (short && full) {
+        if (full.classList.contains('hidden')) {
+            short.classList.add('hidden');
+            full.classList.remove('hidden');
+            if(btn) btn.innerHTML = '접기 <span class="material-symbols-outlined text-sm">expand_less</span>';
+        } else {
+            short.classList.remove('hidden');
+            full.classList.add('hidden');
+            if(btn) btn.innerHTML = '더보기 <span class="material-symbols-outlined text-sm">expand_more</span>';
+        }
+    }
+};
 
 window.deletePost = async (postId) => {
     const ok = await showConfirm('정말 이 게시물을 삭제하시겠습니까?', '게시물 삭제');

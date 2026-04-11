@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadComponents() {
     const components = [
-        { id: 'modal-container', files: ['write-modal.html', 'master-modal.html', 'mobile-modal.html', 'system-modals.html', 'confirm-modal.html'] },
+        { id: 'modal-container', files: ['write-modal.html', 'master-modal.html', 'mobile-modal.html', 'system-modals.html', 'confirm-modal.html', 'post-detail-modal.html'] },
         { id: 'security-container', files: ['security-layers.html', 'prank-layers.html'] }
     ];
 

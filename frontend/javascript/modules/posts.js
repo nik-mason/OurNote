@@ -15,6 +15,7 @@ export async function loadPosts() {
     } else {
         const res = await fetch('/api/posts');
         const posts = await res.json();
+        window.currentPosts = posts; // Cache for detail view
         renderPosts(posts);
     }
 }
@@ -33,8 +34,8 @@ export function renderPosts(posts) {
 
     filtered.forEach((post, index) => {
         const card = document.createElement('article');
-        // Square Grid Card Style
-        card.className = 'group relative w-full aspect-square ultra-card bg-white border border-slate-100 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-700 overflow-hidden cursor-pointer';
+        // Clean White Card Style
+        card.className = 'group relative w-full ultra-card bg-white border border-slate-100 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-700 overflow-hidden cursor-pointer flex flex-col p-8';
         card.style.transitionDelay = `${index * 0.03}s`;
         
         let displayAuthor = post.author || '익명 사용자';
@@ -45,81 +46,47 @@ export function renderPosts(posts) {
         const likes = Array.isArray(post.likes) ? post.likes : [];
         const isLiked = likes.includes(String(state.currentUser?.id || state.currentUser?.name || ''));
         const commentCount = post.comments ? post.comments.length : 0;
+        const isTeacher = state.currentUser?.role === 'teacher';
 
-        // Content for Square Card
         card.innerHTML = `
-            <!-- Background Image (Square) -->
-            <div class="absolute inset-0 z-0">
-                ${post.image_url ? `
-                    <div class="size-full overflow-hidden">
-                        <img src="${post.image_url}" class="size-full object-cover transition-transform duration-1000 group-hover:scale-110" loading="lazy">
-                    </div>
-                ` : `
-                    <div class="size-full bg-gradient-to-br from-primary/10 to-slate-100 flex items-center justify-center">
-                        <span class="material-symbols-outlined text-6xl text-primary/10">description</span>
-                    </div>
-                `}
-                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity"></div>
-            </div>
-
-            <!-- Content Overlay -->
-            <div class="absolute inset-0 z-10 p-5 flex flex-col justify-end" onclick="window.toggleComments(${post.id})">
-                <div class="transform translate-y-3 group-hover:translate-y-0 transition-transform duration-500">
-                    <div class="flex items-center gap-2 mb-1.5">
-                        <span class="px-1.5 py-0.5 bg-primary/20 backdrop-blur-md rounded-md text-[8px] font-black text-white uppercase tracking-widest border border-white/10">${post.category}</span>
-                        <span class="text-[8px] font-bold text-white/40">${post.date}</span>
-                    </div>
-                    <h3 class="text-base font-bold text-white tracking-tighter mb-1 line-clamp-2">${post.title}</h3>
-                    <p class="text-[10px] text-white/60 line-clamp-2 font-medium leading-tight mb-3 group-hover:text-white/80 transition-colors">${post.content}</p>
-                    
-                    <div class="flex items-center justify-between pt-3 border-t border-white/10">
-                        <div class="flex items-center gap-2">
-                            <div class="size-6 rounded-lg bg-white/10 flex items-center justify-center text-white/40 ring-1 ring-white/10 uppercase font-black text-[7px] tracking-widest">
-                                ${displayAuthor.substring(0, 1)}
-                            </div>
-                            <span class="text-[9px] font-bold text-white/80">${displayAuthor}</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <button onclick="event.stopPropagation(); window.toggleLikeV4(${post.id}, this)" class="flex items-center gap-1 ${isLiked ? 'text-red-500' : 'text-white/40 hover:text-red-400'}">
-                                <span class="material-symbols-outlined text-[14px]">${isLiked ? 'favorite' : 'favorite_border'}</span>
-                                <span class="text-[9px] font-black">${likes.length}</span>
-                            </button>
-                            <div class="flex items-center gap-1 text-white/40">
-                                <span class="material-symbols-outlined text-[14px]">chat_bubble</span>
-                                <span class="text-[9px] font-black">${commentCount}</span>
-                            </div>
-                        </div>
-                    </div>
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                    <span class="px-2 py-1 bg-primary/10 rounded-lg text-[10px] font-black text-primary uppercase tracking-widest">${post.category}</span>
+                    <span class="text-[10px] font-bold text-slate-400 italic">${post.date}</span>
                 </div>
+                ${isTeacher ? `
+                    <button onclick="event.stopPropagation(); window.deletePost(${post.id})" class="size-8 rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center border border-red-100">
+                        <span class="material-symbols-outlined text-[18px]">delete_forever</span>
+                    </button>
+                ` : ''}
             </div>
 
-            <!-- Comment Modal (Partial in Square) -->
-            <div id="comments-${post.id}" class="hidden absolute inset-0 z-20 bg-white/95 backdrop-blur-3xl animate-in fade-in duration-300">
-                <div class="h-full flex flex-col p-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h4 class="text-xs font-black text-text-main uppercase tracking-widest">Comments</h4>
-                        <button onclick="window.toggleComments(${post.id})" class="size-8 rounded-full bg-slate-100 flex items-center justify-center">
-                            <span class="material-symbols-outlined text-sm">close</span>
-                        </button>
+            <div onclick="window.openPostDetail(${post.id})" class="flex-1 flex flex-col">
+                <h3 class="text-4xl font-black text-text-main tracking-tighter mb-4 line-clamp-2 leading-none group-hover:text-primary transition-colors">${post.title}</h3>
+                <p class="text-base text-slate-500 line-clamp-3 font-medium leading-relaxed mb-6">${post.content}</p>
+                
+                ${post.image_url ? `
+                    <div class="w-full aspect-square bg-slate-50 rounded-3xl overflow-hidden border border-slate-100 mt-auto mb-6 flex items-center justify-center p-4">
+                        <img src="${post.image_url}" class="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-105" loading="lazy">
                     </div>
-                    <div class="flex-1 overflow-y-auto space-y-3 pr-2 scroll-slim text-xs">
-                        ${(post.comments || []).length > 0 ? (post.comments || []).map(c => `
-                            <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                                <div class="flex justify-between items-center mb-1">
-                                    <span class="font-bold text-primary">${c.author}</span>
-                                    <span class="text-[8px] text-text-secondary">${c.date}</span>
-                                </div>
-                                <p class="text-text-secondary leading-tight line-clamp-2">${c.content}</p>
-                            </div>
-                        `).join('') : `
-                            <p class="text-center text-text-secondary/40 py-10 font-black uppercase text-[10px] tracking-widest">Quiet place...</p>
-                        `}
+                ` : ''}
+            </div>
+            
+            <div class="flex items-center justify-between pt-6 border-t border-slate-50">
+                <div class="flex items-center gap-2">
+                    <div class="size-8 rounded-xl bg-primary/10 flex items-center justify-center text-primary uppercase font-black text-[12px]">
+                        ${displayAuthor.substring(0, 1)}
                     </div>
-                    <div class="pt-4 flex gap-2" onclick="event.stopPropagation()">
-                        <input type="text" placeholder="..." class="comment-input flex-1 bg-slate-100 border border-slate-200 rounded-xl px-4 py-2 text-xs outline-none focus:border-primary/40">
-                        <button onclick="window.submitComment(${post.id})" class="size-8 rounded-xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
-                            <span class="material-symbols-outlined text-sm">send</span>
-                        </button>
+                    <span class="text-[12px] font-bold text-text-main">${displayAuthor}</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button onclick="event.stopPropagation(); window.toggleLikeV4(${post.id}, this)" class="flex items-center gap-1.5 ${isLiked ? 'text-red-500' : 'text-slate-400 hover:text-red-400'} transition-all">
+                        <span class="material-symbols-outlined text-[20px]">${isLiked ? 'favorite' : 'favorite_border'}</span>
+                        <span class="text-[12px] font-black">${likes.length}</span>
+                    </button>
+                    <div class="flex items-center gap-1.5 text-slate-400">
+                        <span class="material-symbols-outlined text-[20px]">chat_bubble_outline</span>
+                        <span class="text-[12px] font-black">${commentCount}</span>
                     </div>
                 </div>
             </div>
@@ -132,9 +99,104 @@ export function renderHomework(hws) {
     // Homework rendering logic...
 }
 
+window.deletePost = async (postId) => {
+    const ok = await showConfirm('정말 이 게시물을 삭제하시겠습니까?', '게시물 삭제');
+    if (!ok) return;
+
+    try {
+        const res = await fetch(`/api/posts/${postId}`, { method: 'DELETE' });
+        if (res.ok) {
+            showToast('이야기가 삭제되었습니다.');
+            loadPosts();
+        } else {
+            showToast('삭제에 실패했습니다.', 'error');
+        }
+    } catch (err) {
+        showToast('서버 오류가 발생했습니다.', 'error');
+    }
+};
+
+window.openPostDetail = (postId) => {
+    // Find post in current state or local array
+    // Since we don't have a single post fetch yet, we find it in the current list
+    const post = (window.currentPosts || []).find(p => p.id === postId);
+    if (!post) return;
+
+    const modal = document.getElementById('post-detail-modal');
+    if (!modal) return;
+
+    // Fill data
+    document.getElementById('detail-title').textContent = post.title;
+    document.getElementById('detail-meta').textContent = `${post.category.toUpperCase()} | ${post.date}`;
+    document.getElementById('detail-content').textContent = post.content;
+    
+    let displayAuthor = post.author || '익명 사용자';
+    if (post.is_anonymous) {
+        displayAuthor = state.currentUser?.role === 'teacher' ? `익명 (${post.author})` : '익명';
+    }
+    document.getElementById('detail-author-name').textContent = displayAuthor;
+    document.getElementById('detail-author-avatar').textContent = displayAuthor.substring(0, 1);
+
+    const imgContainer = document.getElementById('detail-image-container');
+    const img = document.getElementById('detail-image');
+    if (post.image_url) {
+        img.src = post.image_url;
+        imgContainer.classList.remove('hidden');
+    } else {
+        imgContainer.classList.add('hidden');
+    }
+
+    // Comments
+    const list = document.getElementById('detail-comments-list');
+    document.getElementById('detail-comment-count').textContent = post.comments?.length || 0;
+    list.innerHTML = (post.comments || []).map(c => `
+        <div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 flex flex-col gap-2">
+            <div class="flex justify-between items-center">
+                <span class="font-black text-primary text-sm">${c.author}</span>
+                <span class="text-[10px] text-text-secondary font-bold">${c.date}</span>
+            </div>
+            <p class="text-text-main text-lg font-medium">${c.content}</p>
+        </div>
+    `).join('') || '<p class="text-center py-10 opacity-30 font-bold">첫 댓글을 남겨보세요! ✨</p>';
+
+    // Show modal
+    modal.classList.remove('hidden');
+    import('./ui.js').then(m => m.setupModal('post-detail-modal', null, 'close-post-detail-modal'));
+    
+    // Setup comment submission in detail view
+    const submitBtn = document.getElementById('detail-submit-comment');
+    const input = document.getElementById('detail-comment-input');
+    
+    // Clear old listener
+    const newSubmitBtn = submitBtn.cloneNode(true);
+    submitBtn.parentNode.replaceChild(newSubmitBtn, submitBtn);
+    
+    newSubmitBtn.onclick = async () => {
+        const txt = input.value.trim();
+        if (!txt) return;
+        
+        try {
+            const res = await fetch(`/api/posts/${postId}/comments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    author: state.currentUser.name,
+                    content: txt
+                })
+            });
+            if (res.ok) {
+                input.value = '';
+                // Refresh detail view (simplest way is to reload posts and re-open or just fetch single)
+                await loadPosts();
+                window.openPostDetail(postId);
+            }
+        } catch (err) {}
+    };
+};
+
 window.toggleComments = (postId) => {
-    const el = document.getElementById(`comments-${postId}`);
-    if (el) el.classList.toggle('hidden');
+    // Legacy support or fallback
+    window.openPostDetail(postId);
 };
 
 window.submitComment = async (postId) => {

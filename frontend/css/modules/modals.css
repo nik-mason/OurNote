@@ -8,22 +8,39 @@
     transition: opacity 0.5s ease;
 }
 
-#mobile-modal.fixed {
-    display: none;
-    z-index: 2000 !important;
+#mobile-modal:not(.hidden), 
+#write-modal:not(.hidden), 
+#room-modal:not(.hidden), 
+#password-modal:not(.hidden),
+#master-modal:not(.hidden) {
+    display: grid !important;
+    place-items: center;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
-#mobile-modal:not(.hidden) {
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Modal scale animation */
 .modal-v4 {
-    transform: scale(0.9) translateY(20px);
+    margin: auto;
+    width: 90vw;
+    max-width: 680px;
+    height: auto;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    transform: scale(0.95) translateY(20px);
     opacity: 0;
-    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: auto;
+    background: white;
+    border-radius: 2.5rem;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
 .modal-v4.active {
@@ -31,41 +48,6 @@
     opacity: 1;
 }
 
-/* Fixed Centered Modals (New Standard) */
-#write-modal, #settings-modal, #room-modal, #password-modal, #master-modal, #mobile-modal {
-    display: none;
-    align-items: center;
-    justify-content: center;
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-}
-
-#write-modal:not(.hidden), 
-#settings-modal:not(.hidden), 
-#room-modal:not(.hidden), 
-#password-modal:not(.hidden),
-#master-modal:not(.hidden),
-#mobile-modal:not(.hidden) {
-    display: flex !important;
-}
-
-.modal-v4 {
-    margin: auto;
-    max-width: 90vw;
-    max-height: 90vh;
-}
-
-.scale-in-center {
-    animation: scale-in-center 0.5s cubic-bezier(0.250, 0.460, 0.450, 0.940) both;
-}
-
-@keyframes scale-in-center {
-    0% { transform: scale(0.5); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
+#fake-error-overlay, #face-scan-overlay, #rhythm-lock-overlay, #pattern-lock-overlay, #bsod-overlay {
+    z-index: 99999;
 }

@@ -34,18 +34,31 @@ export function initNavigation() {
     // Mobile Hamburger
     const hamburger = document.getElementById('mobile-hamburger');
     const mainNav = document.getElementById('main-nav');
+    const hamIcon = hamburger?.querySelector('.material-symbols-outlined');
+
     if (hamburger && mainNav) {
         hamburger.addEventListener('click', () => {
             const isHidden = mainNav.classList.contains('hidden');
             if (isHidden) {
                 mainNav.classList.remove('hidden');
                 mainNav.classList.add('flex', 'flex-col', 'absolute', 'top-16', 'left-0', 'right-0', 'bg-white', 'p-4', 'border-b', 'border-slate-200', 'shadow-xl', 'animate-slideDownFade');
+                if (hamIcon) hamIcon.textContent = 'close';
             } else {
                 mainNav.classList.add('hidden');
                 mainNav.classList.remove('flex', 'flex-col', 'absolute', 'top-16', 'left-0', 'right-0', 'bg-white', 'p-4', 'border-b', 'border-slate-200', 'shadow-xl', 'animate-slideDownFade');
+                if (hamIcon) hamIcon.textContent = 'menu';
             }
         });
     }
+
+    // Unified Logout Logic
+    const logoutAction = () => {
+        sessionStorage.clear();
+        window.location.href = '/';
+    };
+
+    document.getElementById('logout-btn')?.addEventListener('click', logoutAction);
+    document.getElementById('logout-btn-mobile')?.addEventListener('click', logoutAction);
 
     loadCategories();
     setupRoomCreation();

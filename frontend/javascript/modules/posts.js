@@ -188,56 +188,63 @@ export function initPostForm() {
     const submitBtn = document.getElementById('submit-post');
     if (!submitBtn) return;
 
-    const setupDropdown = (triggerId, optionsId, inputId, textId, onSelect = null) => {
-        const trigger = document.getElementById(triggerId);
-        const options = document.getElementById(optionsId);
-        const input = document.getElementById(inputId);
-        const textDisplay = document.getElementById(textId);
-
-        if (!trigger || !options) return;
-
-        // Toggle dropdown
-        trigger.onclick = (e) => {
+    // NEW: Fully Delegated Dropdown System (Resilient to dynamic content)
+    document.addEventListener('click', (e) => {
+        const trigger = e.target.closest('[id$="-trigger"]');
+        if (trigger) {
             e.preventDefault();
             e.stopPropagation();
             
-            // Close all other dropdowns
-            document.querySelectorAll('.custom-options').forEach(el => {
-                if (el !== options) el.classList.add('hidden');
-            });
+            const optionsId = trigger.id.replace('trigger', 'options');
+            const options = document.getElementById(optionsId);
             
-            options.classList.toggle('hidden');
-        };
+            if (options) {
+                // Close others
+                document.querySelectorAll('.custom-options').forEach(el => {
+                    if (el !== options) el.classList.add('hidden');
+                });
+                options.classList.toggle('hidden');
+            }
+            return;
+        }
 
-        // Option selection
-        options.onclick = (e) => {
-            e.stopPropagation();
-            const opt = e.target.closest('.custom-option');
-            if (!opt) return;
-            
-            const val = opt.getAttribute('data-value');
-            const txt = opt.textContent;
-            
-            if(input) input.value = val;
-            if(textDisplay) textDisplay.textContent = txt;
-            options.classList.add('hidden');
-            
-            if (onSelect) onSelect(val, txt);
-        };
-    };
+        const option = e.target.closest('.custom-option');
+        if (option) {
+            const container = option.closest('.custom-options');
+            const triggerId = container.id.replace('options', 'trigger');
+            const inputId = container.id.replace('custom-', 'post-').replace('-options', '');
+            const textId = container.id.replace('custom-', 'selected-').replace('-options', '-text');
 
-    // Initialize Category Dropdown
-    const catInput = document.getElementById('post-category');
-    setupDropdown('custom-category-trigger', 'custom-category-options', 'post-category', 'selected-category-text', (val) => {
-        const hwTarget = document.getElementById('homework-target-container');
-        const hwTasks = document.getElementById('homework-tasks-container');
-        if (val === 'homework') {
-            hwTarget?.classList.remove('hidden');
-            hwTasks?.classList.remove('hidden');
-            initStudentSelection(); // Load students when homework is selected
+            // Find related elements
+            const input = document.getElementById(inputId) || document.getElementById('post-category'); // Fallback
+            const textDisplay = document.getElementById(textId);
+            
+            if (input) input.value = option.getAttribute('data-value');
+            if (textDisplay) textDisplay.textContent = option.textContent;
+            
+            container.classList.add('hidden');
+
+            // Special logic for Category
+            if (container.id === 'custom-category-options') {
+                const val = option.getAttribute('data-value');
+                const hwTarget = document.getElementById('homework-target-container');
+                const hwTasks = document.getElementById('homework-tasks-container');
+                if (val === 'homework') {
+                    hwTarget?.classList.remove('hidden');
+                    hwTasks?.classList.remove('hidden');
+                    // Explicitly call student loader
+                    const studentsList = document.getElementById('student-options-list');
+                    if (studentsList && studentsList.children.length <= 1) {
+                         initStudentSelection();
+                    }
+                } else {
+                    hwTarget?.classList.add('hidden');
+                    hwTasks?.classList.add('hidden');
+                }
+            }
         } else {
-            hwTarget?.classList.add('hidden');
-            hwTasks?.classList.add('hidden');
+            // Global close when clicking anything else
+            document.querySelectorAll('.custom-options').forEach(el => el.classList.add('hidden'));
         }
     });
 
@@ -265,12 +272,7 @@ export function initPostForm() {
         }
     };
 
-    setupDropdown('student-select-trigger', 'custom-student-options', 'homework-target-student-val', 'selected-student-name');
 
-    // Global Click-to-Close for all dropdowns
-    document.addEventListener('click', () => {
-        document.querySelectorAll('.custom-options').forEach(el => el.classList.add('hidden'));
-    });
 
     // Image Preview logic...
     const imageInput = document.getElementById('post-image');

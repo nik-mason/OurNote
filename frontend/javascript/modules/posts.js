@@ -33,8 +33,8 @@ export function renderPosts(posts) {
 
     filtered.forEach((post, index) => {
         const card = document.createElement('article');
-        card.className = 'group bg-surface-light dark:bg-surface-dark p-5 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-primary/30 transition-all hover:shadow-lg hover:shadow-slate-200/50 cursor-pointer';
-        card.style.transitionDelay = `${index * 0.1}s`;
+        card.className = 'group w-full ultra-card bg-white border border-slate-100 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-500 overflow-hidden';
+        card.style.transitionDelay = `${index * 0.05}s`;
         
         let displayAuthor = post.author || '익명 사용자';
         if (post.is_anonymous) {
@@ -46,61 +46,89 @@ export function renderPosts(posts) {
         const commentCount = post.comments ? post.comments.length : 0;
 
         card.innerHTML = `
-            <div class="flex items-start gap-4" onclick="window.toggleComments(${post.id})">
-                <div class="shrink-0">
-                    <div class="size-12 rounded-full bg-slate-100 flex items-center justify-center text-primary">
-                        <span class="material-symbols-outlined">person</span>
+            <!-- Post Header -->
+            <div class="px-8 pt-8 pb-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="size-11 rounded-1.5xl bg-slate-50 border border-slate-100 flex items-center justify-center text-primary shadow-sm">
+                        <span class="material-symbols-outlined text-2xl">person</span>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[13px] font-black text-text-main tracking-tight">${displayAuthor}</span>
+                            <span class="size-1 rounded-full bg-slate-200"></span>
+                            <span class="text-[11px] font-bold text-primary uppercase tracking-wider">${post.category}</span>
+                        </div>
+                        <p class="text-[11px] font-medium text-text-secondary mt-0.5">${post.date}</p>
                     </div>
                 </div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2 mb-1">
-                        <span class="text-xs font-bold text-primary">${post.category}</span>
-                        <span class="text-[10px] text-text-secondary">•</span>
-                        <span class="text-xs text-text-secondary">${post.date}</span>
-                    </div>
-                    <h3 class="text-lg font-bold text-text-main dark:text-text-main-dark mb-1 truncate group-hover:text-primary transition-colors">${post.title}</h3>
-                    <p class="text-sm text-text-secondary dark:text-text-secondary-dark line-clamp-2 mb-3">${post.content}</p>
-                    
-                    ${post.image_url ? `
-                        <div class="mb-3 rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800">
-                            <img src="${post.image_url}" class="w-full max-h-48 object-cover">
-                        </div>
-                    ` : ''}
+                <button class="size-10 rounded-xl hover:bg-slate-50 transition-colors flex items-center justify-center text-text-secondary">
+                    <span class="material-symbols-outlined text-xl">more_horiz</span>
+                </button>
+            </div>
 
-                    <div class="flex items-center justify-between text-text-secondary text-xs">
-                        <span class="font-medium">${displayAuthor}</span>
-                        <div class="flex items-center gap-4">
-                            <button onclick="event.stopPropagation(); window.toggleLikeV4(${post.id}, this)" class="flex items-center gap-1 ${isLiked ? 'text-red-500' : ''}">
-                                <span class="material-symbols-outlined text-[16px]">${isLiked ? 'favorite' : 'favorite_border'}</span>
-                                <span>${Array.isArray(post.likes) ? post.likes.length : (post.likes || 0)}</span>
-                            </button>
-                            <span class="flex items-center gap-1">
-                                <span class="material-symbols-outlined text-[16px]">chat_bubble</span>
-                                <span>${commentCount}</span>
-                            </span>
-                        </div>
+            <!-- Post Content -->
+            <div class="px-8 pb-4 cursor-pointer" onclick="window.toggleComments(${post.id})">
+                <h3 class="text-xl font-black text-text-main tracking-tighter mb-2 group-hover:text-primary transition-colors duration-300">${post.title}</h3>
+                <p class="text-[15px] leading-relaxed text-text-secondary line-clamp-3 whitespace-pre-wrap">${post.content}</p>
+            </div>
+
+            <!-- Post Image -->
+            ${post.image_url ? `
+                <div class="px-8 pb-6 cursor-pointer" onclick="window.toggleComments(${post.id})">
+                    <div class="rounded-3xl overflow-hidden border border-slate-100 shadow-sm relative group/img">
+                        <img src="${post.image_url}" class="w-full h-auto max-h-[500px] object-cover transition-transform duration-700 group-hover/img:scale-105" loading="lazy">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/img:opacity-100 transition-opacity duration-300"></div>
                     </div>
+                </div>
+            ` : ''}
+
+            <!-- Post Footer/Actions -->
+            <div class="px-8 py-5 bg-slate-50/50 border-t border-slate-50 flex items-center justify-between">
+                <div class="flex items-center gap-6">
+                    <button onclick="event.stopPropagation(); window.toggleLikeV4(${post.id}, this)" 
+                            class="flex items-center gap-2 transition-all active:scale-95 ${isLiked ? 'text-red-500' : 'text-text-secondary hover:text-red-400'}">
+                        <span class="material-symbols-outlined text-2xl font-light">${isLiked ? 'favorite' : 'favorite_border'}</span>
+                        <span class="text-xs font-black tracking-tighter">${likes.length}</span>
+                    </button>
+                    <button onclick="window.toggleComments(${post.id})" class="flex items-center gap-2 text-text-secondary hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined text-2xl font-light">chat_bubble</span>
+                        <span class="text-xs font-black tracking-tighter">${commentCount}</span>
+                    </button>
+                </div>
+                <div class="flex items-center gap-2 text-text-secondary/40">
+                    <span class="material-symbols-outlined text-lg">share</span>
                 </div>
             </div>
 
-            <!-- Comment Section (Expanded below the article) -->
-            <div id="comments-${post.id}" class="hidden mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
-                <div class="comments-list space-y-2">
-                    ${(post.comments || []).map(c => `
-                        <div class="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-xs font-bold text-primary">${c.author}</span>
-                                <span class="text-[10px] text-text-secondary">${c.date}</span>
+            <!-- Comment Section -->
+            <div id="comments-${post.id}" class="hidden bg-white border-t border-slate-100 animate-in slide-in-from-top-4 duration-300">
+                <div class="p-8 space-y-4">
+                    <div class="comments-list space-y-4 max-h-[300px] overflow-y-auto pr-2 scroll-slim">
+                        ${(post.comments || []).length > 0 ? (post.comments || []).map(c => `
+                            <div class="flex gap-3 items-start">
+                                <div class="size-8 rounded-lg bg-slate-50 flex items-center justify-center text-primary/40 shrink-0">
+                                    <span class="material-symbols-outlined text-sm">person</span>
+                                </div>
+                                <div class="flex-1 bg-slate-50 rounded-2xl p-4">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="text-xs font-black text-text-main">${c.author}</span>
+                                        <span class="text-[10px] font-bold text-text-secondary uppercase">${c.date}</span>
+                                    </div>
+                                    <p class="text-xs text-text-secondary leading-normal">${c.content}</p>
+                                </div>
                             </div>
-                            <p class="text-sm text-text-main dark:text-text-main-dark">${c.content}</p>
-                        </div>
-                    `).join('')}
-                </div>
-                <div class="flex gap-2 mt-4" onclick="event.stopPropagation()">
-                    <input type="text" placeholder="댓글을 입력하세요..." class="comment-input flex-1 bg-slate-100 dark:bg-slate-800 border-none rounded-full px-4 py-2 text-sm focus:ring-1 focus:ring-primary outline-none transition-all">
-                    <button onclick="window.submitComment(${post.id})" class="size-9 flex items-center justify-center bg-primary text-white rounded-full hover:bg-primary-dark transition-all">
-                        <span class="material-symbols-outlined text-[18px]">send</span>
-                    </button>
+                        `).join('') : `
+                            <div class="text-center py-4 text-text-secondary/50 text-xs font-bold uppercase tracking-widest">No comments yet</div>
+                        `}
+                    </div>
+                    
+                    <div class="flex gap-3 pt-4 border-t border-slate-50" onclick="event.stopPropagation()">
+                        <input type="text" placeholder="Add a comment..." 
+                               class="comment-input flex-1 bg-slate-50 border border-slate-100 rounded-2xl px-6 py-3 text-xs font-bold text-text-main focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all placeholder:text-text-secondary/40 placeholder:uppercase placeholder:letter-spacing-widest">
+                        <button onclick="window.submitComment(${post.id})" class="px-6 bg-primary text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-primary-dark transition-all shadow-lg shadow-primary/20 active:scale-95">
+                            Post
+                        </button>
+                    </div>
                 </div>
             </div>
         `;

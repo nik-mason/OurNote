@@ -20,7 +20,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script>
+    <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
@@ -28,15 +28,20 @@
                     colors: {
                         "primary": "#2b8cee",
                         "primary-dark": "#1a6bbd",
-                        "accent": "#f43f5e",
                         "background-light": "#f8fafc",
+                        "background-dark": "#101922",
                         "surface-light": "#ffffff",
+                        "surface-dark": "#1c2630",
                         "text-main": "#0f172a",
+                        "text-main-dark": "#f1f5f9",
+                        "text-secondary": "#64748b",
+                        "text-secondary-dark": "#94a3b8",
                     },
                     fontFamily: {
-                        "display": ["Montserrat", "Pretendard", "Noto Sans KR", "sans-serif"],
-                        "body": ["Pretendard", "Noto Sans KR", "sans-serif"],
+                        "display": ["Lexend", "Noto Sans KR", "sans-serif"],
+                        "body": ["Noto Sans KR", "sans-serif"],
                     },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
                 },
             },
         }
@@ -77,144 +82,95 @@
     </script>
 </head>
 
-<body class="overflow-x-hidden font-body bg-deep">
+<body class="bg-background-light dark:bg-background-dark text-text-main dark:text-text-main-dark antialiased transition-colors duration-200">
     <canvas id="particle-canvas"></canvas>
     <div id="cursor-v4"></div>
-    <div class="ultra-progress" id="ultra-bar"></div>
 
-    <div class="main-wrapper">
-        <!-- Mobile Hamburger (visible only on mobile) -->
-        <button id="mobile-hamburger" class="mobile-hamburger">
-            <span class="material-symbols-outlined">menu</span>
-        </button>
-
-        <!-- Sidebar Overlay (mobile) -->
-        <div id="sidebar-overlay" class="sidebar-overlay hidden"></div>
-
-        <!-- Sidebar -->
-        <aside id="sidebar" class="sidebar-v4">
-            <!-- Sidebar Header -->
-            <div class="flex items-center justify-between p-6">
-                <h1 class="text-2xl font-black italic tracking-tighter text-white">OUR<span class="text-primary">NOTE</span></h1>
-                <button id="sidebar-close" class="size-8 flex items-center justify-center text-text-dim hover:text-white transition-all rounded-lg hover:bg-white/10">
-                    <span class="material-symbols-outlined text-lg">close</span>
-                </button>
-            </div>
-
-            <div class="px-4 mb-4">
-                <button id="open-write-modal-sidebar" class="w-full liquid-btn neon-trace flex items-center justify-center gap-2 py-3 rounded-xl border border-white/10 hover:border-primary/50 transition-all">
-                    <span class="material-symbols-outlined text-sm">add_circle</span>
-                    <span class="font-black uppercase tracking-widest text-[10px]">새로운 이야기</span>
-                </button>
-            </div>
-
-            <nav class="flex-1 px-4 space-y-1 overflow-y-auto">
-                <!-- Static Navigation -->
-                <a href="#" id="nav-all" class="nav-link active" data-cat="all">
-                    <span class="material-symbols-outlined">grid_view</span>
-                    <span>전체 메뉴</span>
-                </a>
-                <a href="#" id="nav-notice" class="nav-link" data-cat="notice">
-                    <span class="material-symbols-outlined">campaign</span>
-                    <span>공지사항</span>
-                </a>
-                <a href="#" id="nav-event" class="nav-link" data-cat="event">
-                    <span class="material-symbols-outlined">celebration</span>
-                    <span>이벤트</span>
-                </a>
-                <a href="#" id="nav-homework" class="nav-link" data-cat="homework">
-                    <span class="material-symbols-outlined">assignment</span>
-                    <span>숙제</span>
-                </a>
-                <a href="#" id="nav-mobile" class="nav-link" data-cat="mobile">
-                    <span class="material-symbols-outlined text-primary">qr_code_2</span>
-                    <span>모바일 접속</span>
-                </a>
-
-                <!-- Dynamic Rooms Section -->
-                <div class="h-px bg-white/5 mx-2 my-4"></div>
-                <div class="flex items-center justify-between px-2 mb-2">
-                    <span class="text-[9px] font-black text-text-dim uppercase tracking-widest">게시판 목록</span>
-                    <button id="btn-add-room" class="hidden size-6 flex items-center justify-center text-primary hover:text-white bg-primary/10 hover:bg-primary/20 rounded-md transition-all" title="새 게시판 추가">
-                        <span class="material-symbols-outlined text-sm">add</span>
-                    </button>
-                </div>
-                <div id="dynamic-categories" class="space-y-1">
-                    <!-- Dynamic Rooms will be injected here -->
-                </div>
-            </nav>
-
-            <!-- Sidebar Bottom: Profile & Settings -->
-            <div class="p-4 border-t border-white/5">
-                <div class="flex items-center gap-3 p-3">
-                    <div class="size-9 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/40">
-                        <span class="material-symbols-outlined text-white text-sm">person</span>
+    <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+        <!-- Header from code.html -->
+        <header class="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-surface-light/80 dark:bg-surface-dark/80 backdrop-blur-md">
+            <div class="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4 sm:px-6">
+                <div class="flex items-center gap-8">
+                    <div class="flex items-center gap-2 text-primary">
+                        <div class="flex items-center justify-center size-9 rounded-xl bg-primary/10">
+                            <span class="material-symbols-outlined text-primary text-[26px]">school</span>
+                        </div>
+                        <h2 class="text-text-main dark:text-text-main-dark text-xl font-bold tracking-tight">OurNote</h2>
                     </div>
-                    <div class="flex flex-col flex-1 min-w-0">
-                        <span id="display-username" class="text-xs font-bold truncate">사용자</span>
-                        <span class="text-[9px] text-text-dim uppercase tracking-tighter">Online</span>
+                    <nav class="hidden md:flex items-center gap-1" id="main-nav">
+                        <a class="nav-link px-4 py-2 text-primary font-bold text-sm bg-primary/5 rounded-lg flex items-center gap-2 active" href="#" data-cat="all">
+                            <span class="material-symbols-outlined text-[18px]">grid_view</span>
+                            전체 메뉴
+                        </a>
+                        <a class="nav-link px-4 py-2 text-text-secondary dark:text-text-secondary-dark text-sm font-medium hover:text-primary transition-colors" href="#" data-cat="notice">공지사항</a>
+                        <a class="nav-link px-4 py-2 text-text-secondary dark:text-text-secondary-dark text-sm font-medium hover:text-primary transition-colors" href="#" data-cat="event">이벤트</a>
+                        <a class="nav-link px-4 py-2 text-text-secondary dark:text-text-secondary-dark text-sm font-medium hover:text-primary transition-colors" href="#" data-cat="homework">숙제</a>
+                        <!-- Dynamic Categories Injected Here -->
+                        <div id="dynamic-nav-container" class="flex items-center gap-1"></div>
+                    </nav>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="hidden sm:flex items-center relative">
+                        <span class="absolute left-3 text-text-secondary material-symbols-outlined text-[20px]">search</span>
+                        <input class="block w-64 rounded-full border-none bg-slate-100 dark:bg-slate-800 py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary" placeholder="검색어를 입력하세요" type="text"/>
                     </div>
-                    <button id="open-settings-modal" class="size-8 flex items-center justify-center text-text-dim hover:text-primary transition-all rounded-lg">
-                        <span class="material-symbols-outlined text-sm">settings</span>
+                    <div class="flex items-center gap-3 mr-2">
+                        <span id="display-username" class="text-sm font-bold text-text-main dark:text-text-main-dark">사용자</span>
+                        <button id="logout-btn" class="text-xs text-text-secondary hover:text-accent transition-colors">로그아웃</button>
+                    </div>
+                    <button class="flex items-center gap-2 rounded-full overflow-hidden ring-2 ring-transparent hover:ring-primary/30 transition-all" id="open-settings-modal">
+                        <div id="user-avatar" class="bg-center bg-no-repeat bg-cover size-9 bg-slate-200" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCc8d_xph_dBxBD0-svxObnHS49uQJVSWx-08y_oLdylQvZhFVqCCxBtuwB-0s8FQUzFudID1A_PjoIb2aDxSt_2mB7YO_564JWgLzEGvbjyJAgUcnbje7loxy2ZYLyDrHOg2Q-AhaYaEYk3Sqx5psExSPqp1wJvS_H-k_2kGZK23G4RyXRvVGKMnkihIU7O4KXBgAU2agqzCGLkMko1DuoJ3ISVAQRGUlSSVAxWU4qxDNupVNWbNdsFsvIqOZPjtxahyBNs1E-QnW2");'></div>
                     </button>
-                    <button id="logout-btn" class="size-8 flex items-center justify-center text-text-dim hover:text-red-400 transition-all rounded-lg">
-                        <span class="material-symbols-outlined text-sm">logout</span>
+                    <!-- Mobile Hamburger -->
+                    <button id="mobile-hamburger" class="md:hidden flex items-center justify-center size-9 rounded-lg bg-slate-100 dark:bg-slate-800">
+                        <span class="material-symbols-outlined">menu</span>
                     </button>
                 </div>
             </div>
-        </aside>
+        </header>
 
-        <!-- Main Content -->
-        <main class="content-area">
-            <header class="flex items-center justify-between mb-8 flex-wrap gap-4">
-                <div>
-                    <h2 id="current-category-title" class="text-3xl md:text-5xl font-black tracking-tighter text-white">전체 메뉴</h2>
-                    <p class="text-text-dim mt-1 text-sm font-medium">우리만의 소중한 기록들을 확인해보세요.</p>
-                </div>
-                <div class="flex gap-3 header-actions">
-                    <button id="open-write-modal" class="liquid-btn neon-trace flex items-center gap-3 px-6 py-3">
-                        <span class="material-symbols-outlined">add_circle</span>
-                        <span class="font-black uppercase tracking-widest text-xs hidden sm:inline">새로운 이야기</span>
-                    </button>
-                </div>
-            </header>
-
-            <!-- Rules Section -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-                <div class="ultra-card p-8 border-l-4 border-primary">
-                    <div class="flex items-center gap-3 mb-4">
-                        <span class="material-symbols-outlined text-primary">gavel</span>
-                        <h3 class="text-xl font-bold text-white">OurNote 게시물 규칙</h3>
+        <main class="flex-1 w-full max-w-[1200px] mx-auto py-8 px-4 sm:px-6">
+            <div class="flex flex-col gap-12">
+                <!-- Hero Section from code.html -->
+                <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-blue-600 p-8 text-white shadow-xl shadow-primary/20">
+                    <div class="relative z-10">
+                        <span class="inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white backdrop-blur-md mb-4">중요 공지</span>
+                        <h2 class="text-2xl sm:text-3xl font-bold mb-3 leading-tight">우리반만의 특별한 공간<br/>오늘의 새로운 소식을 확인하세요</h2>
+                        <p class="text-blue-50/80 text-sm sm:text-base max-w-lg mb-6 leading-relaxed">선생님이 올린 공지사항과 친구들의 이야기를 한눈에 볼 수 있습니다.</p>
+                        <button id="open-write-modal" class="inline-flex items-center gap-2 bg-white text-primary px-6 py-2.5 rounded-full font-bold text-sm hover:bg-blue-50 transition-colors shadow-lg">
+                            새 이야기 작성하기
+                            <span class="material-symbols-outlined text-[18px]">edit_square</span>
+                        </button>
                     </div>
-                    <ul class="space-y-3 text-sm text-text-dim">
-                        <li class="flex items-start gap-2"><span>1.</span><span>서로를 비방하거나 욕설, 혐오 표현이 담긴 글은 금지입니다.</span></li>
-                        <li class="flex items-start gap-2"><span>2.</span><span>확인되지 않은 루머나 허위 사실 유포 시 게시글이 삭제됩니다.</span></li>
-                        <li class="flex items-start gap-2"><span>3.</span><span>저작권을 침해하거나 남의 자료를 도용하지 않습니다.</span></li>
-                        <li class="flex items-start gap-2"><span>4.</span><span>우리만의 공간인 만큼 소중한 일상과 생각을 자유롭게 나눠요!</span></li>
-                    </ul>
-                </div>
-                <div class="ultra-card p-8 border-l-4 border-accent">
-                    <div class="flex items-center gap-3 mb-4">
-                        <span class="material-symbols-outlined text-accent">chat</span>
-                        <h3 class="text-xl font-bold text-white">댓글 및 반응 규칙</h3>
+                    <div class="absolute -right-10 -bottom-10 opacity-20 transform rotate-12">
+                        <span class="material-symbols-outlined text-[240px]">campaign</span>
                     </div>
-                    <ul class="space-y-3 text-sm text-text-dim">
-                        <li class="flex items-start gap-2"><span>1.</span><span>친구가 쓴 글에 따뜻한 응원과 칭찬의 댓글을 남겨주세요.</span></li>
-                        <li class="flex items-start gap-2"><span>2.</span><span>장난이라도 상대방이 상처받을 수 있는 말은 피합니다.</span></li>
-                        <li class="flex items-start gap-2"><span>3.</span><span>비판은 정중하게, 의견 차이가 있을 땐 예의를 지킵니다.</span></li>
-                        <li class="flex items-start gap-2"><span>4.</span><span>'좋아요' 버튼으로 서로에게 긍정 에너지를 전달해요! ❤️</span></li>
-                    </ul>
-                </div>
-            </div>
+                </section>
 
-            <!-- Posts Grid -->
-            <div id="posts-container" class="post-container">
-                <!-- Skeletons (Initial) -->
-                <div class="ultra-card h-[300px] skeleton"></div>
-                <div class="ultra-card h-[300px] skeleton"></div>
-                <div class="ultra-card h-[300px] skeleton"></div>
+                <section>
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-text-main dark:text-text-main-dark flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary">article</span>
+                            최신 이야기
+                        </h2>
+                        <div class="flex items-center gap-4">
+                             <button id="btn-add-room" class="hidden text-sm text-primary font-bold hover:underline">+ 게시판 추가</button>
+                             <a class="text-sm text-text-secondary hover:text-primary transition-colors" href="#">전체보기 +</a>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Posts Container -->
+                    <div id="posts-container" class="flex flex-col gap-4">
+                         <!-- Posts injected by JS -->
+                    </div>
+                </section>
             </div>
         </main>
+        
+        <!-- Floating Action Button -->
+        <button id="open-write-modal-sidebar" class="fixed bottom-8 right-8 z-40 flex items-center justify-center size-14 rounded-full bg-primary text-white shadow-xl shadow-primary/40 hover:bg-primary-dark transition-all transform hover:scale-105 active:scale-95">
+            <span class="material-symbols-outlined text-[28px]">edit_square</span>
+        </button>
     </div>
 
     <!-- Modals -->

@@ -32,8 +32,8 @@ export function renderPosts(posts) {
     }
 
     filtered.forEach((post, index) => {
-        const card = document.createElement('div');
-        card.className = 'ultra-card overflow-hidden hover:border-primary/30 transition-all';
+        const card = document.createElement('article');
+        card.className = 'group bg-surface-light dark:bg-surface-dark p-5 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-primary/30 transition-all hover:shadow-lg hover:shadow-slate-200/50 cursor-pointer';
         card.style.transitionDelay = `${index * 0.1}s`;
         
         let displayAuthor = post.author || '익명 사용자';
@@ -46,62 +46,61 @@ export function renderPosts(posts) {
         const commentCount = post.comments ? post.comments.length : 0;
 
         card.innerHTML = `
-            <div class="p-6">
-                <div class="flex items-center gap-3 mb-5">
-                    <div class="size-10 rounded-full bg-slate-100 flex items-center justify-center text-primary shrink-0 border border-white/10">
-                         <span class="material-symbols-outlined text-[20px]">person</span>
+            <div class="flex items-start gap-4" onclick="window.toggleComments(${post.id})">
+                <div class="shrink-0">
+                    <div class="size-12 rounded-full bg-slate-100 flex items-center justify-center text-primary">
+                        <span class="material-symbols-outlined">person</span>
                     </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2">
-                             <span class="text-xs font-bold text-primary px-2 py-0.5 rounded-md bg-primary/10 tracking-tight">${post.category}</span>
-                             <span class="text-[10px] text-text-dim opacity-50">•</span>
-                             <span class="text-[11px] text-text-dim">${post.date}</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-xs font-bold text-primary">${post.category}</span>
+                        <span class="text-[10px] text-text-secondary">•</span>
+                        <span class="text-xs text-text-secondary">${post.date}</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-text-main dark:text-text-main-dark mb-1 truncate group-hover:text-primary transition-colors">${post.title}</h3>
+                    <p class="text-sm text-text-secondary dark:text-text-secondary-dark line-clamp-2 mb-3">${post.content}</p>
+                    
+                    ${post.image_url ? `
+                        <div class="mb-3 rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800">
+                            <img src="${post.image_url}" class="w-full max-h-48 object-cover">
                         </div>
-                        <p class="text-[11px] font-bold text-white/70 truncate mt-0.5">${displayAuthor}</p>
+                    ` : ''}
+
+                    <div class="flex items-center justify-between text-text-secondary text-xs">
+                        <span class="font-medium">${displayAuthor}</span>
+                        <div class="flex items-center gap-4">
+                            <button onclick="event.stopPropagation(); window.toggleLikeV4(${post.id}, this)" class="flex items-center gap-1 ${isLiked ? 'text-red-500' : ''}">
+                                <span class="material-symbols-outlined text-[16px]">${isLiked ? 'favorite' : 'favorite_border'}</span>
+                                <span>${Array.isArray(post.likes) ? post.likes.length : (post.likes || 0)}</span>
+                            </button>
+                            <span class="flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[16px]">chat_bubble</span>
+                                <span>${commentCount}</span>
+                            </span>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <h3 class="text-lg font-bold text-white mb-3 leading-snug group-hover:text-primary transition-colors">${post.title}</h3>
-                <p class="text-sm text-text-dim leading-relaxed mb-4 whitespace-pre-wrap">${post.content}</p>
-                
-                ${post.image_url ? `
-                    <div class="mb-4 rounded-xl overflow-hidden border border-white/5">
-                        <img src="${post.image_url}" class="w-full max-h-[400px] object-cover hover:scale-105 transition-transform duration-500">
-                    </div>
-                ` : ''}
-
-                <div class="flex items-center justify-between pt-4 border-t border-white/5">
-                    <div class="flex items-center gap-4">
-                        <button onclick="window.toggleLikeV4(${post.id}, this)" class="flex items-center gap-1.5 ${isLiked ? 'text-red-400' : 'text-text-dim'} hover:scale-110 transition-all">
-                            <span class="material-symbols-outlined text-[20px]">${isLiked ? 'favorite' : 'favorite_border'}</span>
-                            <span class="text-xs font-bold">${Array.isArray(post.likes) ? post.likes.length : (post.likes || 0)}</span>
-                        </button>
-                        <button onclick="window.toggleComments(${post.id})" class="flex items-center gap-1.5 text-text-dim hover:text-primary transition-all">
-                            <span class="material-symbols-outlined text-[20px]">chat_bubble</span>
-                            <span class="text-xs font-bold">${commentCount}</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Comment Section -->
-                <div id="comments-${post.id}" class="hidden mt-6 pt-6 border-t border-white/5 space-y-4">
-                    <div class="comments-list space-y-3">
-                        ${(post.comments || []).map(c => `
-                            <div class="bg-white/[0.03] p-4 rounded-2xl border border-white/5">
-                                <div class="flex justify-between items-center mb-1.5">
-                                    <span class="text-xs font-bold text-primary">${c.author}</span>
-                                    <span class="text-[9px] text-text-dim uppercase tracking-tighter">${c.date}</span>
-                                </div>
-                                <p class="text-sm text-white/90 leading-relaxed">${c.content}</p>
+            <!-- Comment Section (Expanded below the article) -->
+            <div id="comments-${post.id}" class="hidden mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 space-y-3">
+                <div class="comments-list space-y-2">
+                    ${(post.comments || []).map(c => `
+                        <div class="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-xs font-bold text-primary">${c.author}</span>
+                                <span class="text-[10px] text-text-secondary">${c.date}</span>
                             </div>
-                        `).join('')}
-                    </div>
-                    <div class="flex gap-2 mt-6">
-                        <input type="text" placeholder="공감과 따뜻한 댓글을 한 마디..." class="comment-input flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:border-primary/50 outline-none transition-all placeholder:text-white/20">
-                        <button onclick="window.submitComment(${post.id})" class="size-10 flex items-center justify-center bg-primary text-white rounded-xl shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
-                            <span class="material-symbols-outlined text-[18px]">send</span>
-                        </button>
-                    </div>
+                            <p class="text-sm text-text-main dark:text-text-main-dark">${c.content}</p>
+                        </div>
+                    `).join('')}
+                </div>
+                <div class="flex gap-2 mt-4" onclick="event.stopPropagation()">
+                    <input type="text" placeholder="댓글을 입력하세요..." class="comment-input flex-1 bg-slate-100 dark:bg-slate-800 border-none rounded-full px-4 py-2 text-sm focus:ring-1 focus:ring-primary outline-none transition-all">
+                    <button onclick="window.submitComment(${post.id})" class="size-9 flex items-center justify-center bg-primary text-white rounded-full hover:bg-primary-dark transition-all">
+                        <span class="material-symbols-outlined text-[18px]">send</span>
+                    </button>
                 </div>
             </div>
         `;
@@ -227,6 +226,12 @@ export function initPostForm() {
 
         if (!title || !content) {
             showToast('제목과 내용을 모두 입력해주세요.', 'error');
+            return;
+        }
+
+        // Security Guard: Prevent students from posting in restricted categories
+        if (state.currentUser?.role === 'student' && ['notice', 'event', 'homework'].includes(category)) {
+            showToast('학생은 이 카테고리에 게시할 수 없습니다.', 'error');
             return;
         }
 

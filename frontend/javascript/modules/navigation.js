@@ -5,38 +5,58 @@ import { state } from './common.js';
 import { loadPosts } from './posts.js';
 
 export function initNavigation() {
-    const navLinks = document.querySelectorAll('.nav-link');
-    const title = document.getElementById('current-category-title');
-    
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            
-            const cat = link.getAttribute('data-cat');
-            if (!cat) return;
+    // Select all nav links including dynamic ones that might be added later
+    document.addEventListener('click', (e) => {
+        const link = e.target.closest('.nav-link');
+        if (!link) return;
+        
+        const cat = link.getAttribute('data-cat');
+        if (!cat) return;
 
-            // 1. Update State
-            state.currentCategory = cat;
-            
-            // 2. Update UI
-            navLinks.forEach(l => l.classList.remove('active'));
-            link.classList.add('active');
-            
-            if (title) {
-                const name = link.querySelector('span:last-child').textContent;
-                title.textContent = name;
-            }
-            
-            // 3. Load Data
-            loadPosts();
+        e.preventDefault();
+
+        // 1. Update State
+        state.currentCategory = cat;
+        
+        // 2. Update UI
+        document.querySelectorAll('.nav-link').forEach(l => {
+            l.classList.remove('active', 'text-primary', 'bg-primary/5', 'font-bold');
+            l.classList.add('text-text-secondary', 'font-medium');
         });
+        
+        link.classList.add('active', 'text-primary', 'bg-primary/5', 'font-bold');
+        link.classList.remove('text-text-secondary', 'font-medium');
+        
+        // 3. Load Data
+        loadPosts();
     });
     
+    // Mobile Hamburger
+    const hamburger = document.getElementById('mobile-hamburger');
+    const mainNav = document.getElementById('main-nav');
+    if (hamburger && mainNav) {
+        hamburger.addEventListener('click', () => {
+            mainNav.classList.toggle('hidden');
+            mainNav.classList.toggle('flex');
+            mainNav.classList.toggle('flex-col');
+            mainNav.classList.toggle('absolute');
+            mainNav.classList.toggle('top-16');
+            mainNav.classList.toggle('left-0');
+            mainNav.classList.toggle('right-0');
+            mainNav.classList.toggle('bg-surface-light');
+            mainNav.classList.toggle('dark:bg-surface-dark');
+            mainNav.classList.toggle('p-4');
+            mainNav.classList.toggle('border-b');
+            mainNav.classList.toggle('border-slate-200');
+        });
+    }
+
     loadCategories();
+    setupRoomCreation();
 }
 
 export async function loadCategories() {
-    const container = document.getElementById('dynamic-categories');
+    const container = document.getElementById('dynamic-nav-container');
     if (!container) return;
 
     try {
@@ -51,41 +71,22 @@ export async function loadCategories() {
         cats.forEach(cat => {
             const isTeacher = state.currentUser?.role === 'teacher';
             
-            // Sidebar Navigation
+            // Header Navigation (Dynamic)
             const link = document.createElement('a');
             link.href = '#';
-            link.className = 'nav-link flex justify-between group';
+            link.className = 'nav-link px-4 py-2 text-text-secondary dark:text-text-secondary-dark text-sm font-medium hover:text-primary transition-colors flex items-center justify-between group';
             link.setAttribute('data-cat', cat.id);
             link.innerHTML = `
-                <div class="flex items-center gap-3 w-full">
-                    <span class="material-symbols-outlined">${cat.icon || 'forum'}</span>
-                    <span class="truncate pr-4">${cat.name}</span>
-                </div>
-                ${isTeacher ? `<button class="delete-cat-btn hidden group-hover:block text-red-400 hover:text-red-500" data-id="${cat.id}"><span class="material-symbols-outlined text-[14px]">delete</span></button>` : ''}
+                <span class="truncate">${cat.name}</span>
+                ${isTeacher ? `<button class="delete-cat-btn hidden group-hover:block ml-2 text-red-500" data-id="${cat.id}"><span class="material-symbols-outlined text-[14px]">close</span></button>` : ''}
             `;
-            
-            link.addEventListener('click', (e) => {
-                if (e.target.closest('.delete-cat-btn')) {
-                    e.preventDefault();
-                    deleteCategory(cat.id);
-                    return;
-                }
-                
-                e.preventDefault();
-                state.currentCategory = cat.id;
-                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
-                const title = document.getElementById('current-category-title');
-                if (title) title.textContent = cat.name;
-                import('./posts.js').then(p => p.loadPosts());
-            });
             
             container.appendChild(link);
 
             // Write Modal Categories
             if (writeModalOptions) {
                 const opt = document.createElement('div');
-                opt.className = 'custom-option dynamic-option p-4 hover:bg-primary transition-colors cursor-pointer';
+                opt.className = 'custom-option dynamic-option p-4 hover:bg-primary transition-colors cursor-pointer border-b border-white/5';
                 opt.setAttribute('data-value', cat.id);
                 opt.innerHTML = `<span>💬 ${cat.name}</span>`;
                 opt.addEventListener('click', () => {
@@ -152,9 +153,7 @@ async function deleteCategory(id) {
             import('./common.js').then(c => c.showToast('게시판이 삭제되었습니다.'));
             if (state.currentCategory === id) {
                 state.currentCategory = 'all';
-                const title = document.getElementById('current-category-title');
-                if (title) title.textContent = '전체 메뉴';
-                import('./posts.js').then(p => p.loadPosts());
+                loadPosts();
             }
             loadCategories();
         } else {

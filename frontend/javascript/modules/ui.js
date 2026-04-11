@@ -59,8 +59,8 @@ export function initParticles() {
 
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        const isWhite = document.documentElement.getAttribute('data-theme') === 'white';
-        const baseRGB = isWhite ? '0, 0, 0' : '255, 255, 255';
+        const baseRGB = '100, 116, 139'; // Slate-500 for subtle look on white background
+
         
         particles.forEach(p => {
             p.x += p.speedX; p.y += p.speedY;

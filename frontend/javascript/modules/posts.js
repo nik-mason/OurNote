@@ -196,16 +196,22 @@ export function initPostForm() {
 
         if (!trigger || !options) return;
 
-        trigger.addEventListener('click', (e) => {
+        // Toggle dropdown
+        trigger.onclick = (e) => {
+            e.preventDefault();
             e.stopPropagation();
-            // Close other open dropdowns first
+            
+            // Close all other dropdowns
             document.querySelectorAll('.custom-options').forEach(el => {
-                if(el.id !== optionsId) el.classList.add('hidden');
+                if (el !== options) el.classList.add('hidden');
             });
+            
             options.classList.toggle('hidden');
-        });
+        };
 
-        options.addEventListener('click', (e) => {
+        // Option selection
+        options.onclick = (e) => {
+            e.stopPropagation();
             const opt = e.target.closest('.custom-option');
             if (!opt) return;
             
@@ -217,10 +223,11 @@ export function initPostForm() {
             options.classList.add('hidden');
             
             if (onSelect) onSelect(val, txt);
-        });
+        };
     };
 
     // Initialize Category Dropdown
+    const catInput = document.getElementById('post-category');
     setupDropdown('custom-category-trigger', 'custom-category-options', 'post-category', 'selected-category-text', (val) => {
         const hwTarget = document.getElementById('homework-target-container');
         const hwTasks = document.getElementById('homework-tasks-container');
@@ -283,7 +290,7 @@ export function initPostForm() {
     submitBtn.addEventListener('click', async () => {
         const title = document.getElementById('post-title')?.value.trim();
         const content = document.getElementById('post-content')?.value.trim();
-        const category = catInput.value;
+        const category = document.getElementById('post-category')?.value || 'dashboard';
         const isAnonymous = document.getElementById('post-anonymous')?.checked;
         const imageFile = imageInput?.files[0];
 

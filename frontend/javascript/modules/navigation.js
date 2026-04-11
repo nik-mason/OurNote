@@ -36,18 +36,14 @@ export function initNavigation() {
     const mainNav = document.getElementById('main-nav');
     if (hamburger && mainNav) {
         hamburger.addEventListener('click', () => {
-            mainNav.classList.toggle('hidden');
-            mainNav.classList.toggle('flex');
-            mainNav.classList.toggle('flex-col');
-            mainNav.classList.toggle('absolute');
-            mainNav.classList.toggle('top-16');
-            mainNav.classList.toggle('left-0');
-            mainNav.classList.toggle('right-0');
-            mainNav.classList.toggle('bg-surface-light');
-            mainNav.classList.toggle('dark:bg-surface-dark');
-            mainNav.classList.toggle('p-4');
-            mainNav.classList.toggle('border-b');
-            mainNav.classList.toggle('border-slate-200');
+            const isHidden = mainNav.classList.contains('hidden');
+            if (isHidden) {
+                mainNav.classList.remove('hidden');
+                mainNav.classList.add('flex', 'flex-col', 'absolute', 'top-16', 'left-0', 'right-0', 'bg-white', 'p-4', 'border-b', 'border-slate-200', 'shadow-xl', 'animate-slideDownFade');
+            } else {
+                mainNav.classList.add('hidden');
+                mainNav.classList.remove('flex', 'flex-col', 'absolute', 'top-16', 'left-0', 'right-0', 'bg-white', 'p-4', 'border-b', 'border-slate-200', 'shadow-xl', 'animate-slideDownFade');
+            }
         });
     }
 
@@ -74,7 +70,7 @@ export async function loadCategories() {
             // Header Navigation (Dynamic)
             const link = document.createElement('a');
             link.href = '#';
-            link.className = 'nav-link px-4 py-2 text-text-secondary dark:text-text-secondary-dark text-sm font-medium hover:text-primary transition-colors flex items-center justify-between group';
+            link.className = 'nav-link px-3 py-2 text-text-secondary text-sm font-medium hover:text-primary transition-colors flex items-center justify-between group';
             link.setAttribute('data-cat', cat.id);
             link.innerHTML = `
                 <span class="truncate">${cat.name}</span>

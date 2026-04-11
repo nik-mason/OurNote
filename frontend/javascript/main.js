@@ -19,16 +19,19 @@ setTimeout(() => {
 }, 3000);
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Initialize UI Elements
+    // 1. Initialize Global UI
     initSplash();
     initCursor();
     initParticles();
+    
+    // 2. Initialize Auth
     initAuth();
-    initSidebar();
-    initNavigation();
 
-    // 2. Setup Modals
+    // 3. Modular Initialization
     if (state.isDashboard) {
+        console.log("OurNote: Dashboard mode active.");
+        initNavigation();
+        
         setupModal('mobile-modal', 'nav-mobile', 'close-mobile-modal');
         setupModal('settings-modal', 'open-settings-modal', 'close-settings-modal');
         setupModal('write-modal', 'open-write-modal', 'close-write-modal');
@@ -46,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Teacher-only features
         if (state.currentUser?.role === 'teacher') {
+            console.log("OurNote: Teacher role detected.");
             document.querySelectorAll('.hidden-by-role').forEach(el => el.classList.remove('hidden-by-role'));
             document.getElementById('btn-add-room')?.classList.remove('hidden');
             setupModal('room-modal', 'btn-add-room', 'close-room-modal');

@@ -62,7 +62,7 @@
     </style>
 </head>
 
-<body class="overflow-x-hidden font-body bg-deep">
+<body class="overflow-x-hidden font-body bg-background-light">
     <canvas id="particle-canvas"></canvas>
     <div id="cursor-v4"></div>
 
@@ -72,74 +72,61 @@
     <div class="neon-blob bg-purple-500/10 top-[20%] right-[15%]" style="animation-delay: -10s"></div>
 
     <div id="splash-screen"
-        class="fixed inset-0 z-[10000] bg-deep flex flex-col items-center justify-center transition-all duration-1000">
+        class="fixed inset-0 z-[10000] bg-white flex flex-col items-center justify-center transition-all duration-1000">
         <!-- Flying Elements Container -->
         <div id="flying-particles" class="flying-wrap"></div>
 
         <!-- Animated Rings -->
-        <div class="splash-ring" style="animation-delay: 0s"></div>
-        <div class="splash-ring" style="animation-delay: 1s"></div>
-        <div class="splash-ring" style="animation-delay: 2s"></div>
-
+        <div class="splash-ring" style="animation-delay: 0s; border-color: rgba(43, 140, 238, 0.2);"></div>
+        
         <div class="relative z-10 flex flex-col items-center">
-            <div class="relative mb-12">
+            <div class="relative mb-8">
                 <div class="logo-container-ultra">
                     <img src="/assets/ournote_logo.png" alt="OurNote Logo" class="ournote-logo-img">
                 </div>
-                <div class="absolute -inset-12 bg-primary/20 blur-[100px] -z-10 animate-pulse"></div>
             </div>
 
-            <h1 class="splash-glitch-text mb-4" data-text="OURNOTE">OURNOTE</h1>
-            <h2 class="angel-tag text-4xl mb-8">천사반</h2>
-
-            <div
-                class="h-px w-48 bg-gradient-to-right from-transparent via-primary to-transparent opacity-50 mb-6 transition-all duration-1000">
-            </div>
-            <p class="text-text-dim tracking-[15px] text-xs font-black uppercase opacity-70">Angel Ed. v4.2 Ultra</p>
-
-            <div class="ultra-progress-bar">
-                <div class="ultra-progress-inner"></div>
-            </div>
+            <h1 class="text-4xl font-black text-primary tracking-tighter mb-2">OURNOTE</h1>
+            <h2 class="text-2xl font-bold text-text-main mb-6">천사반</h2>
+            
+            <p class="text-text-secondary tracking-[10px] text-[10px] font-black uppercase opacity-70">Angel Ed. v4.2 Ultra</p>
         </div>
     </div>
 
-    <div id="ultra-bar" class="ultra-progress"></div>
+    <div id="ultra-bar" class="ultra-progress bg-primary/20"></div>
 
     <main class="min-h-screen flex items-center justify-center p-6">
-        <div class="ultra-card max-w-lg w-full p-12 relative login-card-v4 active">
+        <div class="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/50 max-w-lg w-full p-12 relative border border-slate-100 login-card-v4 active">
             <!-- Decorative light -->
-            <div class="absolute -top-24 -right-24 size-48 bg-primary/20 blur-[60px] rounded-full"></div>
+            <div class="absolute -top-12 -right-12 size-48 bg-primary/5 blur-[50px] rounded-full"></div>
 
             <div class="text-center mb-12">
-                <div
-                    class="size-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-primary/20 border border-primary/20">
-                    <span class="material-symbols-outlined text-4xl text-primary">login</span>
+                <div class="size-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-primary/20">
+                    <span class="material-symbols-outlined text-4xl text-primary">school</span>
                 </div>
-                <h2 class="text-5xl font-black text-[var(--text-white)] tracking-tighter mb-4">반가워요!</h2>
-                <p class="text-text-dim text-lg">우리만의 소중한 공간으로 들어오세요.</p>
+                <h2 class="text-4xl font-black text-text-main tracking-tighter mb-4">반가워요!</h2>
+                <p class="text-text-secondary text-lg">우리만의 소중한 공간으로 들어오세요.</p>
             </div>
 
-            <div class="flex gap-2 p-1.5 bg-[var(--card-bg)] rounded-2xl mb-10 border border-[var(--glass-border)]">
+            <div class="flex gap-2 p-1.5 bg-slate-50 rounded-2xl mb-10 border border-slate-200/50">
                 <button id="radio-student-btn"
-                    class="flex-1 py-4 rounded-[14px] bg-primary text-[#ffffff] font-bold transition-all shadow-lg shadow-primary/20">학생</button>
+                    class="flex-1 py-4 rounded-[14px] bg-primary text-white font-bold transition-all shadow-lg shadow-primary/20">학생</button>
                 <button id="radio-teacher-btn"
-                    class="flex-1 py-4 rounded-[14px] text-[var(--text-dim)] font-bold hover:text-[var(--text-white)] transition-all">선생님</button>
+                    class="flex-1 py-4 rounded-[14px] text-text-secondary font-bold hover:text-text-main transition-all">선생님</button>
                 <input type="hidden" id="login-mode" value="student">
             </div>
 
             <div id="student-fields" class="space-y-6">
                 <div class="relative">
-                    <span
-                        class="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-dim">pin</span>
+                    <span class="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-secondary">pin</span>
                     <input type="text" id="student-id"
-                        class="w-full bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-2xl py-5 pl-14 pr-6 text-[var(--text-white)] outline-none focus:border-primary transition-all placeholder:text-text-dim"
+                        class="w-full bg-slate-50 border border-slate-200/50 rounded-2xl py-5 pl-14 pr-6 text-text-main outline-none focus:border-primary transition-all placeholder:text-text-secondary"
                         placeholder="출석 번호 (01)">
                 </div>
                 <div class="relative">
-                    <span
-                        class="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-dim">person</span>
+                    <span class="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-secondary">person</span>
                     <input type="text" id="student-name"
-                        class="w-full bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-2xl py-5 pl-14 pr-6 text-[var(--text-white)] outline-none focus:border-primary transition-all placeholder:text-text-dim"
+                        class="w-full bg-slate-50 border border-slate-200/50 rounded-2xl py-5 pl-14 pr-6 text-text-main outline-none focus:border-primary transition-all placeholder:text-text-secondary"
                         placeholder="이름">
                 </div>
             </div>

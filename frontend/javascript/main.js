@@ -7,6 +7,8 @@ import { initSplash, initCursor, initParticles, setupModal, initSidebar } from '
 import { loadPosts, initPostForm } from './modules/posts.js?v=4.0';
 import { initAuth } from './modules/auth.js?v=4.0';
 import { initNavigation, setupRoomCreation } from './modules/navigation.js?v=4.0';
+import { initWriteModal } from './modules/popups/write-modal.js?v=4.0';
+import { initPostDetailModal } from './modules/popups/post-detail-modal.js?v=4.0';
 
 // GLOBAL FAILSAFE: Ensure splash disappears even if script fails
 setTimeout(() => {
@@ -42,7 +44,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Load initial data
         loadPosts();
-        initPostForm();
+        initWriteModal();
+        initPostDetailModal();
+        initPostForm(); // Keep legacy for compatibility during transition if needed
         
         // Display user name
         const usernameDisplay = document.getElementById('display-username');

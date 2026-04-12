@@ -132,7 +132,7 @@
     padding: 1.25rem 1.5rem !important;
     font-size: 1rem !important;
     border-radius: 1.25rem !important;
-    justify-content: flex-start !important;
+    justify-content: center !important;
     background: var(--bg-deep) !important;
     margin-bottom: 0.25rem !important;
 }

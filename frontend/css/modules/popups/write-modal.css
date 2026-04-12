@@ -1,0 +1,28 @@
+/* 
+   OURNOTE: WRITE MODAL MODULE
+   Dedicated styles for the story creation interface.
+*/
+
+#write-modal .modal-v4 {
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Custom Grid Adjustment if needed */
+@media (min-width: 1024px) {
+    #write-modal .visual-section {
+        width: 40%;
+    }
+    #write-modal .form-section {
+        width: 60%;
+    }
+}
+
+/* Custom categories chips */
+.post-cat-chip {
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.post-cat-chip.active {
+    transform: scale(1.05);
+    box-shadow: 0 10px 25px var(--primary-glow);
+}

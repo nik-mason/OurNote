@@ -1,0 +1,13 @@
+/* 
+   OURNOTE: ROOM MODAL MODULE
+   Dedicated styles for creating new categories.
+*/
+
+#room-modal .modal-v4 {
+    background: #ffffff;
+}
+
+#room-modal input {
+    text-align: center;
+    letter-spacing: -0.02em;
+}

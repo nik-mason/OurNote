@@ -1,0 +1,28 @@
+/* 
+   OURNOTE: NAVIGATION MODAL MODULE
+   Dedicated styles for the full-screen hamburger menu.
+*/
+
+#main-nav.forced-open {
+    /* Centralized layout managed in modals.css and layout.css */
+    /* Add extra polish here */
+}
+
+#main-nav.forced-open .nav-link {
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    margin: 0.5rem 0;
+}
+
+#main-nav.forced-open .nav-link:hover {
+    transform: scale(1.1);
+    letter-spacing: 2px;
+}
+
+/* Close button specific */
+#close-mobile-menu {
+    transition: transform 0.3s ease;
+}
+
+#close-mobile-menu:hover {
+    transform: rotate(90deg);
+}

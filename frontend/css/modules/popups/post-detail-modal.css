@@ -1,0 +1,23 @@
+/* 
+   OURNOTE: POST DETAIL MODAL MODULE
+   Dedicated styles for viewing post details in full screen.
+*/
+
+#post-detail-modal .modal-v4 {
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Specific content scaling */
+#post-detail-modal .post-content-body {
+    line-height: 1.8;
+    color: var(--text-main);
+}
+
+/* Image section zoom effect */
+#post-detail-modal .detail-image-container img {
+    transition: transform 0.8s ease;
+}
+
+#post-detail-modal .detail-image-container:hover img {
+    transform: scale(1.05);
+}

@@ -94,21 +94,10 @@
 /* Mobile Responsive */
 /* Mobile Navigation Forced Open State */
 #main-nav.forced-open {
-    display: flex !important;
-    flex-direction: column !important;
-    position: fixed !important;
-    inset: 0 !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    max-width: none !important;
-    max-height: none !important;
-    background: white !important;
-    padding: 2rem !important;
-    z-index: 10000 !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
-    overflow-y: auto !important;
+/* Modal transitions are now handled in modals.css */
+@keyframes slideUpFade {
+    from { opacity: 0; transform: translateY(50px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* Remove pseudo-element backdrop since main-nav is now full screen */

@@ -29,26 +29,56 @@
     -webkit-backdrop-filter: blur(10px) !important;
 }
 
-/* Modal Body - Now Full Screen */
-.modal-v4 {
+/* Navigation Specific Full Screen */
+#main-nav.forced-open {
+    display: flex !important;
+    flex-direction: column !important;
+    position: fixed !important;
+    inset: 0 !important;
     width: 100vw !important;
     height: 100vh !important;
     max-width: none !important;
     max-height: none !important;
+    background: white !important;
+    padding: 2rem !important;
+    z-index: 10000 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+    overflow-y: auto !important;
+}
+
+/* Modal Body - Flexible & Centered */
+.modal-v4 {
+    width: 95%;
+    max-width: 500px;
+    height: auto;
+    max-height: 90vh;
     display: flex;
     flex-direction: column;
-    transform: translateY(50px);
+    transform: translateY(50px) scale(0.95);
     opacity: 0;
     transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
     pointer-events: auto;
     background: white;
-    border-radius: 0 !important;
+    border-radius: 2.5rem !important;
     overflow: hidden;
-    box-shadow: none;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    margin: auto !important;
+    position: relative;
+    z-index: 10001;
+}
+
+/* Full Screen Variant (For Navigation) */
+.modal-v4.full-screen {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 0 !important;
     margin: 0 !important;
     position: fixed !important;
     inset: 0 !important;
-    z-index: 10001 !important;
 }
 
 /* Centering insurance for Flex */

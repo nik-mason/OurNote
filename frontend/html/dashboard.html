@@ -97,7 +97,7 @@
                     </div>
                     
                     <!-- Main Navigation (Always Popup) -->
-                    <nav class="hidden" id="main-nav">
+                    <nav class="hidden forced-open" id="main-nav">
                         <div class="mb-12 relative w-full flex flex-col items-center">
                             <button id="close-mobile-modal" class="absolute top-0 right-0 size-12 rounded-2xl bg-slate-100 flex items-center justify-center text-text-secondary hover:bg-primary hover:text-white transition-all shadow-lg active:scale-95 z-[100]">
                                 <span class="material-symbols-outlined text-3xl">close</span>
@@ -158,6 +158,9 @@
                             설치
                         </button>
                         
+                        <button id="open-qr-modal" class="flex items-center justify-center size-10 rounded-xl bg-slate-100 text-text-secondary hover:text-primary transition-all shadow-sm">
+                            <span class="material-symbols-outlined">qr_code</span>
+                        </button>
                         <button id="mobile-hamburger" class="flex items-center justify-center size-10 rounded-xl bg-slate-100 text-text-secondary hover:text-primary transition-all shadow-sm">
                             <span class="material-symbols-outlined">menu</span>
                         </button>

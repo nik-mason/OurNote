@@ -1,0 +1,36 @@
+<div id="qr-modal" class="fixed inset-0 z-[3000] hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-md modal-overlay" id="close-qr-modal-overlay"></div>
+    <div class="relative z-10 ultra-card modal-v4 full-screen w-full h-full max-w-none p-0 flex flex-col lg:flex-row overflow-hidden bg-white border-0 shadow-none">
+        
+        <!-- Decoration Left -->
+        <div class="lg:w-2/5 w-full h-[30vh] lg:h-full bg-slate-900 flex flex-col items-center justify-center p-12 relative overflow-hidden text-white text-center">
+            <div class="absolute inset-0 bg-primary/20 backdrop-blur-3xl"></div>
+            <div class="relative z-10 space-y-6">
+                <div class="size-24 md:size-32 rounded-[2.5rem] bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center mx-auto shadow-2xl">
+                    <span class="material-symbols-outlined text-5xl md:text-7xl">qr_code_2</span>
+                </div>
+                <h2 class="text-4xl md:text-6xl font-black tracking-tighter italic uppercase">모바일 접속</h2>
+                <p class="text-slate-300 text-sm md:text-lg font-medium opacity-80">QR 코드를 스캔하여 모바일에서 만나보세요.</p>
+            </div>
+            <button id="close-qr-modal" class="absolute top-6 left-6 size-12 rounded-2xl bg-white/10 backdrop-blur-md hover:bg-white/20 transition-all flex items-center justify-center border border-white/20 z-[100] text-white">
+                <span class="material-symbols-outlined text-3xl">arrow_back</span>
+            </button>
+        </div>
+
+        <!-- Content Right -->
+        <div class="lg:w-3/5 w-full h-full flex flex-col bg-white overflow-y-auto p-8 md:p-24 justify-center items-center">
+            <div class="max-w-md mx-auto w-full space-y-12 text-center">
+                <div class="p-8 bg-slate-50 rounded-[3rem] border border-slate-100 shadow-inner inline-block">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=https://our-note.vercel.app" 
+                         alt="QR Code" 
+                         class="size-64 md:size-80 mx-auto rounded-2xl shadow-2xl">
+                </div>
+                
+                <div class="space-y-4">
+                    <p class="text-text-secondary text-lg font-bold">our-note.vercel.app</p>
+                    <button class="px-8 py-4 rounded-full bg-primary/10 text-primary font-black text-sm uppercase tracking-widest hover:bg-primary hover:text-white transition-all">복사하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

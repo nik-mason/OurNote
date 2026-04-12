@@ -31,31 +31,11 @@ export function initNavigation() {
         loadPosts();
     });
     
-    // Mobile Hamburger
-    const hamburger = document.getElementById('mobile-hamburger');
-    const mainNav = document.getElementById('main-nav');
-    const hamIcon = hamburger?.querySelector('.material-symbols-outlined');
-
-    if (hamburger && mainNav) {
-        hamburger.addEventListener('click', () => {
-            const isForced = mainNav.classList.contains('forced-open');
-            if (!isForced) {
-                mainNav.classList.add('forced-open');
-                mainNav.classList.remove('hidden');
-                document.body.style.overflow = 'hidden';
-            } else {
-                mainNav.classList.remove('forced-open');
-                mainNav.classList.add('hidden');
-                document.body.style.overflow = 'auto';
-            }
-        });
-
-        document.getElementById('close-mobile-menu')?.addEventListener('click', () => {
-            mainNav.classList.remove('forced-open');
-            mainNav.classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        });
-    }
+    // Mobile Hamburger (Visibility handled by setupModal in main.js)
+    // We only handle body lock/unlock here if needed, or better yet, leave it to the modal logic.
+    // However, setupModal in ui.js handles visibility via 'hidden' class.
+    
+    // Unified Logout Logic
 
     // Unified Logout Logic
     const logoutAction = () => {

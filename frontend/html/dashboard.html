@@ -97,38 +97,48 @@
                     </div>
                     
                     <!-- Main Navigation (Always Popup) -->
-                    <nav class="hidden forced-open" id="main-nav">
-                        <div class="mb-12 relative w-full flex flex-col items-center">
-                            <button id="close-mobile-modal" class="absolute top-0 right-0 size-12 rounded-2xl bg-slate-100 flex items-center justify-center text-text-secondary hover:bg-primary hover:text-white transition-all shadow-lg active:scale-95 z-[100]">
-                                <span class="material-symbols-outlined text-3xl">close</span>
-                            </button>
-                             <div class="size-20 rounded-[2rem] bg-primary/10 flex items-center justify-center text-primary mx-auto mb-4">
-                                <span class="material-symbols-outlined text-4xl">school</span>
+                    <nav class="hidden forced-open fixed inset-0 z-[10000]" id="main-nav">
+                        <div class="absolute inset-0 bg-black/60 backdrop-blur-md modal-overlay" id="close-nav-overlay"></div>
+                        <div class="relative z-10 ultra-card modal-v4 full-screen w-full h-full max-w-none p-0 flex flex-col lg:flex-row overflow-hidden bg-white border-0 shadow-none">
+                            
+                            <!-- GRID LEFT: Visual Section (Top on Mobile) -->
+                            <div class="lg:w-2/5 w-full h-[30vh] lg:h-full bg-slate-900 flex flex-col items-center justify-center p-12 relative overflow-hidden text-white text-center">
+                                <div class="absolute inset-0 bg-primary/20 backdrop-blur-3xl"></div>
+                                <div class="relative z-10 space-y-6">
+                                    <div class="size-24 md:size-32 rounded-[2.5rem] bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center mx-auto shadow-2xl">
+                                        <span class="material-symbols-outlined text-5xl md:text-7xl">explore</span>
+                                    </div>
+                                    <h2 class="text-4xl md:text-6xl font-black tracking-tighter italic uppercase text-white">OurNote<br>Explore</h2>
+                                    <p class="text-slate-300 text-sm md:text-lg font-medium opacity-80">어디로 떠나볼까요?</p>
+                                </div>
+                                <button id="close-mobile-modal" class="absolute top-6 left-6 size-12 rounded-2xl bg-white/10 backdrop-blur-md hover:bg-white/20 transition-all flex items-center justify-center border border-white/20 z-[100] text-white">
+                                    <span class="material-symbols-outlined text-3xl">arrow_back</span>
+                                </button>
                             </div>
-                            <h2 class="text-4xl font-black italic tracking-tighter uppercase text-text-main text-center">Navigation</h2>
-                        </div>
 
-                        <!-- Categories vertically stacked -->
-                        <div class="flex flex-col items-center gap-4 w-full">
-                            <a class="nav-link w-full max-w-sm justify-center py-5 text-2xl font-black rounded-3xl bg-slate-100 hover:bg-primary hover:text-white transition-all group flex items-center gap-3 active" href="#" data-cat="all">
-                                <span class="material-symbols-outlined group-hover:scale-125 transition-transform">grid_view</span>
-                                전체보기
-                            </a>
-                            <a class="nav-link w-full max-w-sm justify-center py-5 text-2xl font-black rounded-3xl bg-slate-100 hover:bg-primary hover:text-white transition-all group flex items-center gap-3" href="#" data-cat="notice">공지사항</a>
-                            <a class="nav-link w-full max-w-sm justify-center py-5 text-2xl font-black rounded-3xl bg-slate-100 hover:bg-primary hover:text-white transition-all group flex items-center gap-3" href="#" data-cat="event">이벤트</a>
-                            <a class="nav-link w-full max-w-sm justify-center py-5 text-2xl font-black rounded-3xl bg-slate-100 hover:bg-primary hover:text-white transition-all group flex items-center gap-3" href="#" data-cat="homework">숙제확인</a>
-                            <div id="dynamic-nav-container" class="flex flex-col items-center gap-4 w-full"></div>
-                        </div>
+                            <!-- GRID RIGHT: Links Section (Bottom on Mobile) -->
+                            <div class="lg:w-3/5 w-full h-full flex flex-col bg-white overflow-y-auto p-8 md:p-24 justify-center items-center">
+                                <div class="max-w-md mx-auto w-full space-y-8">
+                                    <!-- Categories vertically stacked -->
+                                    <div class="flex flex-col items-center gap-4 w-full">
+                                        <a class="nav-link w-full py-6 text-3xl font-black rounded-3xl bg-slate-50 hover:bg-primary hover:text-white transition-all group flex items-center justify-center gap-4 active" href="#" data-cat="all">
+                                            <span class="material-symbols-outlined group-hover:scale-125 transition-transform">grid_view</span>
+                                            전체보기
+                                        </a>
+                                        <a class="nav-link w-full py-6 text-3xl font-black rounded-3xl bg-slate-50 hover:bg-primary hover:text-white transition-all group flex items-center justify-center gap-4" href="#" data-cat="notice">공지사항</a>
+                                        <a class="nav-link w-full py-6 text-3xl font-black rounded-3xl bg-slate-50 hover:bg-primary hover:text-white transition-all group flex items-center justify-center gap-4" href="#" data-cat="event">이벤트</a>
+                                        <a class="nav-link w-full py-6 text-3xl font-black rounded-3xl bg-slate-50 hover:bg-primary hover:text-white transition-all group flex items-center justify-center gap-4" href="#" data-cat="homework">숙제확인</a>
+                                        <div id="dynamic-nav-container" class="flex flex-col items-center gap-4 w-full"></div>
+                                    </div>
 
-                        <div class="flex flex-col gap-6 p-8 mt-12 w-full max-w-sm" id="nav-logout-header">
-                             <button id="pwa-install-btn-mobile" class="hidden w-full py-6 rounded-[2rem] bg-primary/10 text-primary font-black text-lg flex items-center justify-center gap-3">
-                                <span class="material-symbols-outlined">download</span>
-                                OurNote 앱 설치
-                            </button>
-                            <button id="logout-btn-mobile" class="w-full text-center py-4 text-accent font-black uppercase tracking-widest text-sm transition-colors flex items-center justify-center gap-2 hover:scale-110">
-                                <span class="material-symbols-outlined">logout</span>
-                                EXIT PORTAL
-                            </button>
+                                    <div class="flex flex-col gap-6 pt-12 border-t border-slate-100 w-full" id="nav-logout-header">
+                                        <button id="logout-btn-mobile" class="w-full text-center py-4 text-accent font-black uppercase tracking-widest text-sm transition-colors flex items-center justify-center gap-2 hover:scale-110">
+                                            <span class="material-symbols-outlined">logout</span>
+                                            EXIT PORTAL
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </nav>
                 </div>

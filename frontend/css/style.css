@@ -974,7 +974,7 @@ body.dark-mode .login-card {
 }
 
 .card-header h1 {
-    font-family: 'Lexend', sans-serif;
+    font-family: 'Cafe24SsurroundAir', sans-serif;
     font-size: 2rem;
     font-weight: 900;
     color: #0f172a;
@@ -1425,7 +1425,7 @@ body.dark-mode .card-footer {
 
 /* Hyper Fonts */
 body {
-    font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+    font-family: 'Cafe24SsurroundAir', sans-serif;
 }
 
 h1,
@@ -1434,7 +1434,7 @@ h3,
 .dashboard-logo-text,
 .nav-item,
 button {
-    font-family: 'Montserrat', 'Pretendard', sans-serif;
+    font-family: 'Cafe24SsurroundAir', sans-serif;
 }
 
 /* Keyframes Zoo */
@@ -1682,7 +1682,7 @@ body.dashboard-active {
 }
 
 .dashboard-logo-text {
-    font-family: 'Lexend', sans-serif;
+    font-family: 'Cafe24SsurroundAir', sans-serif;
 }
 
 /* Navbar */

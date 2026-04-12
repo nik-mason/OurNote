@@ -78,16 +78,34 @@ export async function loadCategories() {
         const res = await fetch('/api/categories');
         const cats = await res.json();
         
-        container.innerHTML = '';
-        const writeModalOptions = document.getElementById('custom-category-options');
-        const dynamicWriteOptions = writeModalOptions ? Array.from(writeModalOptions.querySelectorAll('.dynamic-option')) : [];
-        dynamicWriteOptions.forEach(opt => opt.remove());
+        const chipContainer = document.getElementById('category-chips');
+        if (chipContainer) {
+            chipContainer.innerHTML = '';
+            // 1. Static Core Categories
+            const core = [
+                { id: 'dashboard', name: '✨ 대시보드' },
+                { id: 'notice', name: '📢 공지사항', teacherOnly: true },
+                { id: 'event', name: '🎉 이벤트', teacherOnly: true },
+                { id: 'homework', name: '📝 숙제', teacherOnly: true }
+            ];
 
+            core.concat(cats).forEach(cat => {
+                const isTeacher = state.currentUser?.role === 'teacher';
+                if (cat.teacherOnly && !isTeacher) return;
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = `post-cat-chip px-4 py-2 rounded-2xl font-bold transition-all ${cat.id === 'dashboard' ? 'active bg-primary text-white' : 'bg-slate-100 text-slate-500'}`;
+                btn.setAttribute('data-value', cat.id);
+                btn.innerHTML = `<span>${cat.name}</span>`;
+                chipContainer.appendChild(btn);
+            });
+        }
+
+        // Header Navigation (Dynamic)
+        container.innerHTML = '';
         cats.forEach(cat => {
             const isTeacher = state.currentUser?.role === 'teacher';
-            console.log('OurNote: Rendering category', cat.id, 'Teacher:', isTeacher);
-            
-            // Header Navigation (Dynamic)
             const link = document.createElement('a');
             link.href = '#';
             link.className = 'nav-link px-3 py-2 text-text-secondary text-sm font-medium hover:text-primary transition-colors flex items-center justify-between group';
@@ -107,20 +125,6 @@ export async function loadCategories() {
                     e.stopPropagation(); // Don't trigger navigation
                     deleteCategory(cat.id);
                 });
-            }
-
-            // Write Modal Categories
-            if (writeModalOptions) {
-                const opt = document.createElement('div');
-                opt.className = 'custom-option dynamic-option p-4 hover:bg-primary transition-colors cursor-pointer border-b border-slate-100';
-                opt.setAttribute('data-value', cat.id);
-                opt.innerHTML = `<span>💬 ${cat.name}</span>`;
-                opt.addEventListener('click', () => {
-                    document.getElementById('selected-category-text').textContent = `💬 ${cat.name}`;
-                    document.getElementById('post-category').value = cat.id;
-                    writeModalOptions.classList.add('hidden');
-                });
-                writeModalOptions.appendChild(opt);
             }
         });
     } catch (err) {

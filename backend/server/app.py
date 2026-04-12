@@ -207,6 +207,15 @@ def add_comment(post_id):
             return {"success": True, "comment": new_comment}
     return {"error": "Not found"}, 404
 
+@app.route('/api/posts/<int:post_id>', methods=['DELETE'])
+def delete_post(post_id):
+    posts = pull_data('posts.json')
+    new_posts = [p for p in posts if p.get('id') != post_id]
+    if len(new_posts) == len(posts):
+        return {"error": "Post not found"}, 404
+    push_data('posts.json', new_posts)
+    return {"success": True}
+
 @app.route('/api/upload', methods=['POST'])
 def upload_image():
     try:

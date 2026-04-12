@@ -281,84 +281,71 @@ export function initPostForm() {
     const submitBtn = document.getElementById('submit-post');
     if (!submitBtn) return;
 
-    // NEW: Fully Delegated Dropdown System (Resilient to dynamic content)
+    // NEW: Chip-based selection system (Replacing broken dropdowns)
     document.addEventListener('click', (e) => {
-        const trigger = e.target.closest('[id$="-trigger"]');
-        if (trigger) {
-            e.preventDefault();
-            e.stopPropagation();
+        // Category Chips
+        const catChip = e.target.closest('.post-cat-chip');
+        if (catChip) {
+            document.querySelectorAll('.post-cat-chip').forEach(c => {
+                c.classList.remove('active', 'bg-primary', 'text-white');
+                c.classList.add('bg-slate-100', 'text-slate-500');
+            });
+            catChip.classList.add('active', 'bg-primary', 'text-white');
+            catChip.classList.remove('bg-slate-100', 'text-slate-500');
             
-            const optionsId = trigger.id.replace('trigger', 'options');
-            const options = document.getElementById(optionsId);
+            const val = catChip.getAttribute('data-value');
+            document.getElementById('post-category').value = val;
             
-            if (options) {
-                // Close others
-                document.querySelectorAll('.custom-options').forEach(el => {
-                    if (el !== options) el.classList.add('hidden');
-                });
-                options.classList.toggle('hidden');
+            // Homework toggle
+            const hwTarget = document.getElementById('homework-target-container');
+            const hwTasks = document.getElementById('homework-tasks-container');
+            if (val === 'homework') {
+                hwTarget?.classList.remove('hidden');
+                hwTasks?.classList.remove('hidden');
+                initStudentSelection();
+            } else {
+                hwTarget?.classList.add('hidden');
+                hwTasks?.classList.add('hidden');
             }
             return;
         }
 
-        const option = e.target.closest('.custom-option');
-        if (option) {
-            const container = option.closest('.custom-options');
-            const triggerId = container.id.replace('options', 'trigger');
-            const inputId = container.id.replace('custom-', 'post-').replace('-options', '');
-            const textId = container.id.replace('custom-', 'selected-').replace('-options', '-text');
-
-            // Find related elements
-            const input = document.getElementById(inputId) || document.getElementById('post-category'); // Fallback
-            const textDisplay = document.getElementById(textId);
-            
-            if (input) input.value = option.getAttribute('data-value');
-            if (textDisplay) textDisplay.textContent = option.textContent;
-            
-            container.classList.add('hidden');
-
-            // Special logic for Category
-            if (container.id === 'custom-category-options') {
-                const val = option.getAttribute('data-value');
-                const hwTarget = document.getElementById('homework-target-container');
-                const hwTasks = document.getElementById('homework-tasks-container');
-                if (val === 'homework') {
-                    hwTarget?.classList.remove('hidden');
-                    hwTasks?.classList.remove('hidden');
-                    // Explicitly call student loader
-                    const studentsList = document.getElementById('student-options-list');
-                    if (studentsList && studentsList.children.length <= 1) {
-                         initStudentSelection();
-                    }
-                } else {
-                    hwTarget?.classList.add('hidden');
-                    hwTasks?.classList.add('hidden');
-                }
-            }
-        } else {
-            // Global close when clicking anything else
-            document.querySelectorAll('.custom-options').forEach(el => el.classList.add('hidden'));
+        // Student Chips
+        const stuChip = e.target.closest('.stu-chip');
+        if (stuChip) {
+            document.querySelectorAll('.stu-chip').forEach(c => {
+                c.classList.remove('active', 'bg-primary', 'text-white');
+                c.classList.add('bg-slate-100', 'text-slate-500');
+            });
+            stuChip.classList.add('active', 'bg-primary', 'text-white');
+            stuChip.classList.remove('bg-slate-100', 'text-slate-500');
+            document.getElementById('homework-target-student-val').value = stuChip.getAttribute('data-value');
+            return;
         }
+
+        // Keep old delegated dropdown close for other parts if any
+        document.querySelectorAll('.custom-options').forEach(el => el.classList.add('hidden'));
     });
 
-    // Initialize Student Selection Dropdown (For Homework)
+    // Initialize Student Selection Chips (For Homework)
     const initStudentSelection = async () => {
-        const list = document.getElementById('student-options-list');
-        if (!list) return;
+        const container = document.getElementById('student-chips');
+        if (!container) return;
 
         try {
             const res = await fetch('/api/students');
             const students = await res.json();
             
-            // Keep "All" option
-            list.innerHTML = '<div class="custom-option p-4 hover:bg-primary/10 transition-colors cursor-pointer border-b border-slate-100" data-value="all">🌍 전체 공개</div>';
+            // Clear existing but keep "All"
+            container.innerHTML = '<button type="button" class="stu-chip active px-4 py-2 rounded-xl bg-primary text-white font-bold text-xs" data-value="all">🌍 전체 공개</button>';
             
             students.forEach(s => {
-                const opt = document.createElement('div');
-                opt.className = 'custom-option p-4 hover:bg-primary/10 transition-colors cursor-pointer border-b border-slate-100';
-                opt.setAttribute('data-value', s.id);
-                opt.innerHTML = `<span class="font-bold">${s.name}</span> <span class="text-[10px] opacity-40 ml-2">#${s.id}</span>`;
-                list.appendChild(opt);
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'stu-chip px-4 py-2 rounded-xl bg-slate-100 text-slate-500 font-bold text-xs transition-all';
+                btn.setAttribute('data-value', s.id);
+                btn.textContent = s.name;
+                container.appendChild(btn);
             });
         } catch (err) {
             console.error('Failed to load students', err);

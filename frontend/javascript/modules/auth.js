@@ -33,6 +33,60 @@ export function initAuth() {
     });
 
     // 2. Login Execution
+    let pendingUser = null;
+    let pinBuffer = "";
+
+    const openPinModal = (user) => {
+        pendingUser = user;
+        pinBuffer = "";
+        updatePinDisplay();
+        document.getElementById('pin-target-name').textContent = `${user.name}님, 비밀번호를 입력하세요`;
+        const modal = document.getElementById('pin-modal');
+        modal.classList.remove('hidden');
+        setTimeout(() => modal.querySelector('.modal-v4')?.classList.add('active'), 10);
+        document.getElementById('pin-input-real').focus();
+    };
+
+    const updatePinDisplay = () => {
+        const dots = document.querySelectorAll('.pin-dot');
+        dots.forEach((dot, i) => {
+            if (i < pinBuffer.length) {
+                dot.classList.add('bg-primary', 'border-primary', 'scale-125');
+                dot.classList.remove('border-slate-200');
+            } else {
+                dot.classList.remove('bg-primary', 'border-primary', 'scale-125');
+                dot.classList.add('border-slate-200');
+            }
+        });
+
+        if (pinBuffer.length === 6) {
+            validatePin();
+        }
+    };
+
+    const validatePin = () => {
+        if (pendingUser && pinBuffer === (pendingUser.pin || "000000")) {
+            const userData = { ...pendingUser, role: 'student' };
+            localStorage.setItem('currentUser', JSON.stringify(userData));
+            showToast(`${pendingUser.name}님, 환영합니다!`, 'success');
+            
+            // Success animation
+            document.querySelectorAll('.pin-dot').forEach(d => d.classList.add('bg-green-500', 'border-green-500'));
+            
+            setTimeout(() => window.location.href = '/dashboard', 800);
+        } else {
+            showToast('비밀번호가 틀렸습니다.', 'error');
+            pinBuffer = "";
+            // Shake animation
+            const modalBody = document.querySelector('#pin-modal .modal-v4');
+            modalBody.classList.add('animate-shake');
+            setTimeout(() => {
+                modalBody.classList.remove('animate-shake');
+                updatePinDisplay();
+            }, 500);
+        }
+    };
+
     loginBtn.addEventListener('click', async () => {
         const mode = loginMode.value;
         
@@ -51,10 +105,7 @@ export function initAuth() {
                 const user = students.find(s => s.id === id && s.name === name);
 
                 if (user) {
-                    const userData = { ...user, role: 'student' };
-                    localStorage.setItem('currentUser', JSON.stringify(userData));
-                    showToast(`${user.name}님, 환영합니다!`);
-                    setTimeout(() => window.location.href = '/dashboard', 1000);
+                    openPinModal(user);
                 } else {
                     showToast('학생 정보를 찾을 수 없습니다.', 'error');
                 }
@@ -86,5 +137,41 @@ export function initAuth() {
                 showToast('서버 연결 오류가 발생했습니다.', 'error');
             }
         }
+    });
+
+    // PIN Keypad Events
+    document.querySelectorAll('.keypad-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (pinBuffer.length < 6) {
+                pinBuffer += btn.getAttribute('data-val');
+                updatePinDisplay();
+            }
+        });
+    });
+
+    document.getElementById('pin-clear')?.addEventListener('click', () => {
+        pinBuffer = "";
+        updatePinDisplay();
+    });
+
+    document.getElementById('pin-delete')?.addEventListener('click', () => {
+        pinBuffer = pinBuffer.slice(0, -1);
+        updatePinDisplay();
+    });
+
+    // PC Keyboard Support
+    document.getElementById('pin-input-real')?.addEventListener('input', (e) => {
+        const val = e.target.value;
+        pinBuffer = val.substring(0, 6);
+        updatePinDisplay();
+        e.target.value = pinBuffer; // sync back if exceeded
+    });
+
+    // Close Modal
+    document.getElementById('close-pin-modal')?.addEventListener('click', () => {
+        document.getElementById('pin-modal').classList.add('hidden');
+    });
+    document.getElementById('close-pin-overlay')?.addEventListener('click', () => {
+        document.getElementById('pin-modal').classList.add('hidden');
     });
 }

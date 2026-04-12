@@ -166,9 +166,40 @@ def add_homework():
     hws = pull_data('homework.json') or []
     new_hw['id'] = int(time.time())
     new_hw['date'] = time.strftime('%Y-%m-%d')
+    # assigned_students should be a list of student IDs
+    if 'assigned_students' not in new_hw:
+        new_hw['assigned_students'] = [new_hw.get('student_id', 'all')]
+    
+    # Initialize completions per student: { student_id: [completion_bool, ...] }
+    tasks_count = len(new_hw.get('tasks', []))
+    new_hw['progress'] = { sid: [False] * tasks_count for sid in new_hw['assigned_students'] }
+    
     hws.append(new_hw)
     push_data('homework.json', hws)
     return {"success": True}
+
+@app.route('/api/homework/<int:hw_id>/task', methods=['POST'])
+def update_homework_task(hw_id):
+    from flask import request
+    data = request.json
+    student_id = data.get('student_id')
+    task_idx = data.get('task_index')
+    is_completed = data.get('completed')
+    
+    hws = pull_data('homework.json') or []
+    for hw in hws:
+        if hw['id'] == hw_id:
+            if 'progress' not in hw: hw['progress'] = {}
+            if student_id not in hw['progress']:
+                # Fallback or initialize if student was added later
+                tasks_count = len(hw.get('tasks', []))
+                hw['progress'][student_id] = [False] * tasks_count
+            
+            if 0 <= task_idx < len(hw['progress'][student_id]):
+                hw['progress'][student_id][task_idx] = is_completed
+                push_data('homework.json', hws)
+                return {"success": True}
+    return {"error": "Not found"}, 404
 
 # ... (Additional routes for likes/comments/etc removed for stability during rollback if they were new)
 # Wait, let's keep the baseline that was working before the 500 error starts.

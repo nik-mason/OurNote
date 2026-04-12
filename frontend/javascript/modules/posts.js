@@ -11,6 +11,7 @@ export async function loadPosts() {
     if (state.currentCategory === 'homework') {
         const res = await fetch('/api/homework');
         const hws = await res.json();
+        window.currentHomework = hws; // Cache homework
         renderHomework(hws);
     } else {
         const res = await fetch('/api/posts');
@@ -121,7 +122,28 @@ export function renderHomework(hws) {
         card.style.transitionDelay = `${index * 0.03}s`;
         
         const tasks = Array.isArray(hw.tasks) ? hw.tasks : [];
-        const completedCount = tasks.filter(t => t.completed).length;
+        const isTeacher = state.currentUser?.role === 'teacher';
+        
+        let displayProgress = 0;
+        let progressText = "Tasks";
+
+        if (isTeacher) {
+            // Teacher sees total classroom completion rate
+            const studentIds = Object.keys(hw.progress || {});
+            if (studentIds.length > 0) {
+                let totalTasks = studentIds.length * tasks.length;
+                let doneTasks = studentIds.reduce((acc, sid) => acc + (hw.progress[sid]?.filter(t => t).length || 0), 0);
+                displayProgress = (doneTasks / (totalTasks || 1)) * 100;
+                progressText = `Class: ${doneTasks}/${totalTasks}`;
+            }
+        } else {
+            // Student sees their own progress
+            const myId = state.currentUser?.id || 'all';
+            const myProgress = (hw.progress && hw.progress[myId]) || (hw.progress && hw.progress['all']) || [];
+            const doneCount = myProgress.filter(t => t).length;
+            displayProgress = (doneCount / (tasks.length || 1)) * 100;
+            progressText = `Me: ${doneCount}/${tasks.length}`;
+        }
 
         card.innerHTML = `
             <div class="flex items-center justify-between mb-4">
@@ -134,16 +156,16 @@ export function renderHomework(hws) {
                 </div>
             </div>
 
-            <div onclick="window.openPostDetail(${hw.id || hw.id})" class="flex-1 flex flex-col min-h-0">
+            <div onclick="window.openPostDetail(${hw.id}, true)" class="flex-1 flex flex-col min-h-0">
                 <h3 class="text-3xl font-black text-text-main tracking-tighter mb-4 line-clamp-2 leading-none group-hover:text-primary transition-colors">${hw.title}</h3>
                 
                 <div class="space-y-4 mb-6">
                     <div class="flex justify-between text-[10px] font-black uppercase tracking-widest text-text-secondary">
                         <span>Progress</span>
-                        <span>${completedCount}/${tasks.length} Done</span>
+                        <span>${progressText}</span>
                     </div>
                     <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                        <div class="h-full bg-primary transition-all duration-1000" style="width: ${(completedCount / (tasks.length || 1)) * 100}%"></div>
+                        <div class="h-full bg-primary transition-all duration-1000" style="width: ${displayProgress}%"></div>
                     </div>
                 </div>
 
@@ -205,10 +227,12 @@ window.deletePost = async (postId) => {
     }
 };
 
-window.openPostDetail = (postId) => {
+window.openPostDetail = (postId, isHomework = false) => {
     // Find post in current state or local array
-    // Since we don't have a single post fetch yet, we find it in the current list
-    const post = (window.currentPosts || []).find(p => p.id === postId);
+    const post = isHomework 
+        ? (window.currentHomework || []).find(h => h.id === postId)
+        : (window.currentPosts || []).find(p => p.id === postId);
+        
     if (!post) return;
 
     const modal = document.getElementById('post-detail-modal');
@@ -235,18 +259,144 @@ window.openPostDetail = (postId) => {
         imgContainer.classList.add('hidden');
     }
 
-    // Comments
+    // Comments or Homework Tasks
     const list = document.getElementById('detail-comments-list');
-    document.getElementById('detail-comment-count').textContent = post.comments?.length || 0;
-    list.innerHTML = (post.comments || []).map(c => `
-        <div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 flex flex-col gap-2">
-            <div class="flex justify-between items-center">
-                <span class="font-black text-primary text-sm">${c.author}</span>
-                <span class="text-[10px] text-text-secondary font-bold">${c.date}</span>
+    const commentSection = modal.querySelector('.pt-10.border-t');
+    const isTeacher = state.currentUser?.role === 'teacher';
+    const isHomeworkType = isHomework || post.category === 'homework';
+
+    if (isHomeworkType) {
+        document.getElementById('detail-comment-count').textContent = 'Homework';
+        commentSection.querySelector('h4').innerHTML = `
+            <span class="material-symbols-outlined text-accent">assignment</span>
+            ${isTeacher ? 'Classroom Progress' : 'My Checklist'}
+        `;
+
+        if (isTeacher) {
+            // Teacher View: Progress of all assigned students
+            const studentIds = Object.keys(post.progress || {});
+            list.innerHTML = `
+                <div class="overflow-hidden rounded-[2rem] border border-slate-100 bg-slate-50">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-100 text-[10px] font-black uppercase tracking-widest text-text-secondary">
+                            <tr>
+                                <th class="px-6 py-4">Student</th>
+                                <th class="px-6 py-4 text-center">Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            ${studentIds.length > 0 ? studentIds.map(sid => {
+                                const prog = post.progress[sid] || [];
+                                const done = prog.filter(t => t).length;
+                                const tasks = post.tasks || [];
+                                return `
+                                    <tr class="hover:bg-white transition-colors">
+                                        <td class="px-6 py-4 font-bold text-text-main">${sid}</td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                                                    <div class="h-full bg-accent" style="width: ${(done / (tasks.length || 1)) * 100}%"></div>
+                                                </div>
+                                                <span class="font-black text-[10px]">${done}/${tasks.length}</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `;
+                            }).join('') : '<tr><td colspan="2" class="p-8 text-center opacity-40">No students assigned.</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            modal.querySelector('.sticky.bottom-0').classList.add('hidden'); // Hide comment input
+        } else {
+            // Student View: Checkable list
+            const myId = state.currentUser?.id || 'all';
+            const myProgress = (post.progress && post.progress[myId]) || (post.progress && post.progress['all']) || [];
+            const tasks = post.tasks || [];
+
+            list.innerHTML = tasks.length > 0 ? `
+                <div class="space-y-4">
+                    ${tasks.map((t, idx) => `
+                        <button onclick="window.toggleHomeworkTask(${post.id}, ${idx}, this)" 
+                                class="w-full flex items-center justify-between p-6 rounded-[2rem] bg-slate-50 border ${myProgress[idx] ? 'border-primary bg-primary/5' : 'border-slate-100'} hover:border-primary/50 transition-all text-left">
+                            <div class="flex items-center gap-4">
+                                <div class="size-8 rounded-xl ${myProgress[idx] ? 'bg-primary text-white' : 'bg-white text-slate-300'} border border-slate-100 flex items-center justify-center transition-all">
+                                    <span class="material-symbols-outlined text-xl">${myProgress[idx] ? 'check' : 'radio_button_unchecked'}</span>
+                                </div>
+                                <span class="text-lg font-bold ${myProgress[idx] ? 'text-primary line-through opacity-60' : 'text-text-main'}">${t.text}</span>
+                            </div>
+                        </button>
+                    `).join('')}
+                </div>
+            ` : '<p class="text-center py-10 opacity-30 font-bold">No tasks required for this homework.</p>';
+            modal.querySelector('.sticky.bottom-0').classList.add('hidden');
+        }
+    } else {
+        // Normal Comments View
+        document.getElementById('detail-comment-count').textContent = post.comments?.length || 0;
+        commentSection.querySelector('h4').innerHTML = `
+            <span class="material-symbols-outlined text-primary">chat_bubble</span>
+            댓글 리스트 (${post.comments?.length || 0})
+        `;
+        list.innerHTML = (post.comments || []).map(c => `
+            <div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 flex flex-col gap-2">
+                <div class="flex justify-between items-center">
+                    <span class="font-black text-primary text-sm">${c.author}</span>
+                    <span class="text-[10px] text-text-secondary font-bold">${c.date}</span>
+                </div>
+                <p class="text-text-main text-lg font-medium">${c.content}</p>
             </div>
-            <p class="text-text-main text-lg font-medium">${c.content}</p>
-        </div>
-    `).join('') || '<p class="text-center py-10 opacity-30 font-bold">첫 댓글을 남겨보세요! ✨</p>';
+        `).join('') || '<p class="text-center py-10 opacity-30 font-bold">첫 댓글을 남겨보세요! ✨</p>';
+        modal.querySelector('.sticky.bottom-0').classList.remove('hidden');
+    }
+
+window.toggleHomeworkTask = async (hwId, taskIdx, btn) => {
+    const isCompleted = !btn.querySelector('.material-symbols-outlined').textContent.includes('radio_button_unchecked');
+    const newState = !isCompleted;
+    
+    // Optimistic UI
+    const icon = btn.querySelector('.material-symbols-outlined');
+    const label = btn.querySelector('span:last-child');
+    const box = icon.parentElement;
+    
+    if (newState) {
+        icon.textContent = 'check';
+        box.classList.replace('bg-white', 'bg-primary');
+        box.classList.replace('text-slate-300', 'text-white');
+        label.classList.add('line-through', 'opacity-60', 'text-primary');
+        btn.classList.replace('border-slate-100', 'border-primary');
+        btn.classList.add('bg-primary/5');
+    } else {
+        icon.textContent = 'radio_button_unchecked';
+        box.classList.replace('bg-primary', 'bg-white');
+        box.classList.replace('text-white', 'text-slate-300');
+        label.classList.remove('line-through', 'opacity-60', 'text-primary');
+        btn.classList.replace('border-primary', 'border-slate-100');
+        btn.classList.remove('bg-primary/5');
+    }
+
+    try {
+        const res = await fetch(`/api/homework/${hwId}/task`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                student_id: state.currentUser?.id || 'all',
+                task_index: taskIdx,
+                completed: newState
+            })
+        });
+        
+        if (res.ok) {
+            // Refresh cache and lists
+            const hwRes = await fetch('/api/homework');
+            window.currentHomework = await hwRes.json();
+            // Don't call loadPosts full refresh to avoid modal flickering, 
+            // but the background list will update next time it's rendered.
+        }
+    } catch (err) {
+        showToast('상태 변경에 실패했습니다.', 'error');
+    }
+};
 
     // Show modal directly without setupModal overhead
     modal.classList.remove('hidden');
@@ -416,16 +566,42 @@ export function initPostForm() {
             return;
         }
 
-        // Student Chips
+        // Student Chips (Multi-selection for teacher assigning homework)
         const stuChip = e.target.closest('.stu-chip');
         if (stuChip) {
-            document.querySelectorAll('.stu-chip').forEach(c => {
-                c.classList.remove('active', 'bg-primary', 'text-white');
-                c.classList.add('bg-slate-100', 'text-slate-500');
-            });
-            stuChip.classList.add('active', 'bg-primary', 'text-white');
-            stuChip.classList.remove('bg-slate-100', 'text-slate-500');
-            document.getElementById('homework-target-student-val').value = stuChip.getAttribute('data-value');
+            const val = stuChip.getAttribute('data-value');
+            const isAll = val === 'all';
+            const category = document.getElementById('post-category').value;
+            
+            // If homework, allow multi-select
+            if (category === 'homework') {
+                if (isAll) {
+                    document.querySelectorAll('.stu-chip').forEach(c => c.classList.remove('active', 'bg-primary', 'text-white'));
+                    document.querySelectorAll('.stu-chip').forEach(c => c.classList.add('bg-slate-100', 'text-slate-500'));
+                    stuChip.classList.add('active', 'bg-primary', 'text-white');
+                    stuChip.classList.remove('bg-slate-100', 'text-slate-500');
+                } else {
+                    // Unselect "All" if it was selected
+                    const allChip = document.querySelector('.stu-chip[data-value="all"]');
+                    allChip?.classList.remove('active', 'bg-primary', 'text-white');
+                    allChip?.classList.add('bg-slate-100', 'text-slate-500');
+                    
+                    stuChip.classList.toggle('active');
+                    stuChip.classList.toggle('bg-primary');
+                    stuChip.classList.toggle('text-white');
+                    stuChip.classList.toggle('bg-slate-100');
+                    stuChip.classList.toggle('text-slate-500');
+                }
+            } else {
+                // Single select for other categories if ever used
+                document.querySelectorAll('.stu-chip').forEach(c => {
+                    c.classList.remove('active', 'bg-primary', 'text-white');
+                    c.classList.add('bg-slate-100', 'text-slate-500');
+                });
+                stuChip.classList.add('active', 'bg-primary', 'text-white');
+                stuChip.classList.remove('bg-slate-100', 'text-slate-500');
+                document.getElementById('homework-target-student-val').value = val;
+            }
             return;
         }
 
@@ -535,6 +711,14 @@ export function initPostForm() {
                 completed: false
             })).filter(t => t.text !== '');
 
+            // Collect Assigned Students
+            let assigned_students = [];
+            if (category === 'homework') {
+                const activeChips = document.querySelectorAll('.stu-chip.active');
+                assigned_students = Array.from(activeChips).map(c => c.getAttribute('data-value'));
+                if (assigned_students.length === 0) assigned_students = ['all'];
+            }
+
             const endpoint = category === 'homework' ? '/api/homework' : '/api/posts';
             const payload = {
                 title, content, category, 
@@ -542,7 +726,8 @@ export function initPostForm() {
                 is_anonymous: isAnonymous,
                 image_url: imageUrl,
                 student_id: state.currentUser?.id || 'anon',
-                tasks: tasks // Added tasks
+                assigned_students: assigned_students, // Multi-student support
+                tasks: tasks
             };
 
             const res = await fetch(endpoint, {

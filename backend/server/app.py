@@ -201,6 +201,35 @@ def update_homework_task(hw_id):
                 return {"success": True}
     return {"error": "Not found"}, 404
 
+@app.route('/api/homework/<int:hw_id>', methods=['DELETE'])
+def delete_homework(hw_id):
+    hws = pull_data('homework.json') or []
+    new_hws = [h for h in hws if h['id'] != hw_id]
+    if len(new_hws) == len(hws):
+        return {"error": "Homework not found"}, 404
+    push_data('homework.json', new_hws)
+    return {"success": True}
+
+@app.route('/api/students/pin', methods=['POST'])
+def update_student_pin():
+    from flask import request
+    data = request.json
+    sid = data.get('student_id')
+    new_pin = data.get('new_pin')
+    
+    students = pull_data('students.json') or []
+    found = False
+    for s in students:
+        if str(s['id']) == str(sid):
+            s['pin'] = new_pin
+            found = True
+            break
+    
+    if found:
+        push_data('students.json', students)
+        return {"success": True}
+    return {"error": "Student not found"}, 404
+
 # ... (Additional routes for likes/comments/etc removed for stability during rollback if they were new)
 # Wait, let's keep the baseline that was working before the 500 error starts.
 

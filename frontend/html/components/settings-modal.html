@@ -1,145 +1,132 @@
-<div id="settings-modal" class="hidden">
-    <div class="modal-v4 ultra-card w-full max-w-5xl h-[85vh] flex flex-col relative z-30 overflow-hidden bg-white border border-slate-200 shadow-2xl">
-        <!-- Header -->
-        <div class="p-8 border-b border-slate-100 flex justify-between items-center bg-white">
-            <div>
-                <h3 class="text-4xl font-black tracking-tighter text-text-main uppercase italic">ULTRA SETTINGS</h3>
-                <p class="text-text-secondary text-sm mt-1">OurNote의 모든 환경을 당신의 취향대로 제어하세요.</p>
+<div id="settings-modal" class="fixed inset-0 z-[110] hidden overflow-hidden">
+    <!-- Blur Overlay -->
+    <div id="close-settings-overlay" class="absolute inset-0 bg-slate-900/40 backdrop-blur-2xl transition-opacity duration-500 opacity-0 cursor-pointer"></div>
+    
+    <!-- Modal Content -->
+    <div class="absolute inset-0 flex items-center justify-center p-0 md:p-10 pointer-events-none">
+        <div class="modal-settings w-full h-full max-w-6xl bg-white/90 backdrop-blur-xl md:rounded-[3rem] shadow-2xl flex flex-col md:flex-row overflow-hidden pointer-events-auto transition-all duration-700 translate-y-full opacity-0">
+            
+            <!-- Sidebar: Navigation & Decorations -->
+            <div class="w-full md:w-80 bg-slate-50 border-b md:border-b-0 md:border-r border-slate-100 p-8 flex flex-col">
+                <div class="mb-10 text-center md:text-left">
+                    <h2 class="text-3xl font-black text-text-main tracking-tighter">Settings</h2>
+                    <p class="text-sm text-text-secondary font-bold">Manage your profile & UI</p>
+                </div>
+                
+                <nav class="flex-1 space-y-2">
+                    <button id="nav-general" class="w-full flex items-center gap-4 p-4 rounded-2xl bg-white shadow-sm text-primary font-black transition-all">
+                        <span class="material-symbols-outlined">settings_suggest</span>
+                        일반 설정
+                    </button>
+                    <button id="nav-security" class="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-100 text-text-secondary font-black transition-all">
+                        <span class="material-symbols-outlined">security</span>
+                        보안 (PIN 변경)
+                    </button>
+                    <button id="nav-about" class="w-full flex items-center gap-4 p-4 rounded-2xl hover:bg-slate-100 text-text-secondary font-black transition-all">
+                        <span class="material-symbols-outlined">info</span>
+                        App 정보
+                    </button>
+                </nav>
+
+                <div class="mt-auto pt-8 border-t border-slate-200 hidden md:block">
+                    <div class="aspect-square rounded-[2rem] bg-gradient-to-br from-primary to-accent p-6 flex flex-col justify-end text-white relative overflow-hidden">
+                        <span class="material-symbols-outlined absolute -top-4 -right-4 text-9xl opacity-10">bolt</span>
+                        <p class="text-lg font-black leading-tight relative z-10">Premium Experience</p>
+                        <p class="text-[10px] font-bold opacity-75 relative z-10 border-t border-white/20 pt-2 mt-2">OURNOTE V4.0</p>
+                    </div>
+                </div>
             </div>
-            <button id="close-settings-modal"
-                class="size-14 rounded-2xl hover:bg-slate-100 transition-all group flex items-center justify-center border border-slate-200 text-text-main shadow-sm">
-                <span class="material-symbols-outlined group-hover:rotate-90 transition-transform">close</span>
-            </button>
-        </div>
 
-        <div class="flex flex-1 overflow-hidden">
-            <!-- Tab Sidebar -->
-            <div class="w-64 border-r border-slate-100 p-4 space-y-2 overflow-y-auto bg-slate-50/50">
-                <button class="settings-tab active w-full flex items-center gap-3 p-4 rounded-xl transition-all"
-                    data-tab="visual">
-                    <span class="material-symbols-outlined">palette</span>
-                    <span class="font-bold">테마 & 비주얼</span>
+            <!-- Main Content Area -->
+            <div class="flex-1 overflow-y-auto p-8 md:p-16 custom-scrollbar relative">
+                <button id="close-settings-modal" class="absolute top-8 right-8 size-12 rounded-full bg-slate-100 hover:bg-primary hover:text-white flex items-center justify-center transition-all z-20">
+                    <span class="material-symbols-outlined">close</span>
                 </button>
-                <button class="settings-tab w-full flex items-center gap-3 p-4 rounded-xl transition-all"
-                    data-tab="dynamic">
-                    <span class="material-symbols-outlined">auto_awesome_motion</span>
-                    <span class="font-bold">애니메이션 & 효과</span>
-                </button>
-                <button class="settings-tab w-full flex items-center gap-3 p-4 rounded-xl transition-all"
-                    data-tab="convenience">
-                    <span class="material-symbols-outlined">settings_suggest</span>
-                    <span class="font-bold">대시보드 편의성</span>
-                </button>
-                <button class="settings-tab w-full flex items-center gap-3 p-4 rounded-xl transition-all hidden-by-role"
-                    data-tab="security">
-                    <span class="material-symbols-outlined">shield_person</span>
-                    <span class="font-bold">접근성 & 보안</span>
-                </button>
-            </div>
 
-            <!-- Content Content -->
-            <div class="flex-1 overflow-y-auto p-8 space-y-12 bg-white" id="settings-content-wrapper">
-
-                <!-- 1. 테마 & 비주얼 -->
-                <div id="tab-visual" class="settings-pane space-y-10">
-                    <section>
-                        <h4 class="settings-section-title text-text-main">기본 테마 설정</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-                            <div class="theme-option active" data-theme="dark">
-                                <div class="size-full bg-slate-900 border border-slate-200 rounded-xl mb-3 h-20 shadow-lg"></div>
-                                <span class="text-text-main font-bold">다크 브릴리언트</span>
-                            </div>
-                            <div class="theme-option" data-theme="white">
-                                <div class="size-full bg-white border border-slate-200 rounded-xl mb-3 h-20 shadow-lg"></div>
-                                <span class="text-text-secondary">퓨어 화이트</span>
-                            </div>
-                            <div class="theme-option" data-theme="blue">
-                                <div class="size-full bg-primary border border-slate-200 rounded-xl mb-3 h-20 shadow-lg shadow-primary/20"></div>
-                                <span class="text-text-main">오션 블루</span>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section class="space-y-6">
-                        <h4 class="settings-section-title text-text-main">디테일 비주얼</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                <div>
-                                    <p class="font-bold text-text-main">고대비 모드 (High Contrast)</p>
-                                    <p class="text-xs text-text-secondary">시인성을 높이기 위해 채도를 조정합니다.</p>
+                <!-- SECTION: GENERAL -->
+                <div id="section-general" class="space-y-12 animate-fade-in">
+                    <div>
+                        <h3 class="text-xl font-black text-text-main mb-6">테마 설정</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button id="theme-light" class="theme-btn relative aspect-[16/10] rounded-[2rem] border-2 border-primary bg-white flex flex-col items-center justify-center gap-3 transition-all">
+                                <span class="material-symbols-outlined text-4xl text-primary">light_mode</span>
+                                <span class="text-xs font-black">라이트</span>
+                                <div class="absolute top-4 right-4 size-5 rounded-full bg-primary flex items-center justify-center">
+                                    <span class="material-symbols-outlined text-white text-xs">check</span>
                                 </div>
-                                <label class="switch-ultra">
-                                    <input type="checkbox" id="setting-high-contrast">
-                                    <span class="slider"></span>
+                            </button>
+                            <button id="theme-dark" class="theme-btn relative aspect-[16/10] rounded-[2rem] border-2 border-slate-100 bg-slate-900 flex flex-col items-center justify-center gap-3 transition-all hover:border-primary/50">
+                                <span class="material-symbols-outlined text-4xl text-slate-400">dark_mode</span>
+                                <span class="text-xs font-black text-slate-400">다크</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-xl font-black text-text-main mb-6">사용자 인터페이스</h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-6 rounded-[2rem] bg-slate-50 border border-slate-100">
+                                <div class="flex items-center gap-4">
+                                    <div class="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                                        <span class="material-symbols-outlined">vibration</span>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-text-main">Haptic Feedback</p>
+                                        <p class="text-[10px] text-text-secondary">터치 시 진동 활성화</p>
+                                    </div>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked class="sr-only peer">
+                                    <div class="w-12 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                                 </label>
                             </div>
-                            <div class="flex justify-between items-center bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                <div>
-                                    <p class="font-bold text-text-main">카드 모서리 곡률</p>
-                                    <p class="text-xs text-text-secondary">UI 요소들의 둥글기를 변경합니다.</p>
+                            
+                            <div class="flex items-center justify-between p-6 rounded-[2rem] bg-slate-50 border border-slate-100">
+                                <div class="flex items-center gap-4">
+                                    <div class="size-10 rounded-xl bg-accent/10 text-accent flex items-center justify-center">
+                                        <span class="material-symbols-outlined">auto_awesome</span>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-text-main">Clean Animations</p>
+                                        <p class="text-[10px] text-text-secondary">부드러운 화면 전환</p>
+                                    </div>
                                 </div>
-                                <select id="setting-radius" class="select-ultra bg-white border border-slate-200 text-text-main rounded-xl px-2 py-1">
-                                    <option value="1rem">조금 둥글게 (Rounded)</option>
-                                    <option value="2rem" selected>완전히 둥글게 (Pill)</option>
-                                    <option value="0.2rem">날카롭게 (Sharp)</option>
-                                </select>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-
-                <!-- 2. 애니메이션 & 효과 -->
-                <div id="tab-dynamic" class="settings-pane hidden space-y-10">
-                    <h4 class="settings-section-title text-text-main">익스트림 애니메이션 설정</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="flex justify-between items-center bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                            <span class="text-text-main font-bold">마우스 커서 효과</span>
-                            <label class="switch-ultra"><input type="checkbox" checked><span class="slider"></span></label>
-                        </div>
-                        <div class="flex justify-between items-center bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                            <span class="text-text-main font-bold">배경 파티클</span>
-                            <label class="switch-ultra"><input type="checkbox" checked><span class="slider"></span></label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 3. 대시보드 편의성 -->
-                <div id="tab-convenience" class="settings-pane hidden space-y-10">
-                    <h4 class="settings-section-title text-text-main">작업 효율성 및 UI</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="flex justify-between items-center bg-slate-50 p-6 rounded-3xl border border-slate-100">
-                            <span class="text-text-main font-bold">무한 스크롤 모드</span>
-                            <label class="switch-ultra"><input type="checkbox" checked><span class="slider"></span></label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 4. 접근성 & 보안 -->
-                <div id="tab-security" class="settings-pane hidden space-y-10 hidden-by-role">
-                    <h4 class="settings-section-title text-text-main">계정 및 보안 인증</h4>
-                    <div class="space-y-6 max-w-xl">
-                        <div class="p-6 bg-slate-50 rounded-3xl space-y-4 border border-slate-100">
-                            <label class="block text-sm font-bold text-text-secondary">마스터 비밀번호 재설정</label>
-                            <div class="flex gap-4">
-                                <input type="password" id="new-password"
-                                    class="flex-1 bg-white border border-slate-200 rounded-2xl py-4 px-6 focus:border-primary outline-none text-text-main"
-                                    placeholder="새 비밀번호">
-                                <button id="save-password" class="bg-primary text-white font-bold px-8 rounded-2xl">변경</button>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked class="sr-only peer">
+                                    <div class="w-12 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                </label>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- SECTION: SECURITY (PIN) -->
+                <div id="section-security" class="hidden space-y-12 animate-fade-in">
+                    <div>
+                        <h3 class="text-xl font-black text-text-main mb-6">비밀번호 (PIN) 변경</h3>
+                        <p class="text-sm text-text-secondary mb-8">안전을 위해 6자리 PIN을 정기적으로 변경해 주세요.</p>
+                        
+                        <div class="space-y-6 max-w-sm">
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black text-text-secondary uppercase tracking-widest px-2">현재 PIN</label>
+                                <input id="pin-current" type="password" maxlength="6" class="w-full p-4 rounded-2xl bg-slate-50 border border-slate-100 focus:border-primary focus:bg-white transition-all text-center tracking-[1rem] font-bold text-2xl" placeholder="••••••">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black text-text-secondary uppercase tracking-widest px-2">새 PIN</label>
+                                <input id="pin-new" type="password" maxlength="6" class="w-full p-4 rounded-2xl bg-slate-50 border border-slate-100 focus:border-primary focus:bg-white transition-all text-center tracking-[1rem] font-bold text-2xl" placeholder="••••••">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black text-text-secondary uppercase tracking-widest px-2">새 PIN 확인</label>
+                                <input id="pin-confirm" type="password" maxlength="6" class="w-full p-4 rounded-2xl bg-slate-50 border border-slate-100 focus:border-primary focus:bg-white transition-all text-center tracking-[1rem] font-bold text-2xl" placeholder="••••••">
+                            </div>
+                            
+                            <button id="save-pin" class="w-full py-5 rounded-[2rem] bg-primary text-white font-black text-lg shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all">
+                                PIN 업데이트 완료
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-
-        <!-- Footer Summary -->
-        <div class="px-8 py-4 bg-slate-50 flex justify-between items-center border-t border-slate-100">
-            <div class="flex items-center gap-2 text-primary">
-                <span class="material-symbols-outlined text-sm">info</span>
-                <span class="text-[10px] font-black uppercase tracking-widest">Active Hybrid Mode v4.5 | Control Panel</span>
-            </div>
-            <button class="text-[10px] font-black uppercase tracking-widest text-text-secondary hover:text-primary transition-all">전체 옵션 초기화</button>
         </div>
     </div>
 </div>

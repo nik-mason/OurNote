@@ -251,6 +251,32 @@ window.openPostDetail = (postId, isHomework = false) => {
     document.getElementById('detail-author-name').textContent = displayAuthor;
     document.getElementById('detail-author-avatar').textContent = displayAuthor.substring(0, 1);
 
+    const deleteBtnContainer = document.getElementById('detail-footer-actions') || document.createElement('div');
+    if (!document.getElementById('detail-footer-actions')) {
+        deleteBtnContainer.id = 'detail-footer-actions';
+        deleteBtnContainer.className = 'flex items-center gap-2 mt-4 pt-4 border-t border-slate-100';
+        document.querySelector('.modal-v4 .p-8.md\\:p-12').appendChild(deleteBtnContainer);
+    }
+    deleteBtnContainer.innerHTML = '';
+    
+    if (state.currentUser?.role === 'teacher') {
+        const delBtn = document.createElement('button');
+        delBtn.className = 'px-6 py-3 rounded-2xl bg-red-50 text-red-500 font-black text-sm hover:bg-red-500 hover:text-white transition-all flex items-center gap-2';
+        delBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">delete</span> 삭제하기';
+        delBtn.onclick = async () => {
+            if (await showConfirm('이 항목을 영구적으로 삭제하시겠습니까?')) {
+                const endpoint = isHomework ? `/api/homework/${post.id}` : `/api/posts/${post.id}`;
+                const res = await fetch(endpoint, { method: 'DELETE' });
+                if (res.ok) {
+                    showToast('삭제되었습니다.');
+                    modal.classList.add('hidden');
+                    loadPosts();
+                }
+            }
+        };
+        deleteBtnContainer.appendChild(delBtn);
+    }
+
     const imgContainer = document.getElementById('detail-image-container');
     const img = document.getElementById('detail-image');
     if (post.image_url) {
@@ -394,10 +420,8 @@ window.openPostDetail = (postId, isHomework = false) => {
 };
 
 window.toggleHomeworkTask = async (hwId, taskIdx, btn) => {
-    const isCompleted = !btn.querySelector('.material-symbols-outlined').textContent.includes('radio_button_unchecked');
-    const newState = !isCompleted;
-    
     const icon = btn.querySelector('.material-symbols-outlined');
+    const newState = icon.textContent.trim() !== 'check';
     const label = btn.querySelector('span:last-child');
     const box = icon.parentElement;
     

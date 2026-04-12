@@ -9,6 +9,7 @@ import { initAuth } from './modules/auth.js?v=4.0';
 import { initNavigation, setupRoomCreation } from './modules/navigation.js?v=4.0';
 import { initWriteModal } from './modules/popups/write-modal.js?v=4.0';
 import { initPostDetailModal } from './modules/popups/post-detail-modal.js?v=4.0';
+import { initSettingsModal } from './modules/popups/settings-modal.js?v=4.0';
 
 // GLOBAL FAILSAFE: Ensure splash disappears even if script fails
 setTimeout(() => {
@@ -47,6 +48,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadPosts();
         initPostDetailModal();
         initPostForm();
+        initSettingsModal();
+
         
         // Display user name
         const usernameDisplay = document.getElementById('display-username');
@@ -103,7 +106,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadComponents() {
     const components = [
-        { id: 'modal-container', files: ['write-modal.html', 'master-modal.html', 'mobile-modal.html', 'system-modals.html', 'confirm-modal.html', 'post-detail-modal.html', 'comment-modal.html', 'qr-modal.html'] },
+        { id: 'modal-container', files: ['write-modal.html', 'master-modal.html', 'mobile-modal.html', 'system-modals.html', 'confirm-modal.html', 'post-detail-modal.html', 'comment-modal.html', 'qr-modal.html', 'settings-modal.html'] },
         { id: 'security-container', files: ['security-layers.html', 'prank-layers.html'] }
     ];
 

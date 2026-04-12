@@ -133,14 +133,31 @@ body.dark-mode .bg-primary\/5 {
     background-color: rgba(255, 255, 255, 0.05) !important;
 }
 
-/* Sidebar & Nav specific */
-body.dark-mode .nav-link, 
-body.dark-mode .theme-btn, 
-body.dark-mode nav button:not(.bg-primary),
-body.dark-mode .stu-chip:not(.active),
-body.dark-mode .post-cat-chip:not(.active) {
-    background-color: rgba(255, 255, 255, 0.05) !important;
+/* Specific Component Fixes for Dark Mode */
+body.dark-mode .modal-settings, 
+body.dark-mode .ultra-card, 
+body.dark-mode header,
+body.dark-mode .nav-link,
+body.dark-mode .modal-v4,
+body.dark-mode #main-nav.forced-open {
+    background-color: var(--card-bg) !important;
+    border-color: var(--glass-border) !important;
     color: var(--text-white) !important;
+}
+
+body.dark-mode .pin-dot {
+    border-color: var(--glass-border) !important;
+}
+body.dark-mode .pin-dot.bg-primary {
+    background-color: var(--primary) !important;
+    border-color: var(--primary) !important;
+}
+
+body.dark-mode .keypad-btn {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+body.dark-mode .keypad-btn:hover {
+    background-color: var(--primary) !important;
 }
 
 body.dark-mode input, 
@@ -151,9 +168,26 @@ body.dark-mode select {
     color: var(--text-white) !important;
 }
 
-/* Special fix for Settings Sidebar specifically */
 body.dark-mode .md\:w-80.bg-slate-50 {
     background-color: rgba(255, 255, 255, 0.02) !important;
+}
+
+/* Splash Screen & Login Card Fixes */
+body.dark-mode #splash-screen,
+body.dark-mode .login-card-v4,
+body.dark-mode .bg-white.rounded-\[2\.5rem\] {
+    background-color: var(--card-bg) !important;
+    border-color: var(--glass-border) !important;
+    color: var(--text-white) !important;
+}
+
+body.dark-mode #settings-logout-btn {
+    background-color: rgba(244, 63, 94, 0.1) !important;
+    color: #f43f5e !important;
+}
+body.dark-mode #settings-logout-btn:hover {
+    background-color: #f43f5e !important;
+    color: #ffffff !important;
 }
 
 body.dark-mode .text-primary { color: var(--primary) !important; }

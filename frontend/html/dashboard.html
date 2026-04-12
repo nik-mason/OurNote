@@ -78,6 +78,16 @@
             }, 1000); // Lifeboat: Force end splash 1s after load
         });
     </script>
+    <script>
+        // Immediate Theme Check
+        (function() {
+            const savedTheme = localStorage.getItem('ournote_theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark-mode');
+                document.body.classList.add('dark-mode');
+            }
+        })();
+    </script>
 </head>
 
 <body class="font-sans bg-background-light text-text-main antialiased transition-colors duration-200">

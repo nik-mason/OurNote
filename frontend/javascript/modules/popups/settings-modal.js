@@ -78,8 +78,9 @@ export function initSettingsModal() {
         }
         darkCheck.classList.toggle('hidden', !isDark);
 
-        // Apply to body
+        // Apply to body and html
         document.body.classList.toggle('dark-mode', isDark);
+        document.documentElement.classList.toggle('dark-mode', isDark);
         localStorage.setItem('ournote_theme', theme);
     };
 

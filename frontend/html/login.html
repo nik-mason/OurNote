@@ -56,6 +56,16 @@
             }
         }
     </style>
+    <script>
+        // Immediate Theme Check
+        (function() {
+            const savedTheme = localStorage.getItem('ournote_theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark-mode');
+                document.body.classList.add('dark-mode');
+            }
+        })();
+    </script>
 </head>
 
 <body class="overflow-x-hidden font-body bg-background-light">

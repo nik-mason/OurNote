@@ -121,6 +121,9 @@ export function renderHomework(hws) {
         card.className = 'group relative w-full ultra-card bg-white border border-slate-100 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-700 overflow-hidden cursor-pointer flex flex-col p-8';
         card.style.transitionDelay = `${index * 0.03}s`;
         
+        // Add explicit click handler to the card for better desktop UX
+        card.onclick = () => window.openPostDetail(hw.id, true);
+
         const tasks = Array.isArray(hw.tasks) ? hw.tasks : [];
         const isTeacher = state.currentUser?.role === 'teacher';
         
@@ -128,7 +131,6 @@ export function renderHomework(hws) {
         let progressText = "Tasks";
 
         if (isTeacher) {
-            // Teacher sees total classroom completion rate
             const studentIds = Object.keys(hw.progress || {});
             if (studentIds.length > 0) {
                 let totalTasks = studentIds.length * tasks.length;
@@ -137,7 +139,6 @@ export function renderHomework(hws) {
                 progressText = `Class: ${doneTasks}/${totalTasks}`;
             }
         } else {
-            // Student sees their own progress
             const myId = state.currentUser?.id || 'all';
             const myProgress = (hw.progress && hw.progress[myId]) || (hw.progress && hw.progress['all']) || [];
             const doneCount = myProgress.filter(t => t).length;
@@ -151,12 +152,12 @@ export function renderHomework(hws) {
                     <span class="px-2 py-1 bg-accent/10 rounded-lg text-[10px] font-black text-accent uppercase tracking-widest">HOMEWORK</span>
                     <span class="text-[10px] font-bold text-slate-400 italic">${hw.date}</span>
                 </div>
-                <div class="size-8 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center border border-slate-100">
-                    <span class="material-symbols-outlined text-[18px]">assignment</span>
+                <div class="size-8 rounded-xl ${displayProgress === 100 ? 'bg-primary text-white' : 'bg-slate-50 text-slate-400'} flex items-center justify-center border border-slate-100 transition-all">
+                    <span class="material-symbols-outlined text-[18px]">${displayProgress === 100 ? 'verified' : 'assignment'}</span>
                 </div>
             </div>
 
-            <div onclick="window.openPostDetail(${hw.id}, true)" class="flex-1 flex flex-col min-h-0">
+            <div class="flex-1 flex flex-col min-h-0">
                 <h3 class="text-3xl font-black text-text-main tracking-tighter mb-4 line-clamp-2 leading-none group-hover:text-primary transition-colors">${hw.title}</h3>
                 
                 <div class="space-y-4 mb-6">
@@ -178,7 +179,7 @@ export function renderHomework(hws) {
                     <span class="text-[12px] font-bold text-text-main">Teacher</span>
                 </div>
                 <div class="flex items-center gap-3">
-                    <div class="flex items-center gap-1.5 text-slate-400">
+                    <div class="flex items-center gap-1.5 text-primary">
                         <span class="material-symbols-outlined text-[18px]">checklist</span>
                         <span class="text-[10px] font-black">${tasks.length} Tasks</span>
                     </div>
@@ -424,8 +425,13 @@ window.toggleHomeworkTask = async (hwId, taskIdx, btn) => {
         });
         const hwRes = await fetch('/api/homework');
         window.currentHomework = await hwRes.json();
+        
+        // Silent re-render background list if we are in homework view
+        if (state.currentCategory === 'homework') {
+            renderHomework(window.currentHomework);
+        }
     } catch (err) {
-        showToast('상태 변경 실패', 'error');
+        showToast('상태 변경에 실패했습니다.', 'error');
     }
 };
 

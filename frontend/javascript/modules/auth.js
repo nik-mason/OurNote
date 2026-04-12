@@ -11,7 +11,18 @@ export function initAuth() {
     const studentFields = document.getElementById('student-fields');
     const teacherFields = document.getElementById('teacher-fields');
 
-    if (!loginBtn) return; // Not on login page
+    // 0. Logout LOGIC (Always available if initAuth is called)
+    window.logout = () => {
+        localStorage.removeItem('currentUser');
+        showToast('로그아웃 되었습니다. 안녕히 가세요!');
+        setTimeout(() => window.location.href = '/', 1000);
+    };
+
+    document.getElementById('logout-btn')?.addEventListener('click', window.logout);
+    document.getElementById('logout-btn-mobile')?.addEventListener('click', window.logout);
+    document.getElementById('settings-logout-btn')?.addEventListener('click', window.logout);
+
+    if (!loginBtn) return; // Only stop login-page specific logic
 
     // 1. Mode Toggle Logic
     studentBtn?.addEventListener('click', () => {

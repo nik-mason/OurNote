@@ -14,7 +14,10 @@
 #room-modal:not(.hidden), 
 #password-modal:not(.hidden),
 #master-modal:not(.hidden),
-#confirm-modal:not(.hidden) {
+#confirm-modal:not(.hidden),
+#comment-modal:not(.hidden),
+#post-detail-modal:not(.hidden),
+#qr-modal:not(.hidden) {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
@@ -30,7 +33,7 @@
 }
 
 /* Navigation Specific Full Screen */
-#main-nav.forced-open {
+#main-nav.forced-open:not(.hidden) {
     display: flex !important;
     flex-direction: column !important;
     position: fixed !important;

@@ -106,7 +106,65 @@ export function renderPosts(posts) {
 }
 
 export function renderHomework(hws) {
-    // Homework rendering logic...
+    const container = document.getElementById('posts-container');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    if (hws.length === 0) {
+        container.innerHTML = '<div class="col-span-full py-20 text-center text-text-dim text-xl font-bold">등록된 숙제가 없습니다. ✨</div>';
+        return;
+    }
+
+    hws.forEach((hw, index) => {
+        const card = document.createElement('article');
+        card.className = 'group relative w-full ultra-card bg-white border border-slate-100 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-700 overflow-hidden cursor-pointer flex flex-col p-8';
+        card.style.transitionDelay = `${index * 0.03}s`;
+        
+        const tasks = Array.isArray(hw.tasks) ? hw.tasks : [];
+        const completedCount = tasks.filter(t => t.completed).length;
+
+        card.innerHTML = `
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                    <span class="px-2 py-1 bg-accent/10 rounded-lg text-[10px] font-black text-accent uppercase tracking-widest">HOMEWORK</span>
+                    <span class="text-[10px] font-bold text-slate-400 italic">${hw.date}</span>
+                </div>
+                <div class="size-8 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center border border-slate-100">
+                    <span class="material-symbols-outlined text-[18px]">assignment</span>
+                </div>
+            </div>
+
+            <div onclick="window.openPostDetail(${hw.id || hw.id})" class="flex-1 flex flex-col min-h-0">
+                <h3 class="text-3xl font-black text-text-main tracking-tighter mb-4 line-clamp-2 leading-none group-hover:text-primary transition-colors">${hw.title}</h3>
+                
+                <div class="space-y-4 mb-6">
+                    <div class="flex justify-between text-[10px] font-black uppercase tracking-widest text-text-secondary">
+                        <span>Progress</span>
+                        <span>${completedCount}/${tasks.length} Done</span>
+                    </div>
+                    <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-primary transition-all duration-1000" style="width: ${(completedCount / (tasks.length || 1)) * 100}%"></div>
+                    </div>
+                </div>
+
+                <p class="text-sm text-slate-500 font-medium leading-relaxed line-clamp-3 mb-6">${hw.content}</p>
+            </div>
+            
+            <div class="flex items-center justify-between pt-6 border-t border-slate-50">
+                <div class="flex items-center gap-2">
+                    <div class="size-8 rounded-xl bg-accent text-white flex items-center justify-center font-black text-[12px]">T</div>
+                    <span class="text-[12px] font-bold text-text-main">Teacher</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-1.5 text-slate-400">
+                        <span class="material-symbols-outlined text-[18px]">checklist</span>
+                        <span class="text-[10px] font-black">${tasks.length} Tasks</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
 }
 
 window.toggleCardExpand = (postId) => {
@@ -451,10 +509,10 @@ export function initPostForm() {
             const endpoint = category === 'homework' ? '/api/homework' : '/api/posts';
             const payload = {
                 title, content, category, 
-                author: state.currentUser.name,
+                author: state.currentUser?.name || 'Anonymous',
                 is_anonymous: isAnonymous,
                 image_url: imageUrl,
-                student_id: state.currentUser.id
+                student_id: state.currentUser?.id || 'anon'
             };
 
             const res = await fetch(endpoint, {

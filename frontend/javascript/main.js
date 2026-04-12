@@ -45,9 +45,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         // Load initial data
         loadPosts();
-        initWriteModal();
         initPostDetailModal();
-        initPostForm(); // Keep legacy for compatibility during transition if needed
+        initPostForm();
         
         // Display user name
         const usernameDisplay = document.getElementById('display-username');

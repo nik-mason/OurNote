@@ -190,19 +190,33 @@ window.openPostDetail = (postId) => {
         </div>
     `).join('') || '<p class="text-center py-10 opacity-30 font-bold">첫 댓글을 남겨보세요! ✨</p>';
 
-    // Show modal
+    // Show modal directly without setupModal overhead
     modal.classList.remove('hidden');
-    import('./ui.js').then(m => m.setupModal('post-detail-modal', null, 'close-post-detail-modal'));
+    const overlay = document.getElementById('close-post-detail-overlay');
+    const closeBtn = document.getElementById('close-post-detail-modal');
     
-    // Setup comment submission in detail view
+    // Smooth fade in
+    setTimeout(() => {
+        if(overlay) overlay.style.opacity = '1';
+        modal.querySelector('.modal-v4')?.classList.add('active');
+    }, 10);
+
+    const closeHandler = () => {
+        modal.querySelector('.modal-v4')?.classList.remove('active');
+        if(overlay) overlay.style.opacity = '0';
+        setTimeout(() => modal.classList.add('hidden'), 400);
+        // Remove listeners
+        overlay?.removeEventListener('click', closeHandler);
+        closeBtn?.removeEventListener('click', closeHandler);
+    };
+    overlay?.addEventListener('click', closeHandler);
+    closeBtn?.addEventListener('click', closeHandler);
+    
+    // Setup comment submission
     const submitBtn = document.getElementById('detail-submit-comment');
     const input = document.getElementById('detail-comment-input');
     
-    // Clear old listener
-    const newSubmitBtn = submitBtn.cloneNode(true);
-    submitBtn.parentNode.replaceChild(newSubmitBtn, submitBtn);
-    
-    newSubmitBtn.onclick = async () => {
+    submitBtn.onclick = async () => {
         const txt = input.value.trim();
         if (!txt) return;
         
@@ -217,7 +231,6 @@ window.openPostDetail = (postId) => {
             });
             if (res.ok) {
                 input.value = '';
-                // Refresh detail view (simplest way is to reload posts and re-open or just fetch single)
                 await loadPosts();
                 window.openPostDetail(postId);
             }

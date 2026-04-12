@@ -94,10 +94,10 @@ export function renderPosts(posts) {
                         <span class="material-symbols-outlined text-[20px]">${isLiked ? 'favorite' : 'favorite_border'}</span>
                         <span class="text-[12px] font-black">${likes.length}</span>
                     </button>
-                    <div class="flex items-center gap-1.5 text-slate-400">
+                    <button onclick="event.stopPropagation(); window.openCommentModal(${post.id})" class="flex items-center gap-1.5 text-slate-400 hover:text-primary transition-colors">
                         <span class="material-symbols-outlined text-[20px]">chat_bubble_outline</span>
                         <span class="text-[12px] font-black">${commentCount}</span>
-                    </div>
+                    </button>
                 </div>
             </div>
         `;
@@ -238,15 +238,50 @@ window.openPostDetail = (postId) => {
     };
 };
 
+window.openCommentModal = (postId) => {
+    const post = (window.currentPosts || []).find(p => p.id === postId);
+    if (!post) return;
+
+    const modal = document.getElementById('comment-modal');
+    if (!modal) return;
+
+    document.getElementById('comment-target-title').textContent = post.title;
+    document.getElementById('comment-text').value = '';
+    
+    modal.classList.remove('hidden');
+    modal.querySelector('.modal-v4')?.classList.add('active');
+
+    // Setup submit
+    const btn = document.getElementById('submit-comment-btn');
+    btn.onclick = async () => {
+        const txt = document.getElementById('comment-text').value.trim();
+        if (!txt) return;
+        
+        await window.submitComment(postId, txt);
+        modal.classList.add('hidden');
+    };
+
+    // Close logic
+    const closeBtn = document.getElementById('close-comment-modal');
+    const overlay = document.getElementById('close-comment-modal-overlay');
+    const closeHandler = () => {
+        modal.classList.add('hidden');
+        closeBtn.removeEventListener('click', closeHandler);
+        overlay.removeEventListener('click', closeHandler);
+    };
+    closeBtn.addEventListener('click', closeHandler);
+    overlay.addEventListener('click', closeHandler);
+};
+
 window.toggleComments = (postId) => {
     // Legacy support or fallback
     window.openPostDetail(postId);
 };
 
-window.submitComment = async (postId) => {
+window.submitComment = async (postId, modalContent = null) => {
     const container = document.getElementById(`comments-${postId}`);
     const input = container?.querySelector('.comment-input');
-    const content = input?.value.trim();
+    const content = modalContent || input?.value.trim();
     
     if (!content) return;
     

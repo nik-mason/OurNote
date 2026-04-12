@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log("OurNote: Dashboard mode active.");
         initNavigation();
         
-        setupModal('mobile-modal', 'nav-mobile', 'close-mobile-modal');
+        setupModal('main-nav', 'mobile-hamburger', 'close-mobile-modal');
         setupModal('write-modal', 'open-write-modal', 'close-write-modal');
         setupModal('write-modal', 'open-write-modal-sidebar', 'close-write-modal');
         setupModal('master-modal', 'xxx', 'close-master-modal'); // Placeholder for master trigger if any
@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadComponents() {
     const components = [
-        { id: 'modal-container', files: ['write-modal.html', 'master-modal.html', 'mobile-modal.html', 'system-modals.html', 'confirm-modal.html', 'post-detail-modal.html'] },
+        { id: 'modal-container', files: ['write-modal.html', 'master-modal.html', 'mobile-modal.html', 'system-modals.html', 'confirm-modal.html', 'post-detail-modal.html', 'comment-modal.html'] },
         { id: 'security-container', files: ['security-layers.html', 'prank-layers.html'] }
     ];
 

@@ -98,13 +98,14 @@
                     
                     <!-- Main Navigation (Always Popup) -->
                     <nav class="hidden" id="main-nav">
-                        <!-- Mobile/PC Hamburger Close Header (Always visible when nav is open) -->
-                        <!-- Close header removed per request -->
-                        <div class="mb-12">
+                        <div class="mb-12 relative w-full flex flex-col items-center">
+                            <button id="close-mobile-modal" class="absolute top-0 right-0 size-12 rounded-2xl bg-slate-100 flex items-center justify-center text-text-secondary hover:bg-primary hover:text-white transition-all shadow-lg active:scale-95 z-[100]">
+                                <span class="material-symbols-outlined text-3xl">close</span>
+                            </button>
                              <div class="size-20 rounded-[2rem] bg-primary/10 flex items-center justify-center text-primary mx-auto mb-4">
                                 <span class="material-symbols-outlined text-4xl">school</span>
                             </div>
-                            <h2 class="text-4xl font-black italic tracking-tighter uppercase text-text-main">Navigation</h2>
+                            <h2 class="text-4xl font-black italic tracking-tighter uppercase text-text-main text-center">Navigation</h2>
                         </div>
 
                         <!-- Categories vertically stacked -->

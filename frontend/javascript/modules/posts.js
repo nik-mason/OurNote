@@ -61,22 +61,22 @@ export function renderPosts(posts) {
                 ` : ''}
             </div>
 
-            <div onclick="window.openPostDetail(${post.id})" class="flex-1 flex flex-col">
-                <h3 class="text-4xl font-black text-text-main tracking-tighter mb-4 line-clamp-2 leading-none group-hover:text-primary transition-colors">${post.title}</h3>
+            <div onclick="window.openPostDetail(${post.id})" class="flex-1 flex flex-col min-h-0">
+                <h3 class="text-4xl font-black text-text-main tracking-tighter mb-4 line-clamp-2 leading-none group-hover:text-primary transition-colors break-words">${post.title}</h3>
                 
-                <div class="relative mb-6">
-                    <p id="content-short-${post.id}" class="text-base text-slate-500 font-medium leading-relaxed whitespace-pre-wrap line-clamp-[8]">${post.content}</p>
-                    <p id="content-full-${post.id}" class="hidden text-base text-slate-500 font-medium leading-relaxed whitespace-pre-wrap">${post.content}</p>
+                <div class="relative mb-6 flex-1 flex flex-col">
+                    <p id="content-short-${post.id}" class="text-base text-slate-500 font-medium leading-relaxed whitespace-pre-wrap break-words ${post.image_url ? 'line-clamp-[6]' : 'line-clamp-[15]'}">${post.content}</p>
+                    <p id="content-full-${post.id}" class="hidden text-base text-slate-500 font-medium leading-relaxed whitespace-pre-wrap break-words">${post.content}</p>
                     
-                    ${post.content.split('\n').length > 8 || post.content.length > 200 ? `
-                        <button onclick="event.stopPropagation(); window.toggleCardExpand(${post.id})" id="expand-btn-${post.id}" class="mt-2 text-primary font-black text-sm hover:underline flex items-center gap-1">
+                    ${(post.image_url ? post.content.split('\n').length > 6 || post.content.length > 150 : post.content.split('\n').length > 15 || post.content.length > 400) ? `
+                        <button onclick="event.stopPropagation(); window.toggleCardExpand(${post.id})" id="expand-btn-${post.id}" class="mt-2 text-primary font-black text-sm hover:underline flex items-center gap-1 w-fit">
                             더보기 <span class="material-symbols-outlined text-sm">expand_more</span>
                         </button>
                     ` : ''}
                 </div>
                 
                 ${post.image_url ? `
-                    <div class="w-full aspect-square bg-slate-50 rounded-3xl overflow-hidden border border-slate-100 mt-auto mb-6 flex items-center justify-center p-4">
+                    <div id="image-container-${post.id}" class="w-full aspect-square bg-slate-50 rounded-3xl overflow-hidden border border-slate-100 mt-auto mb-6 flex items-center justify-center p-4">
                         <img src="${post.image_url}" class="max-w-full max-h-full object-contain transition-transform duration-700 group-hover:scale-105" loading="lazy">
                     </div>
                 ` : ''}
@@ -113,15 +113,18 @@ window.toggleCardExpand = (postId) => {
     const short = document.getElementById(`content-short-${postId}`);
     const full = document.getElementById(`content-full-${postId}`);
     const btn = document.getElementById(`expand-btn-${postId}`);
+    const img = document.getElementById(`image-container-${postId}`);
     
     if (short && full) {
         if (full.classList.contains('hidden')) {
             short.classList.add('hidden');
             full.classList.remove('hidden');
+            if(img) img.classList.add('mt-6'); // Add margin if image exists
             if(btn) btn.innerHTML = '접기 <span class="material-symbols-outlined text-sm">expand_less</span>';
         } else {
             short.classList.remove('hidden');
             full.classList.add('hidden');
+            if(img) img.classList.remove('mt-6');
             if(btn) btn.innerHTML = '더보기 <span class="material-symbols-outlined text-sm">expand_more</span>';
         }
     }

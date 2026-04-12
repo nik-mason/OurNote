@@ -1,3 +1,11 @@
+/* Cafe24 Ssurround Air Font */
+@font-face {
+    font-family: 'Cafe24SsurroundAir';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2105_2@1.0/Cafe24SsurroundAir.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
 /* ---------------------------------------------------------
    OURNOTE BASE STYLES & VARIABLES
 --------------------------------------------------------- */
@@ -14,7 +22,7 @@
     --card-bg: rgba(255, 255, 255, 0.05);
     --text-white: #ffffff;
     --text-dim: #94a3b8;
-    --font-display: 'Lexend', 'Montserrat', sans-serif;
+    --font-display: 'Cafe24SsurroundAir', sans-serif;
     --sidebar-width: 280px;
     --sidebar-collapsed: 80px;
 }
@@ -71,7 +79,7 @@
 body {
     background-color: var(--bg-deep);
     color: var(--text-white);
-    font-family: 'Pretendard', sans-serif;
+    font-family: 'Cafe24SsurroundAir', sans-serif;
     overflow-x: hidden !important;
     line-height: 1.6;
 }

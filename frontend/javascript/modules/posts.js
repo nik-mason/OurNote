@@ -347,14 +347,55 @@ window.openPostDetail = (postId, isHomework = false) => {
                 <p class="text-text-main text-lg font-medium">${c.content}</p>
             </div>
         `).join('') || '<p class="text-center py-10 opacity-30 font-bold">첫 댓글을 남겨보세요! ✨</p>';
-        modal.querySelector('.sticky.bottom-0').classList.remove('hidden');
+        modal.querySelector('.sticky.bottom-0')?.classList.remove('hidden');
+
+        // Setup comment submission
+        const submitBtn = document.getElementById('detail-submit-comment');
+        if (submitBtn) {
+            submitBtn.onclick = async () => {
+                const input = document.getElementById('detail-comment-input');
+                const txt = input?.value.trim();
+                if (!txt) return;
+                try {
+                    const res = await fetch(`/api/posts/${post.id}/comments`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ author: state.currentUser?.name || 'Anonymous', content: txt })
+                    });
+                    if (res.ok) {
+                        input.value = '';
+                        await loadPosts();
+                        window.openPostDetail(post.id);
+                    }
+                } catch (err) {}
+            };
+        }
     }
+
+    // Modal Display Logic
+    modal.classList.remove('hidden');
+    const overlay = document.getElementById('close-post-detail-overlay');
+    const closeBtn = document.getElementById('close-post-detail-modal');
+    setTimeout(() => {
+        if(overlay) overlay.style.opacity = '1';
+        modal.querySelector('.modal-v4')?.classList.add('active');
+    }, 10);
+
+    const closeHandler = () => {
+        modal.querySelector('.modal-v4')?.classList.remove('active');
+        if(overlay) overlay.style.opacity = '0';
+        setTimeout(() => modal.classList.add('hidden'), 400);
+        overlay?.removeEventListener('click', closeHandler);
+        closeBtn?.removeEventListener('click', closeHandler);
+    };
+    overlay?.addEventListener('click', closeHandler);
+    closeBtn?.addEventListener('click', closeHandler);
+};
 
 window.toggleHomeworkTask = async (hwId, taskIdx, btn) => {
     const isCompleted = !btn.querySelector('.material-symbols-outlined').textContent.includes('radio_button_unchecked');
     const newState = !isCompleted;
     
-    // Optimistic UI
     const icon = btn.querySelector('.material-symbols-outlined');
     const label = btn.querySelector('span:last-child');
     const box = icon.parentElement;
@@ -376,74 +417,16 @@ window.toggleHomeworkTask = async (hwId, taskIdx, btn) => {
     }
 
     try {
-        const res = await fetch(`/api/homework/${hwId}/task`, {
+        await fetch(`/api/homework/${hwId}/task`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                student_id: state.currentUser?.id || 'all',
-                task_index: taskIdx,
-                completed: newState
-            })
+            body: JSON.stringify({ student_id: state.currentUser?.id || 'all', task_index: taskIdx, completed: newState })
         });
-        
-        if (res.ok) {
-            // Refresh cache and lists
-            const hwRes = await fetch('/api/homework');
-            window.currentHomework = await hwRes.json();
-            // Don't call loadPosts full refresh to avoid modal flickering, 
-            // but the background list will update next time it's rendered.
-        }
+        const hwRes = await fetch('/api/homework');
+        window.currentHomework = await hwRes.json();
     } catch (err) {
-        showToast('상태 변경에 실패했습니다.', 'error');
+        showToast('상태 변경 실패', 'error');
     }
-};
-
-    // Show modal directly without setupModal overhead
-    modal.classList.remove('hidden');
-    const overlay = document.getElementById('close-post-detail-overlay');
-    const closeBtn = document.getElementById('close-post-detail-modal');
-    
-    // Smooth fade in
-    setTimeout(() => {
-        if(overlay) overlay.style.opacity = '1';
-        modal.querySelector('.modal-v4')?.classList.add('active');
-    }, 10);
-
-    const closeHandler = () => {
-        modal.querySelector('.modal-v4')?.classList.remove('active');
-        if(overlay) overlay.style.opacity = '0';
-        setTimeout(() => modal.classList.add('hidden'), 400);
-        // Remove listeners
-        overlay?.removeEventListener('click', closeHandler);
-        closeBtn?.removeEventListener('click', closeHandler);
-    };
-    overlay?.addEventListener('click', closeHandler);
-    closeBtn?.addEventListener('click', closeHandler);
-    
-    // Setup comment submission
-    const submitBtn = document.getElementById('detail-submit-comment');
-    const input = document.getElementById('detail-comment-input');
-    
-    submitBtn.onclick = async () => {
-        const txt = input.value.trim();
-        if (!txt) return;
-        
-        try {
-            const res = await fetch(`/api/posts/${postId}/comments`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    author: state.currentUser.name,
-                    content: txt
-                })
-            });
-            if (res.ok) {
-                input.value = '';
-                await loadPosts();
-                window.openPostDetail(postId);
-            }
-        } catch (err) {}
-    };
 };
 
 window.openCommentModal = (postId) => {

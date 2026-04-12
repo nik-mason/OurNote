@@ -475,6 +475,28 @@ export function initPostForm() {
         }
     });
 
+    // Homework Task Management
+    const addTaskBtn = document.getElementById('add-task-btn');
+    const taskList = document.getElementById('tasks-input-list');
+    
+    addTaskBtn?.addEventListener('click', (e) => {
+        e.preventDefault();
+        const taskRow = document.createElement('div');
+        taskRow.className = 'flex gap-3 items-center group animate-slide-up';
+        taskRow.innerHTML = `
+            <div class="flex-1 overflow-hidden rounded-2xl border border-slate-200 bg-white px-6 py-4 flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary/40">radio_button_unchecked</span>
+                <input type="text" class="hw-task-input flex-1 bg-transparent border-none text-sm font-bold text-text-main focus:ring-0 placeholder:text-slate-300" placeholder="해야 할 일을 입력하세요">
+            </div>
+            <button type="button" class="remove-task-btn size-10 rounded-xl bg-red-50 text-red-400 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
+                <span class="material-symbols-outlined text-lg">delete</span>
+            </button>
+        `;
+        taskList.appendChild(taskRow);
+        
+        taskRow.querySelector('.remove-task-btn').onclick = () => taskRow.remove();
+    });
+
     submitBtn.addEventListener('click', async () => {
         const title = document.getElementById('post-title')?.value.trim();
         const content = document.getElementById('post-content')?.value.trim();
@@ -506,13 +528,21 @@ export function initPostForm() {
                 if (uploadData.success) imageUrl = uploadData.url;
             }
 
+            // Collect Tasks
+            const taskInputs = document.querySelectorAll('.hw-task-input');
+            const tasks = Array.from(taskInputs).map(inp => ({
+                text: inp.value.trim(),
+                completed: false
+            })).filter(t => t.text !== '');
+
             const endpoint = category === 'homework' ? '/api/homework' : '/api/posts';
             const payload = {
                 title, content, category, 
                 author: state.currentUser?.name || 'Anonymous',
                 is_anonymous: isAnonymous,
                 image_url: imageUrl,
-                student_id: state.currentUser?.id || 'anon'
+                student_id: state.currentUser?.id || 'anon',
+                tasks: tasks // Added tasks
             };
 
             const res = await fetch(endpoint, {

@@ -1,7 +1,7 @@
 /**
  * OURNOTE POSTS MODULE (Posts, Homework, Likes, Comments)
  */
-import { state, showToast } from './common.js';
+import { state, showToast, showConfirm } from './common.js';
 
 export async function loadPosts() {
     const container = document.getElementById('posts-container');

@@ -24,7 +24,20 @@ def serve_frontend(filename):
 
 @app.route('/assets/<path:filename>')
 def serve_assets(filename):
+    # Try frontend assets first, then backend assets
+    for d in [FRONTEND_DIR, os.path.join(BASE_DIR, 'backend')]:
+        path = os.path.join(d, 'assets')
+        if os.path.exists(os.path.join(path, filename)):
+            return send_from_directory(path, filename)
     return send_from_directory(ASSETS_DIR, filename)
+
+@app.route('/manifest.json')
+def serve_manifest():
+    return send_from_directory(FRONTEND_DIR, 'manifest.json')
+
+@app.route('/favicon.ico')
+def serve_favicon():
+    return send_from_directory(os.path.join(FRONTEND_DIR, 'assets'), 'logo.png')
 
 from supabase import create_client, Client
 

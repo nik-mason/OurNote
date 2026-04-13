@@ -63,7 +63,9 @@
             const savedTheme = localStorage.getItem('ournote_theme');
             if (savedTheme === 'dark') {
                 document.documentElement.classList.add('dark-mode', 'dark');
-                document.body.classList.add('dark-mode', 'dark');
+                window.addEventListener('DOMContentLoaded', () => {
+                    document.body.classList.add('dark-mode', 'dark');
+                });
             }
         })();
     </script>

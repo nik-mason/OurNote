@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OurNote - 로그인</title>
     <link rel="stylesheet" href="/frontend/css/style.css">
-    <link rel="icon" type="image/png" href="/backend/assets/logo.png">
+    <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="manifest" href="/frontend/manifest.json">
     <!-- Legacy Fonts Removed -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
@@ -62,8 +62,8 @@
         (function() {
             const savedTheme = localStorage.getItem('ournote_theme');
             if (savedTheme === 'dark') {
-                document.documentElement.classList.add('dark-mode');
-                document.body.classList.add('dark-mode');
+                document.documentElement.classList.add('dark-mode', 'dark');
+                document.body.classList.add('dark-mode', 'dark');
             }
         })();
     </script>
@@ -89,7 +89,7 @@
         <div class="relative z-10 flex flex-col items-center">
             <div class="relative mb-8">
                 <div class="logo-container-ultra">
-                    <img src="/backend/assets/logo.png" alt="OurNote Logo" class="ournote-logo-img">
+                    <img src="/assets/logo.png" alt="OurNote Logo" class="ournote-logo-img">
                 </div>
             </div>
 

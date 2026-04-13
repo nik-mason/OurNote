@@ -18,13 +18,14 @@
     <link rel="stylesheet" href="/frontend/css/modules/popups/password-modal.css?v=4.0">
     <link rel="stylesheet" href="/frontend/css/style.css?v=4.0">
     <!-- Google Fonts Preconnect removed for Cafe24 -->
-    <link rel="icon" type="image/png" href="/backend/assets/logo.png">
+    <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="manifest" href="/frontend/manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet">
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script id="tailwind-config">
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -84,8 +85,8 @@
         (function() {
             const savedTheme = localStorage.getItem('ournote_theme');
             if (savedTheme === 'dark') {
-                document.documentElement.classList.add('dark-mode');
-                document.body.classList.add('dark-mode');
+                document.documentElement.classList.add('dark-mode', 'dark');
+                document.body.classList.add('dark-mode', 'dark');
             }
         })();
     </script>

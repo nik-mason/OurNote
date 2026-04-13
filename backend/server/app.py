@@ -331,4 +331,6 @@ def upload_image():
         return {"success": False, "error": str(e)}, 500
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # 환경 변수 FLASK_DEBUG가 'true'나 '1'일 때만 디버그 모드 작동 (운영 환경에서는 기본 False)
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() in ['true', '1', 't']
+    app.run(debug=debug_mode, port=5000)

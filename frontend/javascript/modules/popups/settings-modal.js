@@ -80,7 +80,9 @@ export function initSettingsModal() {
 
         // Apply to body and html
         document.body.classList.toggle('dark-mode', isDark);
+        document.body.classList.toggle('dark', isDark);
         document.documentElement.classList.toggle('dark-mode', isDark);
+        document.documentElement.classList.toggle('dark', isDark);
         localStorage.setItem('ournote_theme', theme);
     };
 

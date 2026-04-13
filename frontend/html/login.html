@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OurNote - 로그인</title>
     <link rel="stylesheet" href="/frontend/css/style.css">
-    <link rel="icon" type="image/png" href="/frontend/assets/logo.png">
+    <link rel="icon" type="image/png" href="/backend/assets/logo.png">
     <link rel="manifest" href="/frontend/manifest.json">
     <!-- Legacy Fonts Removed -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
@@ -69,7 +69,7 @@
     </script>
 </head>
 
-<body class="overflow-x-hidden font-body bg-background-light">
+<body class="overflow-x-hidden font-body bg-background-light dark:bg-slate-900 transition-colors duration-300">
     <canvas id="particle-canvas"></canvas>
     <div id="cursor-v4"></div>
 
@@ -79,7 +79,7 @@
     <div class="neon-blob bg-purple-500/10 top-[20%] right-[15%]" style="animation-delay: -10s"></div>
 
     <div id="splash-screen"
-        class="fixed inset-0 z-[10000] bg-white flex flex-col items-center justify-center transition-all duration-1000">
+        class="fixed inset-0 z-[10000] bg-white dark:bg-slate-900 flex flex-col items-center justify-center transition-all duration-1000">
         <!-- Flying Elements Container -->
         <div id="flying-particles" class="flying-wrap"></div>
 
@@ -89,12 +89,12 @@
         <div class="relative z-10 flex flex-col items-center">
             <div class="relative mb-8">
                 <div class="logo-container-ultra">
-                    <img src="/frontend/assets/logo.png" alt="OurNote Logo" class="ournote-logo-img">
+                    <img src="/backend/assets/logo.png" alt="OurNote Logo" class="ournote-logo-img">
                 </div>
             </div>
 
             <h1 class="text-4xl font-black text-primary tracking-tighter mb-2">OURNOTE</h1>
-            <h2 class="text-2xl font-bold text-text-main mb-6">천사반</h2>
+            <h2 class="text-2xl font-bold text-text-main dark:text-white mb-6">천사반</h2>
             
             <p class="text-text-secondary tracking-[10px] text-[10px] font-black uppercase opacity-70">Angel Ed. v4.2 Ultra</p>
         </div>
@@ -103,7 +103,7 @@
     <div id="ultra-bar" class="ultra-progress bg-primary/20"></div>
 
     <main class="min-h-screen flex items-center justify-center p-6">
-        <div class="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/50 max-w-lg w-full p-12 relative border border-slate-100 login-card-v4 active">
+        <div class="bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 dark:shadow-none max-w-lg w-full p-12 relative border border-slate-100 dark:border-slate-700/50 login-card-v4 active transition-colors duration-300">
             <!-- Decorative light -->
             <div class="absolute -top-12 -right-12 size-48 bg-primary/5 blur-[50px] rounded-full"></div>
             
@@ -116,11 +116,11 @@
                 <div class="size-20 bg-primary/10 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-primary/20">
                     <span class="material-symbols-outlined text-4xl text-primary">school</span>
                 </div>
-                <h2 class="text-4xl font-black text-text-main tracking-tighter mb-4">반가워요!</h2>
-                <p class="text-text-secondary text-lg">우리만의 소중한 공간으로 들어오세요.</p>
+                <h2 class="text-4xl font-black text-text-main dark:text-white tracking-tighter mb-4">반가워요!</h2>
+                <p class="text-text-secondary dark:text-slate-300 text-lg">우리만의 소중한 공간으로 들어오세요.</p>
             </div>
 
-            <div class="flex gap-2 p-1.5 bg-slate-50 rounded-2xl mb-10 border border-slate-200/50">
+            <div class="flex gap-2 p-1.5 bg-slate-50 dark:bg-slate-700/50 rounded-2xl mb-10 border border-slate-200/50 dark:border-slate-600/50 transition-colors">
                 <button id="radio-student-btn"
                     class="flex-1 py-4 rounded-[14px] bg-primary text-white font-bold transition-all shadow-lg shadow-primary/20">학생</button>
                 <button id="radio-teacher-btn"
@@ -132,13 +132,13 @@
                 <div class="relative">
                     <span class="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-secondary">pin</span>
                     <input type="text" id="student-id"
-                        class="w-full bg-slate-50 border border-slate-200/50 rounded-2xl py-5 pl-14 pr-6 text-text-main outline-none focus:border-primary transition-all placeholder:text-text-secondary"
+                        class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200/50 dark:border-slate-600/50 rounded-2xl py-5 pl-14 pr-6 text-text-main dark:text-white outline-none focus:border-primary transition-all placeholder:text-text-secondary dark:placeholder-slate-400"
                         placeholder="출석 번호 (01)">
                 </div>
                 <div class="relative">
                     <span class="absolute left-5 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-secondary">person</span>
                     <input type="text" id="student-name"
-                        class="w-full bg-slate-50 border border-slate-200/50 rounded-2xl py-5 pl-14 pr-6 text-text-main outline-none focus:border-primary transition-all placeholder:text-text-secondary"
+                        class="w-full bg-slate-50 dark:bg-slate-700/50 border border-slate-200/50 dark:border-slate-600/50 rounded-2xl py-5 pl-14 pr-6 text-text-main dark:text-white outline-none focus:border-primary transition-all placeholder:text-text-secondary dark:placeholder-slate-400"
                         placeholder="이름">
                 </div>
             </div>
@@ -182,7 +182,7 @@
     <!-- (PIN Entry Modal) -->
     <div id="pin-modal" class="hidden fixed inset-0 z-[20000] flex items-center justify-center">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-md modal-overlay" id="close-pin-overlay"></div>
-        <div class="relative z-10 ultra-card modal-v4 full-screen w-full h-full max-w-none p-0 flex flex-col lg:flex-row overflow-hidden bg-white">
+        <div class="relative z-10 ultra-card modal-v4 full-screen w-full h-full max-w-none p-0 flex flex-col lg:flex-row overflow-hidden bg-white dark:bg-slate-800 transition-colors duration-300">
             
             <!-- Visual Section -->
             <div class="lg:w-2/5 w-full h-[30vh] lg:h-full bg-slate-900 flex flex-col items-center justify-center p-12 relative overflow-hidden text-white text-center">
@@ -200,16 +200,16 @@
             </div>
 
             <!-- Input Section -->
-            <div class="lg:w-3/5 w-full h-full flex flex-col bg-white overflow-y-auto p-8 md:p-24 justify-center items-center">
+            <div class="lg:w-3/5 w-full h-full flex flex-col bg-white dark:bg-slate-800 overflow-y-auto p-8 md:p-24 justify-center items-center transition-colors duration-300">
                 <div class="max-w-md mx-auto w-full space-y-12">
                     <!-- Dots display -->
                     <div class="flex justify-center gap-4 py-8">
-                        <div class="pin-dot size-6 rounded-full border-2 border-slate-200 transition-all duration-300"></div>
-                        <div class="pin-dot size-6 rounded-full border-2 border-slate-200 transition-all duration-300"></div>
-                        <div class="pin-dot size-6 rounded-full border-2 border-slate-200 transition-all duration-300"></div>
-                        <div class="pin-dot size-6 rounded-full border-2 border-slate-200 transition-all duration-300"></div>
-                        <div class="pin-dot size-6 rounded-full border-2 border-slate-200 transition-all duration-300"></div>
-                        <div class="pin-dot size-6 rounded-full border-2 border-slate-200 transition-all duration-300"></div>
+                        <div class="pin-dot size-6 rounded-full border-2 border-slate-200 dark:border-slate-600/50 transition-all duration-300"></div>
+                        <div class="pin-dot size-6 rounded-full border-2 border-slate-200 dark:border-slate-600/50 transition-all duration-300"></div>
+                        <div class="pin-dot size-6 rounded-full border-2 border-slate-200 dark:border-slate-600/50 transition-all duration-300"></div>
+                        <div class="pin-dot size-6 rounded-full border-2 border-slate-200 dark:border-slate-600/50 transition-all duration-300"></div>
+                        <div class="pin-dot size-6 rounded-full border-2 border-slate-200 dark:border-slate-600/50 transition-all duration-300"></div>
+                        <div class="pin-dot size-6 rounded-full border-2 border-slate-200 dark:border-slate-600/50 transition-all duration-300"></div>
                     </div>
 
                     <!-- Hidden input for PC keyboard -->
@@ -217,18 +217,18 @@
 
                     <!-- Numeric Keypad (Optimized for Mobile) -->
                     <div class="grid grid-cols-3 gap-4">
-                        <button class="keypad-btn py-8 rounded-3xl bg-slate-50 text-3xl font-black text-text-main hover:bg-primary hover:text-white transition-all shadow-sm flex items-center justify-center" data-val="1">1</button>
-                        <button class="keypad-btn py-8 rounded-3xl bg-slate-50 text-3xl font-black text-text-main hover:bg-primary hover:text-white transition-all shadow-sm flex items-center justify-center" data-val="2">2</button>
-                        <button class="keypad-btn py-8 rounded-3xl bg-slate-50 text-3xl font-black text-text-main hover:bg-primary hover:text-white transition-all shadow-sm flex items-center justify-center" data-val="3">3</button>
-                        <button class="keypad-btn py-8 rounded-3xl bg-slate-50 text-3xl font-black text-text-main hover:bg-primary hover:text-white transition-all shadow-sm flex items-center justify-center" data-val="4">4</button>
-                        <button class="keypad-btn py-8 rounded-3xl bg-slate-50 text-3xl font-black text-text-main hover:bg-primary hover:text-white transition-all shadow-sm flex items-center justify-center" data-val="5">5</button>
-                        <button class="keypad-btn py-8 rounded-3xl bg-slate-50 text-3xl font-black text-text-main hover:bg-primary hover:text-white transition-all shadow-sm flex items-center justify-center" data-val="6">6</button>
-                        <button class="keypad-btn py-8 rounded-3xl bg-slate-50 text-3xl font-black text-text-main hover:bg-primary hover:text-white transition-all shadow-sm flex items-center justify-center" data-val="7">7</button>
-                        <button class="keypad-btn py-8 rounded-3xl bg-slate-50 text-3xl font-black text-text-main hover:bg-primary hover:text-white transition-all shadow-sm flex items-center justify-center" data-val="8">8</button>
-                        <button class="keypad-btn py-8 rounded-3xl bg-slate-50 text-3xl font-black text-text-main hover:bg-primary hover:text-white transition-all shadow-sm flex items-center justify-center" data-val="9">9</button>
-                        <button class="py-8 rounded-3xl bg-slate-50 text-xl font-bold text-text-dim hover:text-accent transition-all flex items-center justify-center" id="pin-clear">CLEAR</button>
-                        <button class="keypad-btn py-8 rounded-3xl bg-slate-50 text-3xl font-black text-text-main hover:bg-primary hover:text-white transition-all shadow-sm flex items-center justify-center" data-val="0">0</button>
-                        <button class="py-8 rounded-3xl bg-slate-50 text-xl font-bold text-text-dim hover:text-primary transition-all flex items-center justify-center" id="pin-delete">
+                        <button class="keypad-btn py-8 rounded-3xl bg-slate-50 dark:bg-slate-700/50 text-3xl font-black text-text-main dark:text-white hover:bg-primary hover:text-white transition-all shadow-sm flex items-center justify-center" data-val="1">1</button>
+                        <button class="keypad-btn py-8 rounded-3xl bg-slate-50 dark:bg-slate-700/50 text-3xl font-black text-text-main dark:text-white hover:bg-primary hover:text-white transition-all shadow-sm flex items-center justify-center" data-val="2">2</button>
+                        <button class="keypad-btn py-8 rounded-3xl bg-slate-50 dark:bg-slate-700/50 text-3xl font-black text-text-main dark:text-white hover:bg-primary hover:text-white transition-all shadow-sm flex items-center justify-center" data-val="3">3</button>
+                        <button class="keypad-btn py-8 rounded-3xl bg-slate-50 dark:bg-slate-700/50 text-3xl font-black text-text-main dark:text-white hover:bg-primary hover:text-white transition-all shadow-sm flex items-center justify-center" data-val="4">4</button>
+                        <button class="keypad-btn py-8 rounded-3xl bg-slate-50 dark:bg-slate-700/50 text-3xl font-black text-text-main dark:text-white hover:bg-primary hover:text-white transition-all shadow-sm flex items-center justify-center" data-val="5">5</button>
+                        <button class="keypad-btn py-8 rounded-3xl bg-slate-50 dark:bg-slate-700/50 text-3xl font-black text-text-main dark:text-white hover:bg-primary hover:text-white transition-all shadow-sm flex items-center justify-center" data-val="6">6</button>
+                        <button class="keypad-btn py-8 rounded-3xl bg-slate-50 dark:bg-slate-700/50 text-3xl font-black text-text-main dark:text-white hover:bg-primary hover:text-white transition-all shadow-sm flex items-center justify-center" data-val="7">7</button>
+                        <button class="keypad-btn py-8 rounded-3xl bg-slate-50 dark:bg-slate-700/50 text-3xl font-black text-text-main dark:text-white hover:bg-primary hover:text-white transition-all shadow-sm flex items-center justify-center" data-val="8">8</button>
+                        <button class="keypad-btn py-8 rounded-3xl bg-slate-50 dark:bg-slate-700/50 text-3xl font-black text-text-main dark:text-white hover:bg-primary hover:text-white transition-all shadow-sm flex items-center justify-center" data-val="9">9</button>
+                        <button class="py-8 rounded-3xl bg-slate-50 dark:bg-slate-700/50 text-xl font-bold text-text-dim dark:text-slate-400 hover:text-accent transition-all flex items-center justify-center" id="pin-clear">CLEAR</button>
+                        <button class="keypad-btn py-8 rounded-3xl bg-slate-50 dark:bg-slate-700/50 text-3xl font-black text-text-main dark:text-white hover:bg-primary hover:text-white transition-all shadow-sm flex items-center justify-center" data-val="0">0</button>
+                        <button class="py-8 rounded-3xl bg-slate-50 dark:bg-slate-700/50 text-xl font-bold text-text-dim dark:text-slate-400 hover:text-primary transition-all flex items-center justify-center" id="pin-delete">
                             <span class="material-symbols-outlined">backspace</span>
                         </button>
                     </div>

@@ -255,11 +255,11 @@
     <div id="toast-container" class="fixed bottom-10 right-10 z-[300] flex flex-col gap-4"></div>
 
     <!-- Comprehensive Ultra-Settings Modal -->
-    <div id="settings-modal" class="fixed inset-0 z-[500] hidden">
+    <div id="settings-modal" class="fixed inset-0 z-[10000] hidden">
         <div
             class="absolute inset-0 modal-overlay opacity-0 transition-opacity duration-500 bg-black/80 backdrop-blur-xl">
         </div>
-        <div class="modal-v4 ultra-card w-full max-w-5xl h-[85vh] flex flex-col relative z-30 overflow-hidden bg-white border border-slate-200">
+        <div class="modal-v4 ultra-card w-full max-w-5xl h-[85vh] flex flex-col relative z-30 overflow-hidden bg-white border border-slate-200" style="max-width:64rem; height:85vh; border-radius:2rem;">
                 <!-- Header -->
                 <div class="p-8 border-b border-white/10 flex justify-between items-center">
                     <div>
@@ -475,6 +475,20 @@
                                     <button
                                         class="bg-accent/20 text-accent px-6 py-3 rounded-xl hover:bg-accent hover:text-white transition-all">공장
                                         초기화 실행</button>
+                                </div>
+                            </div>
+
+                            <!-- 📋 학생 비밀번호 관리 (선생님 전용) -->
+                            <div class="hidden-by-role">
+                                <h4 class="settings-section-title flex items-center gap-2 mt-10">
+                                    <span class="material-symbols-outlined text-primary">manage_accounts</span>
+                                    학생 비밀번호 관리
+                                </h4>
+                                <p class="text-sm text-slate-400 mb-6">모든 학생의 입장 비밀번호를 확인하고 수정할 수 있습니다.</p>
+                                <div id="student-pin-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="col-span-full flex items-center justify-center py-8 text-slate-300">
+                                        <span class="material-symbols-outlined animate-spin mr-2">sync</span> 로딩 중...
+                                    </div>
                                 </div>
                             </div>
                         </div>

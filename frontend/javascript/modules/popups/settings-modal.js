@@ -4,6 +4,61 @@ export function initSettingsModal() {
     const modal = document.getElementById('settings-modal');
     if (!modal) return;
 
+    // ── 학생 비번 목록 로드 ──
+    const loadStudentPins = async () => {
+        const container = document.getElementById('student-pin-list');
+        if (!container) return;
+        try {
+            const res = await fetch('/api/students');
+            const students = await res.json();
+            container.innerHTML = students.map(s => `
+                <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <div class="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-black text-sm flex-shrink-0">
+                        ${s.id}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-bold text-text-main text-sm truncate">${s.name}</p>
+                    </div>
+                    <input type="text" value="${s.pin || ''}" maxlength="8"
+                        class="w-24 text-center font-mono font-bold text-sm border border-slate-200 bg-white rounded-xl px-2 py-2 focus:outline-none focus:border-primary transition-all"
+                        data-student-id="${s.id}" placeholder="비번">
+                    <button onclick="window.saveStudentPin('${s.id}', this)" 
+                        class="size-9 rounded-xl bg-primary text-white flex items-center justify-center hover:bg-primary-dark transition-all flex-shrink-0">
+                        <span class="material-symbols-outlined text-[16px]">save</span>
+                    </button>
+                </div>
+            `).join('');
+        } catch (e) {
+            container.innerHTML = '<p class="col-span-full text-center text-red-400 text-sm py-6">학생 목록을 불러올 수 없습니다.</p>';
+        }
+    };
+
+    window.saveStudentPin = async (studentId, btn) => {
+        const input = btn.closest('div').querySelector('input[data-student-id]');
+        const newPin = input?.value.trim();
+        if (!newPin) { showToast('비밀번호를 입력해주세요.', 'error'); return; }
+        
+        btn.innerHTML = '<span class="material-symbols-outlined text-[16px] animate-spin">sync</span>';
+        try {
+            const res = await fetch('/api/students/pin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ student_id: studentId, new_pin: newPin })
+            });
+            if (res.ok) {
+                showToast(`✅ ${studentId}번 비밀번호가 변경되었습니다.`);
+                btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">check</span>';
+                setTimeout(() => { btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">save</span>'; }, 1500);
+            } else {
+                showToast('변경에 실패했습니다.', 'error');
+                btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">save</span>';
+            }
+        } catch {
+            showToast('서버 오류입니다.', 'error');
+            btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">save</span>';
+        }
+    };
+
     // Section Switching Logic (defined first so openSettings can use it)
     const switchTab = (tabName) => {
         modal.querySelectorAll('.settings-pane').forEach(el => el.classList.add('hidden'));
@@ -14,9 +69,14 @@ export function initSettingsModal() {
 
         const activeBtn = modal.querySelector(`.settings-tab[data-tab="${tabName}"]`);
         if (activeBtn) activeBtn.classList.add('active', 'bg-white/10');
+
+        // 보안 탭 열릴 때 학생 목록 자동 로드
+        if (tabName === 'security' && state.currentUser?.role === 'teacher') {
+            loadStudentPins();
+        }
     };
 
-    // 전역 함수로 등록 — 버튼 onclick에서 호출 가능
+    // 전역 함수로 등록
     window.openSettings = () => {
         const isTeacher = state.currentUser?.role === 'teacher';
         const securityTab = modal.querySelector('.settings-tab[data-tab="security"]');
@@ -25,7 +85,6 @@ export function initSettingsModal() {
         }
 
         modal.classList.remove('hidden');
-        // 이 모달 전용 overlay만 선택
         const overlay = modal.querySelector('.modal-overlay');
         const content = modal.querySelector('.modal-v4');
 
@@ -40,10 +99,8 @@ export function initSettingsModal() {
     const closeHandler = () => {
         const overlay = modal.querySelector('.modal-overlay');
         const content = modal.querySelector('.modal-v4');
-
         if (content) content.classList.remove('active');
         if (overlay) overlay.style.opacity = '0';
-
         setTimeout(() => modal.classList.add('hidden'), 500);
     };
 
@@ -56,10 +113,9 @@ export function initSettingsModal() {
         });
     });
 
-    // Theme Switching V4
+    // Theme Switching
     const updateThemeUI = (theme) => {
         const isDark = theme === 'dark';
-
         document.querySelectorAll('.theme-option').forEach(el => {
             if (el.getAttribute('data-theme') === theme) {
                 el.classList.add('active', 'ring-2', 'ring-primary');
@@ -67,7 +123,6 @@ export function initSettingsModal() {
                 el.classList.remove('active', 'ring-2', 'ring-primary');
             }
         });
-
         if (isDark) {
             document.body.classList.add('dark-mode', 'dark');
             document.documentElement.classList.add('dark-mode', 'dark');
@@ -87,4 +142,3 @@ export function initSettingsModal() {
     const savedTheme = localStorage.getItem('ournote_theme') || 'white';
     updateThemeUI(savedTheme);
 }
-

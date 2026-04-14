@@ -17,6 +17,7 @@
 #confirm-modal:not(.hidden),
 #comment-modal:not(.hidden),
 #post-detail-modal:not(.hidden),
+#settings-modal:not(.hidden),
 #qr-modal:not(.hidden) {
     display: flex !important;
     align-items: center !important;

@@ -203,7 +203,15 @@ export async function loadPosts() {
     const container = document.getElementById('posts-container');
     if (!container) return;
     container.innerHTML = '<div class="ultra-card h-[300px] skeleton col-span-full"></div>';
-    
+
+    // 학생 이름 캐시 (선생님 숙제 진행도 뷰용)
+    if (!window.cachedStudents || window.cachedStudents.length === 0) {
+        try {
+            const sRes = await fetch('/api/students');
+            window.cachedStudents = await sRes.json();
+        } catch (e) { window.cachedStudents = []; }
+    }
+
     if (state.currentCategory === 'homework') {
         const res = await fetch('/api/homework');
         const hws = await res.json();
@@ -500,40 +508,60 @@ window.openPostDetail = (postId, isHomework = false) => {
 
         if (isTeacher) {
             // Teacher View: Progress of all assigned students
-            const studentIds = Object.keys(post.progress || {});
+            // assigned_students 배열 기준으로 표시 (progress 객체와 합쳐서)
+            const assignedSids = post.assigned_students || Object.keys(post.progress || {});
+            const studentsMap = {};
+            // 학생 이름 캐시 사용
+            (window.cachedStudents || []).forEach(s => { studentsMap[String(s.id)] = s.name; });
+
+            // assigned_students가 있으면 그것 기준, 아니면 progress 키 기준
+            const displaySids = assignedSids.length > 0 ? assignedSids : Object.keys(post.progress || {});
+
             list.innerHTML = `
                 <div class="overflow-hidden rounded-[2rem] border border-slate-100 bg-slate-50">
                     <table class="w-full text-left text-sm">
                         <thead class="bg-slate-100 text-[10px] font-black uppercase tracking-widest text-text-secondary">
                             <tr>
-                                <th class="px-6 py-4">Student</th>
-                                <th class="px-6 py-4 text-center">Progress</th>
+                                <th class="px-6 py-4">학생</th>
+                                <th class="px-4 py-4 text-center">진행도</th>
+                                <th class="px-4 py-4 text-center">완료</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-                            ${studentIds.length > 0 ? studentIds.map(sid => {
-                                const prog = post.progress[sid] || [];
-                                const done = prog.filter(t => t).length;
+                            ${displaySids.length > 0 ? displaySids.map(sid => {
+                                const prog = (post.progress && post.progress[sid]) || [];
                                 const tasks = post.tasks || [];
+                                const done = prog.filter(t => t).length;
+                                const pct = tasks.length > 0 ? Math.round((done / tasks.length) * 100) : 0;
+                                const studentName = studentsMap[String(sid)] || sid;
+                                const isDone = done === tasks.length && tasks.length > 0;
                                 return `
                                     <tr class="hover:bg-white transition-colors">
-                                        <td class="px-6 py-4 font-bold text-text-main">${sid}</td>
                                         <td class="px-6 py-4">
-                                            <div class="flex items-center gap-3">
-                                                <div class="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                                                    <div class="h-full bg-accent" style="width: ${(done / (tasks.length || 1)) * 100}%"></div>
-                                                </div>
-                                                <span class="font-black text-[10px]">${done}/${tasks.length}</span>
+                                            <div class="flex items-center gap-2">
+                                                <div class="size-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-black text-[10px]">${sid}</div>
+                                                <span class="font-bold text-text-main">${studentName}</span>
                                             </div>
+                                        </td>
+                                        <td class="px-4 py-4">
+                                            <div class="flex items-center gap-2">
+                                                <div class="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                                                    <div class="h-full ${isDone ? 'bg-primary' : 'bg-accent'} transition-all duration-700" style="width: ${pct}%"></div>
+                                                </div>
+                                                <span class="font-black text-[10px] w-10 text-right">${done}/${tasks.length}</span>
+                                            </div>
+                                        </td>
+                                        <td class="px-4 py-4 text-center">
+                                            ${isDone ? '<span class="material-symbols-outlined text-primary text-xl">verified</span>' : '<span class="material-symbols-outlined text-slate-300 text-xl">radio_button_unchecked</span>'}
                                         </td>
                                     </tr>
                                 `;
-                            }).join('') : '<tr><td colspan="2" class="p-8 text-center opacity-40">No students assigned.</td></tr>'}
+                            }).join('') : '<tr><td colspan="3" class="p-8 text-center opacity-40">배정된 학생이 없습니다.</td></tr>'}
                         </tbody>
                     </table>
                 </div>
             `;
-            modal.querySelector('.sticky.bottom-0').classList.add('hidden'); // Hide comment input
+            modal.querySelector('.sticky.bottom-0').classList.add('hidden');
         } else {
             // Student View: Checkable list
             const myId = state.currentUser?.id || 'all';
@@ -578,10 +606,15 @@ window.openPostDetail = (postId, isHomework = false) => {
         // Setup comment submission
         const submitBtn = document.getElementById('detail-submit-comment');
         if (submitBtn) {
-            submitBtn.onclick = async () => {
+            // 기존 이벤트 중복 방지
+            submitBtn.replaceWith(submitBtn.cloneNode(true));
+            const freshBtn = document.getElementById('detail-submit-comment');
+            freshBtn.onclick = async () => {
                 const input = document.getElementById('detail-comment-input');
                 const txt = input?.value.trim();
                 if (!txt) return;
+                freshBtn.disabled = true;
+                freshBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-3xl">sync</span>';
                 try {
                     const res = await fetch(`/api/posts/${post.id}/comments`, {
                         method: 'POST',
@@ -590,10 +623,39 @@ window.openPostDetail = (postId, isHomework = false) => {
                     });
                     if (res.ok) {
                         input.value = '';
-                        await loadPosts();
-                        window.openPostDetail(post.id);
+                        showToast('댓글이 등록되었습니다! 💬');
+                        // 백그라운드에서 posts 갱신 후 댓글 목록만 새로 렌더
+                        const postsRes = await fetch('/api/posts');
+                        window.currentPosts = await postsRes.json();
+                        // 댓글 목록만 업데이트
+                        const updatedPost = window.currentPosts.find(p => p.id === post.id);
+                        if (updatedPost) {
+                            const updatedList = document.getElementById('detail-comments-list');
+                            const count = document.getElementById('detail-comment-count');
+                            if (count) count.textContent = updatedPost.comments?.length || 0;
+                            if (updatedList) {
+                                updatedList.innerHTML = (updatedPost.comments || []).map(c => `
+                                    <div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 flex flex-col gap-2">
+                                        <div class="flex justify-between items-center">
+                                            <span class="font-black text-primary text-sm">${c.author}</span>
+                                            <span class="text-[10px] text-text-secondary font-bold">${c.date}</span>
+                                        </div>
+                                        <p class="text-text-main text-lg font-medium">${c.content}</p>
+                                    </div>
+                                `).join('') || '<p class="text-center py-10 opacity-30 font-bold">첫 댓글을 남겨보세요! ✨</p>';
+                                // 스크롤 아래로
+                                updatedList.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                            }
+                        }
+                    } else {
+                        showToast('댓글 등록에 실패했습니다.', 'error');
                     }
-                } catch (err) {}
+                } catch (err) {
+                    showToast('서버 오류가 발생했습니다.', 'error');
+                } finally {
+                    freshBtn.disabled = false;
+                    freshBtn.innerHTML = '<span class="material-symbols-outlined text-3xl">send</span>';
+                }
             };
         }
     }

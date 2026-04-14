@@ -3,6 +3,202 @@
  */
 import { state, showToast, showConfirm } from './common.js';
 
+/* ╔═══════════════════════════════════════════════════════╗
+   ║          ANIMATION UTILITIES (Global Effects)         ║
+   ╚═══════════════════════════════════════════════════════╝ */
+
+// ── 1. 좋아요 ❤️ 떠오르는 하트 애니메이션 ──
+function spawnFloatingHearts(x, y, count = 8) {
+    for (let i = 0; i < count; i++) {
+        const heart = document.createElement('div');
+        heart.textContent = '❤️';
+        heart.style.cssText = `
+            position: fixed;
+            left: ${x + (Math.random() - 0.5) * 40}px;
+            top: ${y}px;
+            font-size: ${14 + Math.random() * 18}px;
+            pointer-events: none;
+            z-index: 99999;
+            user-select: none;
+            animation: floatHeart ${0.8 + Math.random() * 0.8}s ease-out forwards;
+            animation-delay: ${Math.random() * 0.3}s;
+        `;
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 2000);
+    }
+}
+
+// ── 2. 숙제 완료 폭죽 🎉 애니메이션 ──
+function launchConfetti(originEl) {
+    const rect = originEl.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const colors = ['#2b8cee','#f59e0b','#10b981','#ef4444','#8b5cf6','#f97316','#ec4899'];
+    const emojis = ['🌟','✨','🎊','💫','⚡','🎉','🔥'];
+
+    // Confetti particles
+    for (let i = 0; i < 30; i++) {
+        const p = document.createElement('div');
+        const angle = (Math.PI * 2 * i) / 30 + (Math.random() - 0.5) * 0.4;
+        const speed = 80 + Math.random() * 120;
+        const dx = Math.cos(angle) * speed;
+        const dy = Math.sin(angle) * speed - 60;
+        p.style.cssText = `
+            position: fixed;
+            left: ${cx}px;
+            top: ${cy}px;
+            width: ${4 + Math.random() * 8}px;
+            height: ${4 + Math.random() * 8}px;
+            background: ${colors[Math.floor(Math.random() * colors.length)]};
+            border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+            pointer-events: none;
+            z-index: 99999;
+            transform: translate(-50%, -50%);
+            animation: confettiBurst 0.9s ease-out forwards;
+            --dx: ${dx}px;
+            --dy: ${dy}px;
+        `;
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 1200);
+    }
+
+    // Emoji burst
+    for (let i = 0; i < 6; i++) {
+        const e = document.createElement('div');
+        e.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        e.style.cssText = `
+            position: fixed;
+            left: ${cx + (Math.random() - 0.5) * 80}px;
+            top: ${cy}px;
+            font-size: ${20 + Math.random() * 20}px;
+            pointer-events: none;
+            z-index: 99999;
+            animation: emojiBurst ${0.7 + Math.random() * 0.5}s ease-out forwards;
+            animation-delay: ${Math.random() * 0.2}s;
+            --dy: ${-(60 + Math.random() * 80)}px;
+        `;
+        document.body.appendChild(e);
+        setTimeout(() => e.remove(), 1500);
+    }
+
+    // Screen flash
+    const flash = document.createElement('div');
+    flash.style.cssText = `
+        position: fixed; inset: 0; z-index: 99998;
+        background: radial-gradient(ellipse at ${cx}px ${cy}px, rgba(43,140,238,0.25) 0%, transparent 60%);
+        pointer-events: none;
+        animation: flashFade 0.5s ease-out forwards;
+    `;
+    document.body.appendChild(flash);
+    setTimeout(() => flash.remove(), 600);
+}
+
+// ── 3. 종이 비행기 게시 애니메이션 ──
+function playPaperPlaneAnimation(onComplete) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed; inset: 0; z-index: 99999;
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(2px);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.3s;
+    `;
+    document.body.appendChild(overlay);
+    setTimeout(() => overlay.style.opacity = '1', 10);
+
+    const plane = document.createElement('div');
+    plane.innerHTML = `
+    <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M72 8L8 38l28 8 4 26 10-16 22 2-6-50z" fill="#2b8cee" opacity="0.95"/>
+      <path d="M36 46L72 8" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+      <path d="M36 46l4 26 10-16" fill="#1a6bbd" opacity="0.8"/>
+    </svg>`;
+    plane.style.cssText = `
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+        z-index: 100000;
+        pointer-events: none;
+        filter: drop-shadow(0 8px 24px rgba(43,140,238,0.5));
+        animation: planeFlying 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    `;
+    document.body.appendChild(plane);
+
+    // Trail particles
+    const trailInterval = setInterval(() => {
+        const t = document.createElement('div');
+        t.style.cssText = `
+            position: fixed;
+            left: 50%; top: 50%;
+            width: 6px; height: 6px;
+            background: #2b8cee;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 99998;
+            animation: trailFade 0.5s ease-out forwards;
+        `;
+        document.body.appendChild(t);
+        setTimeout(() => t.remove(), 600);
+    }, 60);
+
+    setTimeout(() => {
+        clearInterval(trailInterval);
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+            plane.remove();
+            overlay.remove();
+            if (onComplete) onComplete();
+        }, 300);
+    }, 1200);
+}
+
+// ── CSS Keyframes 주입 (한 번만) ──
+(function injectAnimationCSS() {
+    if (document.getElementById('ournote-anim-css')) return;
+    const style = document.createElement('style');
+    style.id = 'ournote-anim-css';
+    style.textContent = `
+        @keyframes floatHeart {
+            0%   { transform: translateY(0) scale(1); opacity: 1; }
+            60%  { transform: translateY(-80px) scale(1.2) rotate(10deg); opacity: 0.8; }
+            100% { transform: translateY(-140px) scale(0.5) rotate(-10deg); opacity: 0; }
+        }
+        @keyframes confettiBurst {
+            0%   { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            80%  { opacity: 0.8; }
+            100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0); opacity: 0; }
+        }
+        @keyframes emojiBurst {
+            0%   { transform: translateY(0) scale(0.5); opacity: 1; }
+            60%  { transform: translateY(var(--dy)) scale(1.3); opacity: 1; }
+            100% { transform: translateY(calc(var(--dy) * 1.5)) scale(0.8); opacity: 0; }
+        }
+        @keyframes flashFade {
+            0%   { opacity: 1; }
+            100% { opacity: 0; }
+        }
+        @keyframes planeFlying {
+            0%   { transform: translate(-50%, -50%) scale(0.5) rotate(-30deg); opacity: 0; }
+            15%  { transform: translate(-50%, -50%) scale(1.1) rotate(-15deg); opacity: 1; }
+            50%  { transform: translate(20vw, -30vh) scale(1) rotate(10deg); opacity: 1; }
+            85%  { transform: translate(60vw, -60vh) scale(0.6) rotate(25deg); opacity: 0.6; }
+            100% { transform: translate(100vw, -80vh) scale(0.2) rotate(40deg); opacity: 0; }
+        }
+        @keyframes trailFade {
+            0%   { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+            100% { transform: translate(-50%, -100px) scale(0); opacity: 0; }
+        }
+        @keyframes hwCheckPulse {
+            0%   { box-shadow: 0 0 0 0 rgba(43,140,238,0.7); }
+            50%  { box-shadow: 0 0 0 20px rgba(43,140,238,0); }
+            100% { box-shadow: 0 0 0 0 rgba(43,140,238,0); }
+        }
+    `;
+    document.head.appendChild(style);
+})();
+
 export async function loadPosts() {
     const container = document.getElementById('posts-container');
     if (!container) return;
@@ -91,7 +287,7 @@ export function renderPosts(posts) {
                     <span class="text-[12px] font-bold text-text-main">${displayAuthor}</span>
                 </div>
                 <div class="flex items-center gap-4">
-                    <button onclick="event.stopPropagation(); window.toggleLikeV4(${post.id}, this)" class="flex items-center gap-1.5 ${isLiked ? 'text-red-500' : 'text-slate-400 hover:text-red-400'} transition-all">
+                    <button onclick="event.stopPropagation(); window.toggleLikeV4(${post.id}, this, event)" class="flex items-center gap-1.5 ${isLiked ? 'text-red-500' : 'text-slate-400 hover:text-red-400'} transition-all">
                         <span class="material-symbols-outlined text-[20px]">${isLiked ? 'favorite' : 'favorite_border'}</span>
                         <span class="text-[12px] font-black">${likes.length}</span>
                     </button>
@@ -234,14 +430,15 @@ window.openPostDetail = (postId, isHomework = false) => {
         ? (window.currentHomework || []).find(h => h.id === postId)
         : (window.currentPosts || []).find(p => p.id === postId);
         
-    if (!post) return;
+    if (!post) { console.warn('[OurNote] openPostDetail: post not found', postId, isHomework); return; }
 
     const modal = document.getElementById('post-detail-modal');
-    if (!modal) return;
+    if (!modal) { console.warn('[OurNote] post-detail-modal not found'); return; }
 
     // Fill data
     document.getElementById('detail-title').textContent = post.title;
-    document.getElementById('detail-meta').textContent = `${post.category.toUpperCase()} | ${post.date}`;
+    const catLabel = (post.category || (isHomework ? 'HOMEWORK' : 'POST')).toUpperCase();
+    document.getElementById('detail-meta').textContent = `${catLabel} | ${post.date}`;
     document.getElementById('detail-content').textContent = post.content;
     
     let displayAuthor = post.author || '익명 사용자';
@@ -251,11 +448,13 @@ window.openPostDetail = (postId, isHomework = false) => {
     document.getElementById('detail-author-name').textContent = displayAuthor;
     document.getElementById('detail-author-avatar').textContent = displayAuthor.substring(0, 1);
 
-    const deleteBtnContainer = document.getElementById('detail-footer-actions') || document.createElement('div');
-    if (!document.getElementById('detail-footer-actions')) {
+    let deleteBtnContainer = document.getElementById('detail-footer-actions');
+    if (!deleteBtnContainer) {
+        deleteBtnContainer = document.createElement('div');
         deleteBtnContainer.id = 'detail-footer-actions';
         deleteBtnContainer.className = 'flex items-center gap-2 mt-4 pt-4 border-t border-slate-100';
-        document.querySelector('.modal-v4 .p-8.md\\:p-12').appendChild(deleteBtnContainer);
+        const contentArea = modal.querySelector('.p-8.space-y-10') || modal.querySelector('.p-8');
+        if (contentArea) contentArea.appendChild(deleteBtnContainer);
     }
     deleteBtnContainer.innerHTML = '';
     
@@ -432,6 +631,12 @@ window.toggleHomeworkTask = async (hwId, taskIdx, btn) => {
         label.classList.add('line-through', 'opacity-60', 'text-primary');
         btn.classList.replace('border-slate-100', 'border-primary');
         btn.classList.add('bg-primary/5');
+        btn.style.animation = 'hwCheckPulse 0.6s ease-out';
+        setTimeout(() => btn.style.animation = '', 700);
+
+        // 🎉 화려한 폭죽 애니메이션!
+        launchConfetti(btn);
+        showToast('✅ 완료! 잘 했어요! 🎉', 'success');
     } else {
         icon.textContent = 'radio_button_unchecked';
         box.classList.replace('bg-primary', 'bg-white');
@@ -450,7 +655,7 @@ window.toggleHomeworkTask = async (hwId, taskIdx, btn) => {
         const hwRes = await fetch('/api/homework');
         window.currentHomework = await hwRes.json();
         
-        // Silent re-render background list if we are in homework view
+        // Silent re-render background list
         if (state.currentCategory === 'homework') {
             renderHomework(window.currentHomework);
         }
@@ -530,16 +735,27 @@ window.submitComment = async (postId, modalContent = null) => {
     }
 };
 
-window.toggleLikeV4 = async (postId, btn) => {
+window.toggleLikeV4 = async (postId, btn, event) => {
+    // ❤️ 하트 떠오르는 애니메이션
+    const x = event ? event.clientX : btn.getBoundingClientRect().left + 16;
+    const y = event ? event.clientY : btn.getBoundingClientRect().top;
+    spawnFloatingHearts(x, y, 8);
+
+    // 버튼 펄스 효과
+    btn.style.transform = 'scale(1.4)';
+    btn.style.transition = 'transform 0.15s cubic-bezier(0.34,1.56,0.64,1)';
+    setTimeout(() => { btn.style.transform = ''; }, 300);
+
     try {
         const res = await fetch(`/api/posts/${postId}/like`, { method: 'POST' });
         const data = await res.json();
         if (data.success) {
             const span = btn.querySelector('span:last-child');
             if (span) span.textContent = data.likes;
-            btn.classList.add('text-red-400');
-            btn.classList.remove('text-text-dim');
-            btn.querySelector('.material-symbols-outlined').textContent = 'favorite';
+            btn.classList.add('text-red-500');
+            btn.classList.remove('text-slate-400', 'text-text-dim');
+            const icon = btn.querySelector('.material-symbols-outlined');
+            if (icon) icon.textContent = 'favorite';
         }
     } catch (err) {
         showToast('좋아요 처리에 실패했습니다.', 'error');
@@ -739,7 +955,7 @@ export function initPostForm() {
                 is_anonymous: isAnonymous,
                 image_url: imageUrl,
                 student_id: state.currentUser?.id || 'anon',
-                assigned_students: assigned_students, // Multi-student support
+                assigned_students: assigned_students,
                 tasks: tasks
             };
 
@@ -750,16 +966,19 @@ export function initPostForm() {
             });
 
             if (res.ok) {
-                showToast('이야기가 등록되었습니다! ✨');
                 // Reset form
                 document.getElementById('post-title').value = '';
                 document.getElementById('post-content').value = '';
                 document.getElementById('image-preview').classList.add('hidden');
                 imageInput.value = '';
-                // Close modal
-                const modal = document.getElementById('write-modal');
-                if(modal) modal.classList.add('hidden');
-                loadPosts();
+
+                // ✈️ 종이 비행기 애니메이션 후 모달 닫기
+                const writeModal = document.getElementById('write-modal');
+                playPaperPlaneAnimation(() => {
+                    if (writeModal) writeModal.classList.add('hidden');
+                    showToast('이야기가 등록되었습니다! ✈️✨');
+                    loadPosts();
+                });
             } else {
                 showToast('게시물 등록에 실패했습니다.', 'error');
             }

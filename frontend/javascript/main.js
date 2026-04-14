@@ -2,14 +2,14 @@
  * OURNOTE ULTRA-ENGINE (V4 Modular)
  * Final integrated entry point.
  */
-import { state, showToast } from './modules/common.js?v=4.1';
-import { initSplash, initCursor, initParticles, setupModal, initSidebar } from './modules/ui.js?v=4.1';
-import { loadPosts, initPostForm } from './modules/posts.js?v=4.1';
-import { initAuth } from './modules/auth.js?v=4.1';
-import { initNavigation, setupRoomCreation } from './modules/navigation.js?v=4.1';
-import { initWriteModal } from './modules/popups/write-modal.js?v=4.1';
-import { initPostDetailModal } from './modules/popups/post-detail-modal.js?v=4.1';
-import { initSettingsModal } from './modules/popups/settings-modal.js?v=4.1';
+import { state, showToast } from './modules/common.js?v=4.2';
+import { initSplash, initCursor, initParticles, setupModal, initSidebar } from './modules/ui.js?v=4.2';
+import { loadPosts, initPostForm } from './modules/posts.js?v=4.2';
+import { initAuth } from './modules/auth.js?v=4.2';
+import { initNavigation, setupRoomCreation } from './modules/navigation.js?v=4.2';
+import { initWriteModal } from './modules/popups/write-modal.js?v=4.2';
+import { initPostDetailModal } from './modules/popups/post-detail-modal.js?v=4.2';
+import { initSettingsModal } from './modules/popups/settings-modal.js?v=4.2';
 
 // GLOBAL FAILSAFE: Ensure splash disappears even if script fails
 setTimeout(() => {

@@ -84,24 +84,46 @@ export function initSettingsModal() {
             securityTab.style.display = isTeacher ? 'flex' : 'none';
         }
 
+        switchTab('visual');
         modal.classList.remove('hidden');
+
         const overlay = modal.querySelector('.modal-overlay');
         const content = modal.querySelector('.modal-v4');
 
-        switchTab('visual');
+        // 초기 상태 설정 (invisible)
+        if (content) {
+            content.style.opacity = '0';
+            content.style.transform = 'translateY(40px) scale(0.96)';
+            content.style.transition = 'opacity 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1)';
+        }
 
-        setTimeout(() => {
-            if (overlay) overlay.style.opacity = '1';
-            if (content) content.classList.add('active');
-        }, 10);
+        // double rAF: 첫 프레임에서 DOM 반영, 두 번째 프레임에서 애니메이션 시작 (확실한 방법)
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                if (overlay) overlay.style.opacity = '1';
+                if (content) {
+                    content.style.opacity = '1';
+                    content.style.transform = 'translateY(0) scale(1)';
+                }
+            });
+        });
     };
 
     const closeHandler = () => {
         const overlay = modal.querySelector('.modal-overlay');
         const content = modal.querySelector('.modal-v4');
-        if (content) content.classList.remove('active');
+
+        if (content) {
+            content.style.opacity = '0';
+            content.style.transform = 'translateY(30px) scale(0.97)';
+        }
         if (overlay) overlay.style.opacity = '0';
-        setTimeout(() => modal.classList.add('hidden'), 500);
+
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            // 인라인 스타일 초기화 (다음 열기 준비)
+            if (content) content.style.cssText = '';
+        }, 480);
     };
 
     document.getElementById('close-settings-modal')?.addEventListener('click', closeHandler);

@@ -104,6 +104,20 @@
     max-width: 420px;
 }
 
+/* settings-modal은 inline style로 애니메이션 제어 — CSS 기본값 간섭 차단 */
+#settings-modal .modal-v4 {
+    max-width: 64rem !important;
+    height: 85vh !important;
+    border-radius: 2rem !important;
+    /* opacity/transform은 JS inline style로만 제어 */
+}
+
+#settings-modal:not(.hidden) {
+    z-index: 10000 !important;
+    background: rgba(0, 0, 0, 0.8) !important;
+    backdrop-filter: blur(16px) !important;
+}
+
 #fake-error-overlay, #face-scan-overlay, #rhythm-lock-overlay, #pattern-lock-overlay, #bsod-overlay {
     z-index: 99999;
 }

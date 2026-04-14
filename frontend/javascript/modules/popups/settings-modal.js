@@ -80,27 +80,49 @@ export function initSettingsModal() {
     window.openSettings = () => {
         const isTeacher = state.currentUser?.role === 'teacher';
         const securityTab = modal.querySelector('.settings-tab[data-tab="security"]');
-        if (securityTab) {
-            securityTab.style.display = isTeacher ? 'flex' : 'none';
-        }
+        if (securityTab) securityTab.style.display = isTeacher ? 'flex' : 'none';
 
         switchTab('visual');
+
+        // ── 모달 컨테이너를 직접 스타일로 표시 (CSS 클래스 의존 없음) ──
         modal.classList.remove('hidden');
+        modal.style.cssText = `
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            position: fixed !important;
+            inset: 0 !important;
+            z-index: 100000 !important;
+            background: rgba(0,0,0,0.85) !important;
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
+        `;
 
-        const overlay = modal.querySelector('.modal-overlay');
         const content = modal.querySelector('.modal-v4');
-
-        // 초기 상태 설정 (invisible)
         if (content) {
-            content.style.opacity = '0';
-            content.style.transform = 'translateY(40px) scale(0.96)';
-            content.style.transition = 'opacity 0.45s cubic-bezier(0.16,1,0.3,1), transform 0.45s cubic-bezier(0.16,1,0.3,1)';
+            // 항상 라이트 테마 강제 (다크모드 간섭 차단)
+            content.style.cssText = `
+                display: flex !important;
+                flex-direction: column !important;
+                width: 94vw !important;
+                max-width: 1024px !important;
+                height: 88vh !important;
+                background: #ffffff !important;
+                color: #0f172a !important;
+                border-radius: 2rem !important;
+                overflow: hidden !important;
+                box-shadow: 0 32px 80px -12px rgba(0,0,0,0.6) !important;
+                position: relative !important;
+                z-index: 1 !important;
+                opacity: 0;
+                transform: translateY(36px) scale(0.97);
+                transition: opacity 0.4s cubic-bezier(0.16,1,0.3,1), transform 0.4s cubic-bezier(0.16,1,0.3,1);
+            `;
         }
 
-        // double rAF: 첫 프레임에서 DOM 반영, 두 번째 프레임에서 애니메이션 시작 (확실한 방법)
+        // 두 프레임 후 애니메이션 시작 (확실한 트랜지션 촉발)
         requestAnimationFrame(() => {
             requestAnimationFrame(() => {
-                if (overlay) overlay.style.opacity = '1';
                 if (content) {
                     content.style.opacity = '1';
                     content.style.transform = 'translateY(0) scale(1)';
@@ -110,20 +132,16 @@ export function initSettingsModal() {
     };
 
     const closeHandler = () => {
-        const overlay = modal.querySelector('.modal-overlay');
         const content = modal.querySelector('.modal-v4');
-
         if (content) {
             content.style.opacity = '0';
-            content.style.transform = 'translateY(30px) scale(0.97)';
+            content.style.transform = 'translateY(32px) scale(0.97)';
         }
-        if (overlay) overlay.style.opacity = '0';
-
         setTimeout(() => {
             modal.classList.add('hidden');
-            // 인라인 스타일 초기화 (다음 열기 준비)
+            modal.style.cssText = '';
             if (content) content.style.cssText = '';
-        }, 480);
+        }, 420);
     };
 
     document.getElementById('close-settings-modal')?.addEventListener('click', closeHandler);

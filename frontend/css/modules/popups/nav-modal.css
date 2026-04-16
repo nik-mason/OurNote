@@ -1,12 +1,9 @@
 /* 
    OURNOTE: NAVIGATION MODAL MODULE
    Dedicated styles for the full-screen hamburger menu.
+   Centralized layout managed in modals.css and layout.css.
 */
 
-#main-nav.forced-open {
-    /* Centralized layout managed in modals.css and layout.css */
-    /* Add extra polish here */
-}
 
 #main-nav.forced-open .nav-link {
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);

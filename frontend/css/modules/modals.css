@@ -17,7 +17,6 @@
 #confirm-modal:not(.hidden),
 #comment-modal:not(.hidden),
 #post-detail-modal:not(.hidden),
-#settings-modal:not(.hidden),
 #qr-modal:not(.hidden) {
     display: flex !important;
     align-items: center !important;
@@ -104,18 +103,33 @@
     max-width: 420px;
 }
 
-/* settings-modal은 inline style로 애니메이션 제어 — CSS 기본값 간섭 차단 */
-#settings-modal .modal-v4 {
-    max-width: 64rem !important;
-    height: 85vh !important;
-    border-radius: 2rem !important;
-    /* opacity/transform은 JS inline style로만 제어 */
+/* Settings Fullscreen Page */
+#settings-modal .settings-fullscreen {
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 #settings-modal:not(.hidden) {
+    display: block !important;
+    position: fixed !important;
+    inset: 0 !important;
     z-index: 10000 !important;
-    background: rgba(0, 0, 0, 0.8) !important;
-    backdrop-filter: blur(16px) !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+}
+
+.dark-mode .settings-fullscreen,
+.dark-mode #settings-modal #close-settings-overlay {
+    background-color: var(--card-bg) !important;
+}
+
+.dark-mode .settings-fullscreen .bg-slate-50,
+.dark-mode .settings-fullscreen .bg-white {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+.dark-mode .settings-fullscreen .border-slate-100,
+.dark-mode .settings-fullscreen .border-slate-200 {
+    border-color: var(--glass-border) !important;
 }
 
 #fake-error-overlay, #face-scan-overlay, #rhythm-lock-overlay, #pattern-lock-overlay, #bsod-overlay {

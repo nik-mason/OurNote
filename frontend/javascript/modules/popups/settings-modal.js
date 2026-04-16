@@ -4,7 +4,132 @@ export function initSettingsModal() {
     const modal = document.getElementById('settings-modal');
     if (!modal) return;
 
-    // ── 학생 비번 목록 로드 ──
+    const fullscreen = modal.querySelector('.settings-fullscreen');
+    const overlay = document.getElementById('close-settings-overlay');
+
+    // ─── Theme state ───
+    let teacherPwVisible = false;
+    let teacherData = null;
+
+    // ─── Theme switching ───
+    const updateThemeUI = (theme) => {
+        const isDark = theme === 'dark';
+        const checkLight = document.getElementById('check-light');
+        const checkDark = document.getElementById('check-dark');
+        const btnLight = document.getElementById('theme-light-btn');
+        const btnDark = document.getElementById('theme-dark-btn');
+
+        if (isDark) {
+            document.body.classList.add('dark-mode', 'dark');
+            document.documentElement.classList.add('dark-mode', 'dark');
+            if (checkLight) checkLight.classList.add('hidden');
+            if (checkDark) { checkDark.classList.remove('hidden'); checkDark.style.display = 'flex'; }
+            if (btnLight) { btnLight.classList.remove('border-primary'); btnLight.classList.add('border-slate-200'); }
+            if (btnDark) { btnDark.classList.remove('border-slate-200'); btnDark.classList.add('border-primary'); }
+        } else {
+            document.body.classList.remove('dark-mode', 'dark');
+            document.documentElement.classList.remove('dark-mode', 'dark');
+            if (checkLight) { checkLight.classList.remove('hidden'); checkLight.style.display = 'flex'; }
+            if (checkDark) checkDark.classList.add('hidden');
+            if (btnLight) { btnLight.classList.remove('border-slate-200'); btnLight.classList.add('border-primary'); }
+            if (btnDark) { btnDark.classList.remove('border-primary'); btnDark.classList.add('border-slate-200'); }
+        }
+        localStorage.setItem('ournote_theme', theme);
+    };
+
+    document.getElementById('theme-light-btn')?.addEventListener('click', () => updateThemeUI('white'));
+    document.getElementById('theme-dark-btn')?.addEventListener('click', () => updateThemeUI('dark'));
+
+    // Initialize theme from saved state
+    const savedTheme = localStorage.getItem('ournote_theme') || 'white';
+    updateThemeUI(savedTheme);
+
+    // ─── Student PIN change logic ───
+    document.getElementById('save-pin-btn')?.addEventListener('click', async () => {
+        const currentPin = document.getElementById('pin-current')?.value.trim();
+        const newPin = document.getElementById('pin-new')?.value.trim();
+        const confirmPin = document.getElementById('pin-confirm')?.value.trim();
+
+        if (!currentPin || !newPin || !confirmPin) {
+            showToast('모든 항목을 입력해주세요.', 'error');
+            return;
+        }
+        if (newPin.length !== 6 || !/^\d{6}$/.test(newPin)) {
+            showToast('새 PIN은 6자리 숫자여야 합니다.', 'error');
+            return;
+        }
+        if (newPin !== confirmPin) {
+            showToast('새 PIN이 일치하지 않습니다.', 'error');
+            return;
+        }
+
+        // Verify current PIN
+        const userPin = state.currentUser?.pin || '000000';
+        if (currentPin !== userPin) {
+            showToast('현재 PIN이 올바르지 않습니다.', 'error');
+            return;
+        }
+
+        const btn = document.getElementById('save-pin-btn');
+        btn.innerHTML = '<span class="material-symbols-outlined animate-spin text-lg">sync</span> 변경 중...';
+
+        try {
+            const res = await fetch('/api/students/pin', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ student_id: state.currentUser.id, new_pin: newPin })
+            });
+
+            if (res.ok) {
+                // Update local state
+                state.currentUser.pin = newPin;
+                localStorage.setItem('currentUser', JSON.stringify(state.currentUser));
+
+                showToast('✅ PIN이 성공적으로 변경되었습니다!');
+                document.getElementById('pin-current').value = '';
+                document.getElementById('pin-new').value = '';
+                document.getElementById('pin-confirm').value = '';
+            } else {
+                showToast('PIN 변경에 실패했습니다.', 'error');
+            }
+        } catch {
+            showToast('서버 오류입니다.', 'error');
+        }
+
+        btn.innerHTML = '<span class="material-symbols-outlined text-lg">check_circle</span> PIN 변경하기';
+    });
+
+    // ─── Teacher: load own password ───
+    const loadTeacherPassword = async () => {
+        try {
+            const res = await fetch('/api/teacher');
+            teacherData = await res.json();
+            const idEl = document.getElementById('teacher-id-display');
+            if (idEl) idEl.textContent = teacherData.username || '-';
+            // Initially hidden
+            const pwEl = document.getElementById('teacher-pw-display');
+            if (pwEl) pwEl.textContent = '••••••••';
+        } catch {
+            const idEl = document.getElementById('teacher-id-display');
+            if (idEl) idEl.textContent = '로드 실패';
+        }
+    };
+
+    // Toggle password visibility
+    document.getElementById('toggle-teacher-pw')?.addEventListener('click', () => {
+        teacherPwVisible = !teacherPwVisible;
+        const pwEl = document.getElementById('teacher-pw-display');
+        const toggleBtn = document.getElementById('toggle-teacher-pw');
+        if (pwEl && teacherData) {
+            pwEl.textContent = teacherPwVisible ? (teacherData.password || '-') : '••••••••';
+        }
+        if (toggleBtn) {
+            const icon = toggleBtn.querySelector('.material-symbols-outlined');
+            if (icon) icon.textContent = teacherPwVisible ? 'visibility_off' : 'visibility';
+        }
+    });
+
+    // ─── Teacher: load all student PINs ───
     const loadStudentPins = async () => {
         const container = document.getElementById('student-pin-list');
         if (!container) return;
@@ -12,187 +137,79 @@ export function initSettingsModal() {
             const res = await fetch('/api/students');
             const students = await res.json();
             container.innerHTML = students.map(s => `
-                <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-primary/20 transition-all">
                     <div class="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-black text-sm flex-shrink-0">
                         ${s.id}
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="font-bold text-text-main text-sm truncate">${s.name}</p>
                     </div>
-                    <input type="text" value="${s.pin || ''}" maxlength="8"
-                        class="w-24 text-center font-mono font-bold text-sm border border-slate-200 bg-white rounded-xl px-2 py-2 focus:outline-none focus:border-primary transition-all"
-                        data-student-id="${s.id}" placeholder="비번">
-                    <button onclick="window.saveStudentPin('${s.id}', this)" 
-                        class="size-9 rounded-xl bg-primary text-white flex items-center justify-center hover:bg-primary-dark transition-all flex-shrink-0">
-                        <span class="material-symbols-outlined text-[16px]">save</span>
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <div class="px-4 py-2 bg-white border border-slate-200 rounded-xl font-mono font-bold text-sm text-text-main tracking-widest select-all">
+                            ${s.pin || '000000'}
+                        </div>
+                    </div>
                 </div>
             `).join('');
         } catch (e) {
-            container.innerHTML = '<p class="col-span-full text-center text-red-400 text-sm py-6">학생 목록을 불러올 수 없습니다.</p>';
+            container.innerHTML = '<p class="text-center text-red-400 text-sm py-6">학생 목록을 불러올 수 없습니다.</p>';
         }
     };
 
-    window.saveStudentPin = async (studentId, btn) => {
-        const input = btn.closest('div').querySelector('input[data-student-id]');
-        const newPin = input?.value.trim();
-        if (!newPin) { showToast('비밀번호를 입력해주세요.', 'error'); return; }
-        
-        btn.innerHTML = '<span class="material-symbols-outlined text-[16px] animate-spin">sync</span>';
-        try {
-            const res = await fetch('/api/students/pin', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ student_id: studentId, new_pin: newPin })
-            });
-            if (res.ok) {
-                showToast(`✅ ${studentId}번 비밀번호가 변경되었습니다.`);
-                btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">check</span>';
-                setTimeout(() => { btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">save</span>'; }, 1500);
-            } else {
-                showToast('변경에 실패했습니다.', 'error');
-                btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">save</span>';
-            }
-        } catch {
-            showToast('서버 오류입니다.', 'error');
-            btn.innerHTML = '<span class="material-symbols-outlined text-[16px]">save</span>';
-        }
-    };
-
-    // Section Switching Logic (defined first so openSettings can use it)
-    const switchTab = (tabName) => {
-        modal.querySelectorAll('.settings-pane').forEach(el => el.classList.add('hidden'));
-        modal.querySelectorAll('.settings-tab').forEach(el => el.classList.remove('active', 'bg-white/10'));
-
-        const targetPane = modal.querySelector(`#tab-${tabName}`);
-        if (targetPane) targetPane.classList.remove('hidden');
-
-        const activeBtn = modal.querySelector(`.settings-tab[data-tab="${tabName}"]`);
-        if (activeBtn) activeBtn.classList.add('active', 'bg-white/10');
-
-        // 보안 탭 열릴 때 학생 목록 자동 로드
-        if (tabName === 'security' && state.currentUser?.role === 'teacher') {
-            loadStudentPins();
-        }
-    };
-
-    // 전역 함수로 등록
+    // ─── OPEN settings (full-screen) ───
     window.openSettings = () => {
         const isTeacher = state.currentUser?.role === 'teacher';
-        const securityTab = modal.querySelector('.settings-tab[data-tab="security"]');
-        if (securityTab) securityTab.style.display = isTeacher ? 'flex' : 'none';
+        const isStudent = state.currentUser?.role === 'student';
 
-        switchTab('visual');
+        // Show/hide role-specific sections
+        const studentSection = document.getElementById('section-student-pin');
+        const teacherSection = document.getElementById('section-teacher-passwords');
+        if (studentSection) studentSection.classList.toggle('hidden', !isStudent);
+        if (teacherSection) teacherSection.classList.toggle('hidden', !isTeacher);
 
-        // ── 모달 컨테이너를 직접 스타일로 표시 ──
+        // Load teacher data if teacher
+        if (isTeacher) {
+            loadTeacherPassword();
+            loadStudentPins();
+        }
+
+        // Show the full-screen modal
         modal.classList.remove('hidden');
-        modal.removeAttribute('hidden');
-        modal.style.cssText = `
-            display: flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            position: fixed !important;
-            inset: 0 !important;
-            z-index: 100000 !important;
-            background: rgba(0,0,0,0.85) !important;
-            backdrop-filter: blur(16px) !important;
-            -webkit-backdrop-filter: blur(16px) !important;
-            pointer-events: auto !important;
-            opacity: 1 !important;
-        `;
+        modal.style.display = 'block';
 
-        // 오버레이 활성화
-        const overlay = modal.querySelector('.modal-overlay');
-        if (overlay) {
-            overlay.style.cssText = 'opacity: 1; pointer-events: auto; position: absolute; inset: 0;';
-        }
-
-        const content = modal.querySelector('.modal-v4');
-        if (content) {
-            content.classList.add('active');
-            content.style.cssText = `
-                display: flex !important;
-                flex-direction: column !important;
-                width: 94vw !important;
-                max-width: 1024px !important;
-                height: 88vh !important;
-                background: #ffffff !important;
-                color: #0f172a !important;
-                border-radius: 2rem !important;
-                overflow: hidden !important;
-                box-shadow: 0 32px 80px -12px rgba(0,0,0,0.6) !important;
-                position: relative !important;
-                z-index: 1 !important;
-                pointer-events: auto !important;
-                opacity: 0;
-                transform: translateY(36px) scale(0.97);
-                transition: opacity 0.4s cubic-bezier(0.16,1,0.3,1), transform 0.4s cubic-bezier(0.16,1,0.3,1);
-            `;
-        }
-
-        // 두 프레임 후 애니메이션 시작 (확실한 트랜지션 촉발)
         requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-                if (content) {
-                    content.style.opacity = '1';
-                    content.style.transform = 'translateY(0) scale(1)';
-                }
-            });
+            if (overlay) overlay.style.opacity = '1';
+            if (fullscreen) {
+                fullscreen.style.transform = 'translateY(0)';
+                fullscreen.style.opacity = '1';
+            }
         });
     };
 
+    // ─── CLOSE settings ───
     const closeHandler = () => {
-        const content = modal.querySelector('.modal-v4');
-        if (content) {
-            content.style.opacity = '0';
-            content.style.transform = 'translateY(32px) scale(0.97)';
-            content.classList.remove('active');
+        if (fullscreen) {
+            fullscreen.style.transform = 'translateY(100%)';
+            fullscreen.style.opacity = '0';
         }
-        const overlay = modal.querySelector('.modal-overlay');
         if (overlay) overlay.style.opacity = '0';
+
+        // Reset password visibility
+        teacherPwVisible = false;
+        const pwEl = document.getElementById('teacher-pw-display');
+        if (pwEl) pwEl.textContent = '••••••••';
+        const toggleBtn = document.getElementById('toggle-teacher-pw');
+        if (toggleBtn) {
+            const icon = toggleBtn.querySelector('.material-symbols-outlined');
+            if (icon) icon.textContent = 'visibility';
+        }
+
         setTimeout(() => {
             modal.classList.add('hidden');
-            modal.style.cssText = '';
-            if (content) content.style.cssText = '';
-            if (overlay) overlay.style.cssText = '';
-        }, 420);
+            modal.style.display = '';
+        }, 500);
     };
 
     document.getElementById('close-settings-modal')?.addEventListener('click', closeHandler);
-    modal.querySelector('.modal-overlay')?.addEventListener('click', closeHandler);
-
-    modal.querySelectorAll('.settings-tab').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            switchTab(e.currentTarget.getAttribute('data-tab'));
-        });
-    });
-
-    // Theme Switching
-    const updateThemeUI = (theme) => {
-        const isDark = theme === 'dark';
-        document.querySelectorAll('.theme-option').forEach(el => {
-            if (el.getAttribute('data-theme') === theme) {
-                el.classList.add('active', 'ring-2', 'ring-primary');
-            } else {
-                el.classList.remove('active', 'ring-2', 'ring-primary');
-            }
-        });
-        if (isDark) {
-            document.body.classList.add('dark-mode', 'dark');
-            document.documentElement.classList.add('dark-mode', 'dark');
-        } else {
-            document.body.classList.remove('dark-mode', 'dark');
-            document.documentElement.classList.remove('dark-mode', 'dark');
-        }
-        localStorage.setItem('ournote_theme', theme);
-    };
-
-    document.querySelectorAll('.theme-option').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            updateThemeUI(e.currentTarget.getAttribute('data-theme'));
-        });
-    });
-
-    const savedTheme = localStorage.getItem('ournote_theme') || 'white';
-    updateThemeUI(savedTheme);
+    overlay?.addEventListener('click', closeHandler);
 }

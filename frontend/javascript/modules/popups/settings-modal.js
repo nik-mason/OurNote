@@ -84,8 +84,9 @@ export function initSettingsModal() {
 
         switchTab('visual');
 
-        // ── 모달 컨테이너를 직접 스타일로 표시 (CSS 클래스 의존 없음) ──
+        // ── 모달 컨테이너를 직접 스타일로 표시 ──
         modal.classList.remove('hidden');
+        modal.removeAttribute('hidden');
         modal.style.cssText = `
             display: flex !important;
             align-items: center !important;
@@ -96,11 +97,19 @@ export function initSettingsModal() {
             background: rgba(0,0,0,0.85) !important;
             backdrop-filter: blur(16px) !important;
             -webkit-backdrop-filter: blur(16px) !important;
+            pointer-events: auto !important;
+            opacity: 1 !important;
         `;
+
+        // 오버레이 활성화
+        const overlay = modal.querySelector('.modal-overlay');
+        if (overlay) {
+            overlay.style.cssText = 'opacity: 1; pointer-events: auto; position: absolute; inset: 0;';
+        }
 
         const content = modal.querySelector('.modal-v4');
         if (content) {
-            // 항상 라이트 테마 강제 (다크모드 간섭 차단)
+            content.classList.add('active');
             content.style.cssText = `
                 display: flex !important;
                 flex-direction: column !important;
@@ -114,6 +123,7 @@ export function initSettingsModal() {
                 box-shadow: 0 32px 80px -12px rgba(0,0,0,0.6) !important;
                 position: relative !important;
                 z-index: 1 !important;
+                pointer-events: auto !important;
                 opacity: 0;
                 transform: translateY(36px) scale(0.97);
                 transition: opacity 0.4s cubic-bezier(0.16,1,0.3,1), transform 0.4s cubic-bezier(0.16,1,0.3,1);
@@ -136,11 +146,15 @@ export function initSettingsModal() {
         if (content) {
             content.style.opacity = '0';
             content.style.transform = 'translateY(32px) scale(0.97)';
+            content.classList.remove('active');
         }
+        const overlay = modal.querySelector('.modal-overlay');
+        if (overlay) overlay.style.opacity = '0';
         setTimeout(() => {
             modal.classList.add('hidden');
             modal.style.cssText = '';
             if (content) content.style.cssText = '';
+            if (overlay) overlay.style.cssText = '';
         }, 420);
     };
 

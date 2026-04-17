@@ -113,7 +113,8 @@ export function initAuth() {
             try {
                 const res = await fetch('/api/students');
                 const students = await res.json();
-                const user = students.find(s => s.id === id && s.name === name);
+                const nameNormalized = name.replace(/\s/g, '');
+                const user = students.find(s => s.id === id && s.name.replace(/\s/g, '') === nameNormalized);
 
                 if (user) {
                     openPinModal(user);

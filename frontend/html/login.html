@@ -179,6 +179,39 @@
         </div>
     </main>
 
+    <!-- Usage Rules Section -->
+    <section class="max-w-lg mx-auto px-6 pb-12">
+        <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700/50 rounded-[2rem] p-7 shadow-sm transition-colors duration-300">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="size-9 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <span class="material-symbols-outlined text-primary text-[18px]">gavel</span>
+                </div>
+                <div>
+                    <h3 class="text-sm font-black text-text-main dark:text-white tracking-tight">이용 규칙</h3>
+                    <p class="text-[10px] text-text-secondary font-bold uppercase tracking-widest">Community Guidelines</p>
+                </div>
+            </div>
+            <div id="login-rules-text" class="text-sm text-slate-500 dark:text-slate-400 whitespace-pre-wrap leading-relaxed">
+                <div class="flex items-center gap-2 text-primary animate-pulse">
+                    <span class="material-symbols-outlined text-sm">sync</span>
+                    <span class="text-xs font-bold">규칙 불러오는 중...</span>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script>
+        fetch('/api/rules')
+            .then(r => r.json())
+            .then(data => {
+                const el = document.getElementById('login-rules-text');
+                if (el) el.textContent = data.rules || '등록된 이용 규칙이 없습니다.';
+            })
+            .catch(() => {
+                const el = document.getElementById('login-rules-text');
+                if (el) el.textContent = '규칙을 불러올 수 없습니다.';
+            });
+    </script>
+
     <!-- (Color Auth Modal Removed) -->
 
     <!-- (PIN Entry Modal) -->

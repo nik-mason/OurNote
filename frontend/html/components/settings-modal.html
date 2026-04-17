@@ -62,6 +62,32 @@
                 <div class="border-t border-slate-100"></div>
 
                 <!-- ═══════════════════════════════════════ -->
+                <!-- SECTION 1.5: OurNote Usage Rules        -->
+                <!-- ═══════════════════════════════════════ -->
+                <section class="space-y-6">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="material-symbols-outlined text-primary text-xl">gavel</span>
+                        <h3 class="text-lg font-black text-text-main">이용 규칙</h3>
+                    </div>
+                    <p class="text-sm text-text-secondary -mt-2">우리만의 대화방을 즐겁게 쓰기 위한 약속입니다.</p>
+                    
+                    <div id="rules-display-container" class="bg-slate-50 border border-slate-100 rounded-[1.5rem] p-6 space-y-4 transition-all">
+                        <div id="rules-text-box" class="text-sm text-text-main whitespace-pre-wrap leading-relaxed font-bold opacity-80">
+                            로딩 중...
+                        </div>
+                        
+                        <div id="rules-edit-form" class="hidden space-y-4 pt-4 border-t border-slate-200">
+                            <textarea id="rules-edit-textarea" class="w-full p-4 rounded-xl bg-white border border-slate-200 text-sm font-bold min-h-[120px] focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all outline-none" placeholder="이용 규칙을 작성해 주세요."></textarea>
+                            <button id="save-rules-btn" class="w-full py-3 rounded-xl bg-primary text-white font-black text-sm shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.01] active:scale-[0.98] transition-all">
+                                규칙 변경 내용 저장
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="border-t border-slate-100"></div>
+
+                <!-- ═══════════════════════════════════════ -->
                 <!-- SECTION 2: Student PIN Change           -->
                 <!-- (Visible to students only)              -->
                 <!-- ═══════════════════════════════════════ -->

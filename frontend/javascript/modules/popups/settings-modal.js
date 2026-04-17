@@ -115,6 +115,58 @@ export function initSettingsModal() {
         }
     };
 
+    // ─── Usage Rules Logic ───
+    const loadRules = async () => {
+        const rulesTextBox = document.getElementById('rules-text-box');
+        const rulesEditTextarea = document.getElementById('rules-edit-textarea');
+        const editForm = document.getElementById('rules-edit-form');
+        const isTeacher = state.currentUser?.role === 'teacher';
+
+        try {
+            const res = await fetch('/api/rules');
+            const data = await res.json();
+            const rules = data.rules || '등록된 이용 규칙이 없습니다.';
+            
+            if (rulesTextBox) rulesTextBox.textContent = rules;
+            if (rulesEditTextarea) rulesEditTextarea.value = rules;
+            
+            if (isTeacher && editForm) {
+                editForm.classList.remove('hidden');
+            }
+        } catch {
+            if (rulesTextBox) rulesTextBox.textContent = '규칙을 불러오는 데 실패했습니다.';
+        }
+    };
+
+    document.getElementById('save-rules-btn')?.addEventListener('click', async () => {
+        const newRules = document.getElementById('rules-edit-textarea')?.value;
+        const btn = document.getElementById('save-rules-btn');
+        
+        btn.disabled = true;
+        btn.textContent = '저장 중...';
+        
+        try {
+            const res = await fetch('/api/rules', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rules: newRules })
+            });
+            
+            if (res.ok) {
+                showToast('✅ 이용 규칙이 저장되었습니다!');
+                const rulesTextBox = document.getElementById('rules-text-box');
+                if (rulesTextBox) rulesTextBox.textContent = newRules;
+            } else {
+                showToast('저장에 실패했습니다.', 'error');
+            }
+        } catch {
+            showToast('서버 오류입니다.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '규칙 변경 내용 저장';
+        }
+    });
+
     // Toggle password visibility
     document.getElementById('toggle-teacher-pw')?.addEventListener('click', () => {
         teacherPwVisible = !teacherPwVisible;
@@ -166,6 +218,9 @@ export function initSettingsModal() {
         const teacherSection = document.getElementById('section-teacher-passwords');
         if (studentSection) studentSection.classList.toggle('hidden', !isStudent);
         if (teacherSection) teacherSection.classList.toggle('hidden', !isTeacher);
+
+        // Load rules (for both student and teacher)
+        loadRules();
 
         // Load teacher data if teacher
         if (isTeacher) {

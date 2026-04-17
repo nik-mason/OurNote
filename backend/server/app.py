@@ -114,6 +114,19 @@ def get_teacher():
 def get_posts():
     return pull_data('posts.json')
 
+@app.route('/api/rules', methods=['GET'])
+def get_rules():
+    return pull_data('rules.json')
+
+@app.route('/api/rules', methods=['POST'])
+def update_rules():
+    from flask import request
+    data = request.json
+    if not data or 'rules' not in data:
+        return {"error": "Invalid data"}, 400
+    push_data('rules.json', data)
+    return {"success": True}
+
 @app.route('/api/categories', methods=['GET'])
 def get_categories():
     cats = pull_data('categories.json') or []

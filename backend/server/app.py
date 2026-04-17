@@ -98,7 +98,13 @@ def push_data(filename, data):
 
 @app.route('/api/students', methods=['GET'])
 def get_students():
-    return pull_data('students.json')
+    # 학생 데이터는 항상 로컬 JSON 파일에서 직접 읽어서 반환
+    path = os.path.join(BASE_DIR, 'backend', 'data', 'students.json')
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        return {"error": str(e)}, 500
 
 @app.route('/api/teacher', methods=['GET'])
 def get_teacher():
@@ -230,10 +236,17 @@ def update_student_pin():
     sid = data.get('student_id')
     new_pin = data.get('new_pin')
     
-    students = pull_data('students.json') or []
+    # 학생 데이터는 항상 로컬 JSON 파일에서 직접 읽음
+    path = os.path.join(BASE_DIR, 'backend', 'data', 'students.json')
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            students = json.load(f)
+    except:
+        students = []
+
     found = False
     for s in students:
-        if str(s['id']) == str(sid):
+        if str(s.get('id', '')) == str(sid):
             s['pin'] = new_pin
             found = True
             break

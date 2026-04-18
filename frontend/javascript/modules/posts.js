@@ -471,6 +471,9 @@ window.deletePost = async (postId) => {
 };
 
 window.openPostDetail = (postId, isHomework = false) => {
+    window.currentOpenPostId = postId;
+    window.currentOpenIsHomework = isHomework;
+    
     // Find post in current state or local array
     const post = isHomework 
         ? (window.currentHomework || []).find(h => h.id === postId)
@@ -478,8 +481,35 @@ window.openPostDetail = (postId, isHomework = false) => {
         
     if (!post) { console.warn('[OurNote] openPostDetail: post not found', postId, isHomework); return; }
 
+    // Silently fill content
+    updateDetailContent(post, isHomework);
+
     const modal = document.getElementById('post-detail-modal');
     if (!modal) { console.warn('[OurNote] post-detail-modal not found'); return; }
+
+    modal.classList.remove('hidden');
+    const overlay = document.getElementById('close-post-detail-overlay');
+    const closeBtn = document.getElementById('close-post-detail-modal');
+    setTimeout(() => {
+        if(overlay) overlay.style.opacity = '1';
+        modal.querySelector('.modal-v4')?.classList.add('active');
+    }, 10);
+
+    const closeHandler = () => {
+        window.currentOpenPostId = null;
+        modal.querySelector('.modal-v4')?.classList.remove('active');
+        if(overlay) overlay.style.opacity = '0';
+        setTimeout(() => modal.classList.add('hidden'), 400);
+        overlay?.removeEventListener('click', closeHandler);
+        closeBtn?.removeEventListener('click', closeHandler);
+    };
+    overlay?.addEventListener('click', closeHandler);
+    closeBtn?.addEventListener('click', closeHandler);
+};
+
+window.updateDetailContent = (post, isHomework = false) => {
+    const modal = document.getElementById('post-detail-modal');
+    if (!modal) return;
 
     // Fill data
     document.getElementById('detail-title').textContent = post.title;
@@ -671,28 +701,26 @@ window.openPostDetail = (postId, isHomework = false) => {
         // Setup comment submission
         const submitBtn = document.getElementById('detail-submit-comment');
         if (submitBtn) {
-            submitBtn.replaceWith(submitBtn.cloneNode(true));
-            const freshBtn = document.getElementById('detail-submit-comment');
-            freshBtn.onclick = async () => {
+            // Using a named function to avoid cloning issues or duplication
+            submitBtn.onclick = async () => {
+                if (submitBtn.disabled) return;
+                
                 const input = document.getElementById('detail-comment-input');
                 let txt = input?.value.trim();
                 if (!txt) return;
                 
-                // Check if reply was cleared manually
                 if (window.currentReplyParentId && !txt.startsWith('@')) {
                     window.currentReplyParentId = null;
                 }
 
-                freshBtn.disabled = true;
-                freshBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[20px]">sync</span>';
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[20px]">sync</span>';
                 try {
                     const payload = { 
                         author: state.currentUser?.name || 'Anonymous', 
                         content: txt 
                     };
-                    if (window.currentReplyParentId) {
-                        payload.parent_id = window.currentReplyParentId;
-                    }
+                    if (window.currentReplyParentId) payload.parent_id = window.currentReplyParentId;
 
                     const res = await fetch(`/api/posts/${post.id}/comments`, {
                         method: 'POST',
@@ -705,17 +733,16 @@ window.openPostDetail = (postId, isHomework = false) => {
                         window.currentReplyParentId = null;
                         showToast(payload.parent_id ? '답글이 등록되었습니다! 💬' : '댓글이 등록되었습니다! 💬');
                         
+                        // Silent refresh data
                         const postsRes = await fetch('/api/posts');
                         window.currentPosts = await postsRes.json();
                         const updatedPost = window.currentPosts.find(p => p.id === post.id);
                         if (updatedPost) {
-                            const updatedList = document.getElementById('detail-comments-list');
-                            const count = document.getElementById('detail-comment-count');
-                            if (count) count.textContent = updatedPost.comments?.length || 0;
-                            if (updatedList) {
-                                updatedList.innerHTML = renderCommentsList(updatedPost.comments);
-                                updatedList.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                            }
+                            updateDetailContent(updatedPost, isHomework);
+                            setTimeout(() => {
+                                const list = document.getElementById('detail-comments-list');
+                                list?.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                            }, 50);
                         }
                     } else {
                         showToast('댓글 등록에 실패했습니다.', 'error');
@@ -723,31 +750,14 @@ window.openPostDetail = (postId, isHomework = false) => {
                 } catch (err) {
                     showToast('서버 오류가 발생했습니다.', 'error');
                 } finally {
-                    freshBtn.disabled = false;
-                    freshBtn.innerHTML = '<span class="material-symbols-outlined text-[20px]">send</span>';
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<span class="material-symbols-outlined text-[20px]">send</span>';
                 }
             };
         }
     }
-
-    // Modal Display Logic
-    modal.classList.remove('hidden');
-    const overlay = document.getElementById('close-post-detail-overlay');
-    const closeBtn = document.getElementById('close-post-detail-modal');
-    setTimeout(() => {
-        if(overlay) overlay.style.opacity = '1';
-        modal.querySelector('.modal-v4')?.classList.add('active');
-    }, 10);
-
-    const closeHandler = () => {
-        modal.querySelector('.modal-v4')?.classList.remove('active');
-        if(overlay) overlay.style.opacity = '0';
-        setTimeout(() => modal.classList.add('hidden'), 400);
-        overlay?.removeEventListener('click', closeHandler);
-        closeBtn?.removeEventListener('click', closeHandler);
-    };
-    overlay?.addEventListener('click', closeHandler);
-    closeBtn?.addEventListener('click', closeHandler);
+        }
+    }
 };
 
 window.toggleHomeworkTask = async (hwId, taskIdx, btn) => {
@@ -1124,4 +1134,42 @@ export function initPostForm() {
             submitBtn.textContent = '게시물 등록하기';
         }
     });
+
 }
+
+// -------------------------------------------------------------------------------- //
+// SILENT POLLING (Real-time updates)
+// -------------------------------------------------------------------------------- //
+setInterval(async () => {
+    if (!state.currentUser) return;
+    
+    // Skip if typing
+    const active = document.activeElement;
+    if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
+
+    try {
+        if (state.currentCategory === 'homework') {
+            const res = await fetch('/api/homework');
+            const hws = await res.json();
+            if (JSON.stringify(hws) !== JSON.stringify(window.currentHomework)) {
+                window.currentHomework = hws;
+                renderHomework(hws.slice().reverse());
+                if (window.currentOpenPostId && window.currentOpenIsHomework) {
+                    const post = hws.find(h => h.id === window.currentOpenPostId);
+                    if (post) updateDetailContent(post, true);
+                }
+            }
+        } else {
+            const res = await fetch('/api/posts');
+            const posts = await res.json();
+            if (JSON.stringify(posts) !== JSON.stringify(window.currentPosts)) {
+                window.currentPosts = posts;
+                renderPosts(posts.slice().reverse());
+                if (window.currentOpenPostId && !window.currentOpenIsHomework) {
+                    const post = posts.find(p => p.id === window.currentOpenPostId);
+                    if (post) updateDetailContent(post, false);
+                }
+            }
+        }
+    } catch (e) {}
+}, 4000);

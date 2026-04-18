@@ -60,6 +60,39 @@ document.addEventListener('DOMContentLoaded', async () => {
             usernameDisplay.textContent = state.currentUser.name;
         }
 
+        // Load Rules Component
+        try {
+            fetch('/api/rules').then(r => r.json()).then(data => {
+                if (data && data.rules) {
+                    const rulesSec = document.getElementById('rules-section');
+                    const rulesContent = document.getElementById('rules-content');
+                    if (rulesSec && rulesContent) {
+                        rulesSec.classList.remove('hidden');
+                        rulesContent.textContent = data.rules;
+                    }
+                }
+            });
+        } catch(e) {}
+
+        // Load Daily Alert
+        try {
+            fetch('/api/alert').then(r => r.json()).then(data => {
+                if (data && data.message) {
+                    const today = new Date().toLocaleDateString();
+                    const dismissedDate = localStorage.getItem('dismissed_alert_date');
+                    
+                    if (dismissedDate !== today) {
+                        const alertModal = document.getElementById('daily-alert-modal');
+                        const alertText = document.getElementById('daily-alert-text');
+                        if (alertModal && alertText) {
+                            alertText.textContent = data.message;
+                            alertModal.classList.remove('hidden');
+                        }
+                    }
+                }
+            });
+        } catch(e) {}
+
         // Teacher-only features
         if (state.currentUser?.role === 'teacher') {
             console.log("OurNote: Teacher role detected.");
@@ -281,4 +314,45 @@ function initFeedbackLogic() {
             modalObserver.observe(feedbackModal, { attributes: true, attributeFilter: ['class'] });
         }
     }, 2000);
+    // Daily Alert Setup (Admin)
+    const btnSaveAlert = document.getElementById('btn-save-alert');
+    const btnClearAlert = document.getElementById('btn-clear-alert');
+    if (btnSaveAlert && btnClearAlert) {
+        btnSaveAlert.addEventListener('click', async () => {
+            const input = document.getElementById('admin-alert-input').value.trim();
+            if(!input) return showToast('공지 내용을 입력하세요.', 'error');
+            try {
+                await fetch('/api/alert', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: input })
+                });
+                showToast('오늘의 공지가 설정되었습니다.', 'success');
+                document.getElementById('admin-alert-input').value = '';
+            } catch(e) { showToast('오류가 발생했습니다.', 'error'); }
+        });
+        
+        btnClearAlert.addEventListener('click', async () => {
+            try {
+                await fetch('/api/alert', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: "" })
+                });
+                showToast('공지가 삭제되었습니다.', 'success');
+                document.getElementById('admin-alert-input').value = '';
+            } catch(e) { showToast('오류가 발생했습니다.', 'error'); }
+        });
+    }
+
+    // Daily Alert User Actions
+    document.addEventListener('click', (e) => {
+        if (e.target.id === 'btn-close-alert') {
+            document.getElementById('daily-alert-modal').classList.add('hidden');
+        } else if (e.target.id === 'btn-dismiss-alert-today') {
+            localStorage.setItem('dismissed_alert_date', new Date().toLocaleDateString());
+            document.getElementById('daily-alert-modal').classList.add('hidden');
+            showToast('오늘 하루 동안 알림이 표시되지 않습니다.');
+        }
+    });
 }

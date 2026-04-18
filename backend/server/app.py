@@ -290,6 +290,17 @@ def add_feedback():
     push_data('feedback.json', feedbacks)
     return {"success": True}
 
+@app.route('/api/alert', methods=['GET'])
+def get_alert():
+    return pull_data('alert.json') or {}
+
+@app.route('/api/alert', methods=['POST'])
+def set_alert():
+    from flask import request
+    data = request.json
+    push_data('alert.json', data)
+    return {"success": True}
+
 # ... (Additional routes for likes/comments/etc removed for stability during rollback if they were new)
 # Wait, let's keep the baseline that was working before the 500 error starts.
 

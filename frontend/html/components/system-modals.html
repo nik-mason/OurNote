@@ -40,3 +40,21 @@
         </div>
     </div>
 </div>
+
+<!-- Daily Alert Modal -->
+<div id="daily-alert-modal" class="fixed inset-0 z-[2500] hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-md modal-overlay" id="close-daily-alert-overlay"></div>
+    <div class="relative z-10 bg-white p-8 rounded-[2rem] shadow-2xl w-full max-w-[400px] border border-primary/20 scale-in-center">
+        <div class="flex flex-col gap-5 text-center items-center">
+            <div class="size-16 rounded-full bg-blue-50 flex items-center justify-center text-primary mb-2">
+                <span class="material-symbols-outlined text-4xl">campaign</span>
+            </div>
+            <h2 class="text-xl font-black text-text-main">오늘의 알림</h2>
+            <p id="daily-alert-text" class="text-sm text-text-secondary leading-relaxed bg-slate-50 p-4 rounded-xl w-full whitespace-pre-wrap">알림 내용이 여기에 표시됩니다.</p>
+            <div class="flex w-full gap-3 mt-2">
+                <button id="btn-dismiss-alert-today" class="flex-[1] py-3 rounded-xl bg-slate-100 text-slate-500 font-bold hover:bg-slate-200 transition-all text-xs">오늘 하루 보지 않기</button>
+                <button id="btn-close-alert" class="flex-[1] py-3 rounded-xl bg-primary text-white font-bold hover:bg-primary-dark transition-all text-xs shadow-md">확인</button>
+            </div>
+        </div>
+    </div>
+</div>

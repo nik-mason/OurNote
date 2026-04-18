@@ -102,7 +102,10 @@ export function initAuth() {
         const mode = loginMode.value;
         
         if (mode === 'student') {
-            const id = document.getElementById('student-id').value.trim();
+            let id = document.getElementById('student-id').value.trim();
+            if (id.length === 1 && !isNaN(id)) {
+                id = '0' + id;
+            }
             const name = document.getElementById('student-name').value.trim();
             
             if (!id || !name) {

@@ -69,6 +69,19 @@
             }
         })();
     </script>
+    <script>
+        // Splash Lifeboat
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                if (splash) {
+                    splash.style.opacity = '0';
+                    document.body.classList.add('ready');
+                    setTimeout(() => splash.remove(), 600);
+                }
+            }, 3000); // 3s failsafe
+        });
+    </script>
 </head>
 
 <body class="overflow-x-hidden font-body bg-background-light dark:bg-slate-900 transition-colors duration-300">

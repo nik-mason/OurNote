@@ -756,8 +756,6 @@ window.updateDetailContent = (post, isHomework = false) => {
             };
         }
     }
-        }
-    }
 };
 
 window.toggleHomeworkTask = async (hwId, taskIdx, btn) => {

@@ -240,7 +240,7 @@ window.toggleCommentLike = async (postId, commentId, btn) => {
 export async function loadPosts() {
     const container = document.getElementById('posts-container');
     if (!container) return;
-    container.innerHTML = '<div class="ultra-card h-[300px] skeleton col-span-full"></div>';
+
 
     // 학생 이름 캐시 (선생님 숙제 진행도 뷰용)
     if (!window.cachedStudents || window.cachedStudents.length === 0) {
@@ -786,11 +786,8 @@ window.toggleHomeworkTask = async (hwId, taskIdx, btn) => {
         });
         const hwRes = await fetch('/api/homework');
         window.currentHomework = await hwRes.json();
-        
-        // Silent re-render background list
-        if (state.currentCategory === 'homework') {
-            renderHomework(window.currentHomework);
-        }
+        // Do not re-render homework list entirely to avoid scrolling/refreshing issues
+
     } catch (err) {
         showToast('상태 변경에 실패했습니다.', 'error');
     }
@@ -855,12 +852,14 @@ window.submitComment = async (postId, modalContent = null) => {
         
         if (res.ok) {
             input.value = '';
-            loadPosts(); // Refresh to show new comment
-            // Re-open comments after refresh
-            setTimeout(() => {
-                const newEl = document.getElementById(`comments-${postId}`);
-                if (newEl) newEl.classList.remove('hidden');
-            }, 500);
+            // Refresh to show new comment but avoid losing context
+            const postsRes = await fetch('/api/posts');
+            window.currentPosts = await postsRes.json();
+            const el = document.getElementById(`comments-${postId}`);
+            if (el) {
+                // Re-render the specific comment list here or just notify
+                showToast('댓글이 등록되었습니다! 💬', 'success');
+            }
         }
     } catch (err) {
         showToast('댓글 등록에 실패했습니다.', 'error');

@@ -394,7 +394,6 @@ def toggle_comment_like(post_id, comment_id):
 def delete_post(post_id):
     try:
         posts = pull_data('posts.json') or []
-        # Convert everything to string for safe comparison
         pid_str = str(post_id)
         new_posts = [p for p in posts if str(p.get('id', '')) != pid_str]
         
@@ -405,6 +404,22 @@ def delete_post(post_id):
         return {"success": True}
     except Exception as e:
         return {"error": str(e)}, 500
+
+@app.route('/api/homework/<hw_id>', methods=['DELETE'])
+def delete_homework(hw_id):
+    try:
+        hws = pull_data('homework.json') or []
+        hw_str = str(hw_id)
+        new_hws = [h for h in hws if str(h.get('id', '')) != hw_str]
+        
+        if len(new_hws) == len(hws):
+            return {"error": "Homework not found"}, 404
+            
+        push_data('homework.json', new_hws)
+        return {"success": True}
+    except Exception as e:
+        return {"error": str(e)}, 500
+
 
 @app.route('/api/upload', methods=['POST'])
 def upload_image():

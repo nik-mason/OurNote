@@ -29,6 +29,12 @@ export function initNavigation() {
         
         // 3. Load Data
         loadPosts();
+        
+        // 4. Close mobile menu if open
+        const mobileModal = document.getElementById('mobile-modal');
+        if (mobileModal && !mobileModal.classList.contains('hidden')) {
+            document.getElementById('close-mobile-modal')?.click();
+        }
     });
     
     // Mobile Hamburger (Visibility handled by setupModal in main.js)

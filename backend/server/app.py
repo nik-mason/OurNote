@@ -233,14 +233,20 @@ def update_homework_task(hw_id):
                 return {"success": True}
     return {"error": "Not found"}, 404
 
-@app.route('/api/homework/<int:hw_id>', methods=['DELETE'])
+@app.route('/api/homework/<hw_id>', methods=['DELETE'])
 def delete_homework(hw_id):
-    hws = pull_data('homework.json') or []
-    new_hws = [h for h in hws if h['id'] != hw_id]
-    if len(new_hws) == len(hws):
-        return {"error": "Homework not found"}, 404
-    push_data('homework.json', new_hws)
-    return {"success": True}
+    try:
+        hws = pull_data('homework.json') or []
+        hw_str = str(hw_id)
+        new_hws = [h for h in hws if str(h.get('id', '')) != hw_str]
+        
+        if len(new_hws) == len(hws):
+            return {"error": "Homework not found"}, 404
+            
+        push_data('homework.json', new_hws)
+        return {"success": True}
+    except Exception as e:
+        return {"error": str(e)}, 500
 
 @app.route('/api/students/pin', methods=['POST'])
 def update_student_pin():
@@ -404,22 +410,6 @@ def delete_post(post_id):
         return {"success": True}
     except Exception as e:
         return {"error": str(e)}, 500
-
-@app.route('/api/homework/<hw_id>', methods=['DELETE'])
-def delete_homework(hw_id):
-    try:
-        hws = pull_data('homework.json') or []
-        hw_str = str(hw_id)
-        new_hws = [h for h in hws if str(h.get('id', '')) != hw_str]
-        
-        if len(new_hws) == len(hws):
-            return {"error": "Homework not found"}, 404
-            
-        push_data('homework.json', new_hws)
-        return {"success": True}
-    except Exception as e:
-        return {"error": str(e)}, 500
-
 
 @app.route('/api/upload', methods=['POST'])
 def upload_image():

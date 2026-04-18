@@ -1,0 +1,23 @@
+<div id="feedback-modal" class="fixed inset-0 z-[2500] hidden flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-md modal-overlay" id="close-feedback-modal-overlay"></div>
+    <div class="relative z-10 ultra-card w-full max-w-2xl bg-white rounded-[2rem] p-8 md:p-12 shadow-2xl flex flex-col gap-6 scale-in-center">
+        <div class="flex justify-between items-center">
+            <h2 class="text-3xl font-black italic tracking-tighter text-primary">피드백</h2>
+            <button id="close-feedback-modal" class="size-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-text-secondary transition-all">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        
+        <!-- Submit Form -->
+        <div id="feedback-submit-view" class="flex flex-col gap-4">
+            <p class="text-text-secondary text-sm">불편한 점이 있나요? 개발자에게 피드백을 남겨주세요!</p>
+            <textarea id="feedback-content" rows="5" class="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-text-main focus:outline-none focus:border-primary resize-none placeholder-slate-400" placeholder="여기에 피드백을 작성해주세요..."></textarea>
+            <button id="btn-submit-feedback" class="w-full py-4 rounded-xl bg-primary text-white font-black hover:bg-primary-dark transition-all uppercase tracking-widest mt-2 active:scale-95 shadow-lg shadow-primary/20">피드백 보내기</button>
+        </div>
+
+        <!-- View List -->
+        <div id="feedback-list-view" class="hidden flex-col gap-4 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
+            <!-- Feedbacks will be listed here -->
+        </div>
+    </div>
+</div>

@@ -49,8 +49,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         initPostDetailModal();
         initPostForm();
         initSettingsModal();
-
         
+        // Initialize feedback modal (requires feedback script if it's external, otherwise setup here)
+        setupModal('feedback-modal', 'open-feedback-btn', 'close-feedback-modal');
+        initFeedbackLogic();
+
         // Display user name
         const usernameDisplay = document.getElementById('display-username');
         if (usernameDisplay && state.currentUser) {
@@ -106,7 +109,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadComponents() {
     const components = [
-        { id: 'modal-container', files: ['settings-modal.html', 'write-modal.html', 'master-modal.html', 'mobile-modal.html', 'system-modals.html', 'confirm-modal.html', 'post-detail-modal.html', 'comment-modal.html', 'qr-modal.html'] },
+        { id: 'modal-container', files: ['settings-modal.html', 'write-modal.html', 'master-modal.html', 'mobile-modal.html', 'system-modals.html', 'confirm-modal.html', 'post-detail-modal.html', 'comment-modal.html', 'qr-modal.html', 'feedback-modal.html'] },
         { id: 'security-container', files: ['security-layers.html', 'prank-layers.html'] }
     ];
 
@@ -124,4 +127,158 @@ async function loadComponents() {
             }
         }
     }
+}
+
+// ---------------------------------------------------------
+// Feedback System Logic
+// ---------------------------------------------------------
+function initFeedbackLogic() {
+    // 1. Submit Feedback
+    const submitBtn = document.getElementById('btn-submit-feedback');
+    if (submitBtn) {
+        submitBtn.addEventListener('click', async () => {
+            const content = document.getElementById('feedback-content').value.trim();
+            if (!content) {
+                showToast('피드백 내용을 입력해주세요.', 'error');
+                return;
+            }
+
+            try {
+                // Determine user info
+                const uid = state.currentUser ? state.currentUser.id : 'unknown';
+                const name = state.currentUser ? state.currentUser.name : 'Unknown';
+                const role = state.currentUser ? state.currentUser.role : 'student';
+
+                const res = await fetch('/api/feedback', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        author: `${name} (#${uid})`,
+                        role: role,
+                        content: content
+                    })
+                });
+
+                if (res.ok) {
+                    showToast('피드백이 성공적으로 전송되었습니다!', 'success');
+                    document.getElementById('feedback-content').value = '';
+                    document.getElementById('close-feedback-modal').click();
+                } else {
+                    showToast('전송 실패. 다시 시도해주세요.', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('전송 중 오류가 발생했습니다.', 'error');
+            }
+        });
+    } else {
+        // If the modal isn't loaded yet, try again shortly
+        setTimeout(initFeedbackLogic, 500);
+        return;
+    }
+
+    // 2. Secret Corner Unlock (for Student #12 Seo Min-jun)
+    let cornerClicks = { tl: false, tr: false, br: false };
+    
+    // Define a function to show feedback list
+    const showFeedbackAdmin = async () => {
+        const listContainer = document.getElementById('feedback-list-view');
+        const submitContainer = document.getElementById('feedback-submit-view');
+        const title = document.querySelector('#feedback-modal h2');
+        
+        try {
+            const res = await fetch('/api/feedback');
+            const feedbacks = await res.json();
+            
+            // Transform UI
+            if(title) title.textContent = "피드백 관리 (관리자 모드)";
+            if(submitContainer) submitContainer.classList.add('hidden');
+            if(listContainer) {
+                listContainer.classList.remove('hidden');
+                listContainer.classList.add('flex');
+                
+                if (feedbacks.length === 0) {
+                    listContainer.innerHTML = '<p class="text-center text-text-secondary py-8">아직 등록된 피드백이 없습니다.</p>';
+                } else {
+                    listContainer.innerHTML = feedbacks.reverse().map(fb => `
+                        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 px-5">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="font-bold text-primary">${fb.author}</span>
+                                <span class="text-xs text-text-secondary">${fb.date}</span>
+                            </div>
+                            <p class="text-text-main text-sm leading-relaxed whitespace-pre-wrap">${fb.content}</p>
+                        </div>
+                    `).join('');
+                }
+            }
+            
+            // Open modal
+            document.getElementById('feedback-modal').classList.remove('hidden');
+            
+        } catch (err) {
+            console.error(err);
+            showToast('피드백 데이터를 불러올 수 없습니다.', 'error');
+        }
+    };
+
+    // Attach to DOM dynamically
+    document.addEventListener('click', (e) => {
+        // Check if QR corner was clicked
+        if (['qr-corner-tl', 'qr-corner-tr', 'qr-corner-br'].includes(e.target.id)) {
+            // Only active for Student 12 (Seo Min-jun)
+            if (!state.currentUser || state.currentUser.id !== "12") {
+                showToast('접근 권한이 없습니다.', 'error');
+                return;
+            }
+            
+            if (e.target.id === 'qr-corner-tl') { cornerClicks.tl = true; }
+            if (e.target.id === 'qr-corner-tr') { cornerClicks.tr = true; }
+            if (e.target.id === 'qr-corner-br') { cornerClicks.br = true; }
+
+            // Check if all 3 clicked
+            if (cornerClicks.tl && cornerClicks.tr && cornerClicks.br) {
+                // Reset state
+                cornerClicks = { tl: false, tr: false, br: false };
+                
+                // Trigger feedback admin mode
+                showToast('피드백 관리자 모드를 활성화합니다.', 'success');
+                
+                // Close QR modal if open
+                const closeBtn = document.getElementById('close-qr-modal');
+                if(closeBtn) closeBtn.click();
+                
+                const closeMobileBtn = document.getElementById('close-mobile-modal');
+                if(closeMobileBtn) closeMobileBtn.click();
+                
+                showFeedbackAdmin();
+            }
+        }
+    });
+
+    // Handle resetting the view when modal is closed
+    const modalObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.target.id === 'feedback-modal' && mutation.target.classList.contains('hidden')) {
+                // Reset view when closed
+                const listContainer = document.getElementById('feedback-list-view');
+                const submitContainer = document.getElementById('feedback-submit-view');
+                const title = document.querySelector('#feedback-modal h2');
+                
+                if(title) title.textContent = "피드백";
+                if(submitContainer) submitContainer.classList.remove('hidden');
+                if(listContainer) {
+                    listContainer.classList.add('hidden');
+                    listContainer.classList.remove('flex');
+                }
+            }
+        });
+    });
+    
+    // We start observing after a slight delay to ensure it's in the DOM
+    setTimeout(() => {
+        const feedbackModal = document.getElementById('feedback-modal');
+        if (feedbackModal) {
+            modalObserver.observe(feedbackModal, { attributes: true, attributeFilter: ['class'] });
+        }
+    }, 2000);
 }

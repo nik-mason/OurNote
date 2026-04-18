@@ -269,6 +269,27 @@ def update_student_pin():
         return {"success": True}
     return {"error": "Student not found"}, 404
 
+@app.route('/api/feedback', methods=['GET'])
+def get_feedback():
+    return pull_data('feedback.json') or []
+
+@app.route('/api/feedback', methods=['POST'])
+def add_feedback():
+    from flask import request
+    data = request.json
+    feedbacks = pull_data('feedback.json') or []
+    
+    new_fb = {
+        "id": int(time.time()),
+        "author": data.get('author', '익명'),
+        "role": data.get('role', 'student'),
+        "content": data.get('content', ''),
+        "date": time.strftime('%Y-%m-%d %H:%M')
+    }
+    feedbacks.append(new_fb)
+    push_data('feedback.json', feedbacks)
+    return {"success": True}
+
 # ... (Additional routes for likes/comments/etc removed for stability during rollback if they were new)
 # Wait, let's keep the baseline that was working before the 500 error starts.
 

@@ -181,7 +181,7 @@ def add_post():
     posts = pull_data('posts.json')
     new_post['id'] = max([p['id'] for p in posts], default=0) + 1
     new_post['date'] = time.strftime('%Y-%m-%d %H:%M')
-    new_post['likes'] = 0
+    new_post['likes'] = []
     new_post['comments'] = []
     posts.append(new_post)
     push_data('posts.json', posts)
@@ -306,17 +306,22 @@ def set_alert():
 
 @app.route('/api/posts/<int:post_id>/like', methods=['POST'])
 def toggle_like(post_id):
+    from flask import request
+    data = request.json or {}
+    user_id = str(data.get('user_id', 'anon'))
     posts = pull_data('posts.json')
     for p in posts:
         if p['id'] == post_id:
-            # Handle likes as array or number
-            if isinstance(p.get('likes'), list):
-                # If we want to track WHO liked it, this would be better but for now let's stick to count as requested by app logic
-                p['likes'] = len(p['likes']) + 1
+            if not isinstance(p.get('likes'), list):
+                p['likes'] = []
+            likes = p['likes']
+            if user_id in likes:
+                likes.remove(user_id)
             else:
-                p['likes'] = (p.get('likes') or 0) + 1
+                likes.append(user_id)
+            p['likes'] = likes
             push_data('posts.json', posts)
-            return {"success": True, "likes": p['likes']}
+            return {"success": True, "likes": len(likes)}
     return {"error": "Not found"}, 404
 
 @app.route('/api/posts/<int:post_id>/comments', methods=['POST'])
@@ -327,16 +332,63 @@ def add_comment(post_id):
     for p in posts:
         if p['id'] == post_id:
             if 'comments' not in p: p['comments'] = []
-            new_comment = {
-                "id": int(time.time()),
-                "author": data.get('author', 'Anonymous'),
-                "content": data.get('content', ''),
-                "date": time.strftime('%Y-%m-%d %H:%M')
-            }
-            p['comments'].append(new_comment)
-            push_data('posts.json', posts)
-            return {"success": True, "comment": new_comment}
+            parent_id = data.get('parent_id')
+            if parent_id:
+                for c in p['comments']:
+                    if str(c.get('id')) == str(parent_id):
+                        if 'replies' not in c: c['replies'] = []
+                        new_reply = {
+                            "id": int(time.time() * 1000),
+                            "author": data.get('author', 'Anonymous'),
+                            "content": data.get('content', ''),
+                            "date": time.strftime('%Y-%m-%d %H:%M'),
+                            "likes": []
+                        }
+                        c['replies'].append(new_reply)
+                        push_data('posts.json', posts)
+                        return {"success": True, "reply": new_reply}
+                return {"error": "Parent not found"}, 404
+            else:
+                new_comment = {
+                    "id": int(time.time() * 1000),
+                    "author": data.get('author', 'Anonymous'),
+                    "content": data.get('content', ''),
+                    "date": time.strftime('%Y-%m-%d %H:%M'),
+                    "replies": [],
+                    "likes": []
+                }
+                p['comments'].append(new_comment)
+                push_data('posts.json', posts)
+                return {"success": True, "comment": new_comment}
     return {"error": "Not found"}, 404
+
+@app.route('/api/posts/<int:post_id>/comments/<int:comment_id>/like', methods=['POST'])
+def toggle_comment_like(post_id, comment_id):
+    from flask import request
+    data = request.json or {}
+    user_id = str(data.get('user_id', 'anon'))
+    
+    posts = pull_data('posts.json')
+    for p in posts:
+        if p['id'] == post_id:
+            for c in p.get('comments', []):
+                if str(c.get('id')) == str(comment_id):
+                    likes = c.get('likes', [])
+                    if user_id in likes: likes.remove(user_id)
+                    else: likes.append(user_id)
+                    c['likes'] = likes
+                    push_data('posts.json', posts)
+                    return {"success": True, "likes": len(likes)}
+                for r in c.get('replies', []):
+                    if str(r.get('id')) == str(comment_id):
+                        likes = r.get('likes', [])
+                        if user_id in likes: likes.remove(user_id)
+                        else: likes.append(user_id)
+                        r['likes'] = likes
+                        push_data('posts.json', posts)
+                        return {"success": True, "likes": len(likes)}
+            return {"error": "Comment not found"}, 404
+    return {"error": "Post not found"}, 404
 
 @app.route('/api/posts/<post_id>', methods=['DELETE'])
 def delete_post(post_id):

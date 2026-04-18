@@ -195,9 +195,47 @@ function playPaperPlaneAnimation(onComplete) {
             50%  { box-shadow: 0 0 0 20px rgba(43,140,238,0); }
             100% { box-shadow: 0 0 0 0 rgba(43,140,238,0); }
         }
+        }
     `;
     document.head.appendChild(style);
 })();
+
+window.currentReplyParentId = null;
+
+window.prepareReply = (postId, commentId, author) => {
+    window.currentReplyParentId = commentId;
+    const input = document.getElementById('detail-comment-input');
+    if (input) {
+        input.value = `@${author} `;
+        input.focus();
+    }
+};
+
+window.toggleCommentLike = async (postId, commentId, btn) => {
+    try {
+        const res = await fetch(`/api/posts/${postId}/comments/${commentId}/like`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: state.currentUser?.id || state.currentUser?.name || 'anon' })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            btn.querySelector('span:last-child').textContent = data.likes;
+            const icon = btn.querySelector('.material-symbols-outlined');
+            if (icon.textContent === 'favorite_border') {
+                icon.textContent = 'favorite';
+                btn.classList.add('text-red-500');
+                btn.classList.remove('text-slate-400', 'text-text-dim');
+            } else {
+                icon.textContent = 'favorite_border';
+                btn.classList.remove('text-red-500');
+                btn.classList.add('text-slate-400');
+            }
+            btn.style.transform = 'scale(1.2)';
+            setTimeout(() => btn.style.transform = '', 200);
+        }
+    } catch (err) {}
+};
 
 export async function loadPosts() {
     const container = document.getElementById('posts-container');
@@ -216,12 +254,12 @@ export async function loadPosts() {
         const res = await fetch('/api/homework');
         const hws = await res.json();
         window.currentHomework = hws; // Cache homework
-        renderHomework(hws);
+        renderHomework(hws.slice().reverse());
     } else {
         const res = await fetch('/api/posts');
         const posts = await res.json();
         window.currentPosts = posts; // Cache for detail view
-        renderPosts(posts);
+        renderPosts(posts.slice().reverse());
     }
 }
 
@@ -587,63 +625,95 @@ window.openPostDetail = (postId, isHomework = false) => {
         }
     } else {
         // Normal Comments View
+        window.currentReplyParentId = null;
         document.getElementById('detail-comment-count').textContent = post.comments?.length || 0;
-        commentSection.querySelector('h4').innerHTML = `
-            <span class="material-symbols-outlined text-primary">chat_bubble</span>
-            댓글 리스트 (${post.comments?.length || 0})
-        `;
-        list.innerHTML = (post.comments || []).map(c => `
-            <div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 flex flex-col gap-2">
+        
+        const renderCommentHTML = (c, isReply = false) => {
+            const userId = String(state.currentUser?.id || state.currentUser?.name || '');
+            const clikes = Array.isArray(c.likes) ? c.likes : [];
+            const cLiked = clikes.includes(userId);
+            const replies = Array.isArray(c.replies) ? c.replies : [];
+            
+            return `
+            <div class="${isReply ? 'ml-8 mt-3 relative' : 'bg-slate-50 p-5 rounded-2xl border border-slate-100'} flex flex-col gap-2">
+                ${isReply ? '<div class="absolute -left-6 top-3 w-4 h-[2px] bg-slate-200"></div>' : ''}
                 <div class="flex justify-between items-center">
                     <span class="font-black text-primary text-sm">${c.author}</span>
                     <span class="text-[10px] text-text-secondary font-bold">${c.date}</span>
                 </div>
-                <p class="text-text-main text-lg font-medium">${c.content}</p>
-            </div>
-        `).join('') || '<p class="text-center py-10 opacity-30 font-bold">첫 댓글을 남겨보세요! ✨</p>';
-        modal.querySelector('.sticky.bottom-0')?.classList.remove('hidden');
+                <p class="text-text-main text-sm font-medium whitespace-pre-wrap leading-relaxed">${c.content}</p>
+                <div class="flex gap-4 mt-1 items-center">
+                    <button onclick="window.toggleCommentLike(${post.id}, ${c.id}, this)" class="flex items-center gap-1 ${cLiked ? 'text-red-500' : 'text-slate-400 hover:text-red-400'} transition-colors">
+                        <span class="material-symbols-outlined text-[14px]">${cLiked ? 'favorite' : 'favorite_border'}</span>
+                        <span class="text-[10px] font-black">${clikes.length}</span>
+                    </button>
+                    ${!isReply ? `
+                    <button onclick="window.prepareReply(${post.id}, ${c.id}, '${c.author}')" class="flex items-center gap-1 text-slate-400 hover:text-primary transition-colors">
+                        <span class="material-symbols-outlined text-[14px]">reply</span>
+                        <span class="text-[10px] font-black">답글쓰기</span>
+                    </button>
+                    ` : ''}
+                </div>
+                ${!isReply && replies.length > 0 ? `
+                    <div class="mt-3 space-y-3 border-l-2 border-slate-200">
+                        ${replies.map(r => renderCommentHTML(r, true)).join('')}
+                    </div>
+                ` : ''}
+            </div>`;
+        };
+
+        const renderCommentsList = (commentsArray) => {
+            return (commentsArray || []).map(c => renderCommentHTML(c)).join('') || '<p class="text-center py-6 opacity-30 font-bold text-sm">첫 댓글을 남겨보세요! ✨</p>';
+        };
+
+        list.innerHTML = renderCommentsList(post.comments);
 
         // Setup comment submission
         const submitBtn = document.getElementById('detail-submit-comment');
         if (submitBtn) {
-            // 기존 이벤트 중복 방지
             submitBtn.replaceWith(submitBtn.cloneNode(true));
             const freshBtn = document.getElementById('detail-submit-comment');
             freshBtn.onclick = async () => {
                 const input = document.getElementById('detail-comment-input');
-                const txt = input?.value.trim();
+                let txt = input?.value.trim();
                 if (!txt) return;
+                
+                // Check if reply was cleared manually
+                if (window.currentReplyParentId && !txt.startsWith('@')) {
+                    window.currentReplyParentId = null;
+                }
+
                 freshBtn.disabled = true;
-                freshBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-3xl">sync</span>';
+                freshBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[20px]">sync</span>';
                 try {
+                    const payload = { 
+                        author: state.currentUser?.name || 'Anonymous', 
+                        content: txt 
+                    };
+                    if (window.currentReplyParentId) {
+                        payload.parent_id = window.currentReplyParentId;
+                    }
+
                     const res = await fetch(`/api/posts/${post.id}/comments`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ author: state.currentUser?.name || 'Anonymous', content: txt })
+                        body: JSON.stringify(payload)
                     });
+                    
                     if (res.ok) {
                         input.value = '';
-                        showToast('댓글이 등록되었습니다! 💬');
-                        // 백그라운드에서 posts 갱신 후 댓글 목록만 새로 렌더
+                        window.currentReplyParentId = null;
+                        showToast(payload.parent_id ? '답글이 등록되었습니다! 💬' : '댓글이 등록되었습니다! 💬');
+                        
                         const postsRes = await fetch('/api/posts');
                         window.currentPosts = await postsRes.json();
-                        // 댓글 목록만 업데이트
                         const updatedPost = window.currentPosts.find(p => p.id === post.id);
                         if (updatedPost) {
                             const updatedList = document.getElementById('detail-comments-list');
                             const count = document.getElementById('detail-comment-count');
                             if (count) count.textContent = updatedPost.comments?.length || 0;
                             if (updatedList) {
-                                updatedList.innerHTML = (updatedPost.comments || []).map(c => `
-                                    <div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100 flex flex-col gap-2">
-                                        <div class="flex justify-between items-center">
-                                            <span class="font-black text-primary text-sm">${c.author}</span>
-                                            <span class="text-[10px] text-text-secondary font-bold">${c.date}</span>
-                                        </div>
-                                        <p class="text-text-main text-lg font-medium">${c.content}</p>
-                                    </div>
-                                `).join('') || '<p class="text-center py-10 opacity-30 font-bold">첫 댓글을 남겨보세요! ✨</p>';
-                                // 스크롤 아래로
+                                updatedList.innerHTML = renderCommentsList(updatedPost.comments);
                                 updatedList.lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'end' });
                             }
                         }
@@ -654,7 +724,7 @@ window.openPostDetail = (postId, isHomework = false) => {
                     showToast('서버 오류가 발생했습니다.', 'error');
                 } finally {
                     freshBtn.disabled = false;
-                    freshBtn.innerHTML = '<span class="material-symbols-outlined text-3xl">send</span>';
+                    freshBtn.innerHTML = '<span class="material-symbols-outlined text-[20px]">send</span>';
                 }
             };
         }
@@ -809,7 +879,11 @@ window.toggleLikeV4 = async (postId, btn, event) => {
     setTimeout(() => { btn.style.transform = ''; }, 300);
 
     try {
-        const res = await fetch(`/api/posts/${postId}/like`, { method: 'POST' });
+        const res = await fetch(`/api/posts/${postId}/like`, { 
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: state.currentUser?.id || state.currentUser?.name || 'anon' })
+        });
         const data = await res.json();
         if (data.success) {
             const span = btn.querySelector('span:last-child');

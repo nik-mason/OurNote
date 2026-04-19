@@ -75,26 +75,43 @@ export function initAuth() {
         }
     };
 
-    const validatePin = () => {
-        if (pendingUser && pinBuffer === (pendingUser.pin || "000000")) {
-            const userData = { ...pendingUser, role: 'student' };
-            localStorage.setItem('currentUser', JSON.stringify(userData));
-            showToast(`${pendingUser.name}님, 환영합니다!`, 'success');
-            
-            // Success animation
-            document.querySelectorAll('.pin-dot').forEach(d => d.classList.add('bg-green-500', 'border-green-500'));
-            
-            setTimeout(() => window.location.href = '/dashboard', 800);
-        } else {
-            showToast('비밀번호가 틀렸습니다.', 'error');
-            pinBuffer = "";
-            // Shake animation
-            const modalBody = document.querySelector('#pin-modal .modal-v4');
-            modalBody.classList.add('animate-shake');
-            setTimeout(() => {
-                modalBody.classList.remove('animate-shake');
-                updatePinDisplay();
-            }, 500);
+    const validatePin = async () => {
+        if (!pendingUser) return;
+
+        try {
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    type: 'student',
+                    id: pendingUser.id,
+                    pin: pinBuffer
+                })
+            });
+
+            const result = await res.json();
+
+            if (res.ok && result.success) {
+                localStorage.setItem('currentUser', JSON.stringify(result.user));
+                showToast(`${result.user.name}님, 환영합니다!`, 'success');
+                
+                // Success animation
+                document.querySelectorAll('.pin-dot').forEach(d => d.classList.add('bg-green-500', 'border-green-500'));
+                
+                setTimeout(() => window.location.href = '/dashboard', 800);
+            } else {
+                showToast(result.error || '비밀번호가 틀렸습니다.', 'error');
+                pinBuffer = "";
+                // Shake animation
+                const modalBody = document.querySelector('#pin-modal .modal-v4');
+                modalBody.classList.add('animate-shake');
+                setTimeout(() => {
+                    modalBody.classList.remove('animate-shake');
+                    updatePinDisplay();
+                }, 500);
+            }
+        } catch (err) {
+            showToast('서버 연결 오류가 발생했습니다.', 'error');
         }
     };
 
@@ -114,15 +131,18 @@ export function initAuth() {
             }
 
             try {
-                const res = await fetch('/api/students');
-                const students = await res.json();
-                const nameNormalized = name.replace(/\s/g, '');
-                const user = students.find(s => s.id === id && s.name.replace(/\s/g, '') === nameNormalized);
+                const res = await fetch('/api/auth/identify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id, name })
+                });
+                
+                const result = await res.json();
 
-                if (user) {
-                    openPinModal(user);
+                if (res.ok && result.success) {
+                    openPinModal(result.user);
                 } else {
-                    showToast('학생 정보를 찾을 수 없습니다.', 'error');
+                    showToast(result.error || '학생 정보를 찾을 수 없습니다.', 'error');
                 }
             } catch (err) {
                 showToast('서버 연결 오류가 발생했습니다.', 'error');
@@ -137,16 +157,24 @@ export function initAuth() {
             }
 
             try {
-                const res = await fetch('/api/teacher');
-                const teacher = await res.json();
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        type: 'teacher',
+                        id: id,
+                        password: pw
+                    })
+                });
 
-                if (teacher.username === id && teacher.password === pw) {
-                    const userData = { name: '선생님', role: 'teacher' };
-                    localStorage.setItem('currentUser', JSON.stringify(userData));
+                const result = await res.json();
+
+                if (res.ok && result.success) {
+                    localStorage.setItem('currentUser', JSON.stringify(result.user));
                     showToast('선생님 기기에 접속되었습니다!');
                     setTimeout(() => window.location.href = '/dashboard', 1000);
                 } else {
-                    showToast('ID 또는 비밀번호가 틀렸습니다.', 'error');
+                    showToast(result.error || 'ID 또는 비밀번호가 틀렸습니다.', 'error');
                 }
             } catch (err) {
                 showToast('서버 연결 오류가 발생했습니다.', 'error');

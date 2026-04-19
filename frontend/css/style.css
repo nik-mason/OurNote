@@ -28,10 +28,16 @@
     --bg-start: #f8fafc;
     --bg-end: #ffffff;
     --bg-deep: #f8fafc;
-    --primary: #2b8cee;
+    --primary: #2b8ce6;
+    --primary-dark: #1e70bd;
     --primary-glow: rgba(43, 140, 238, 0.1);
     --accent: #f43f5e;
     --accent-glow: rgba(244, 63, 94, 0.1);
+    --background-light: #f8fafc;
+    --surface-light: #ffffff;
+    --text-main: #0f172a;
+    --text-secondary: #64748b;
+    --text-dim: #94a3b8;
     --glass-bg: rgba(255, 255, 255, 0.8);
     --glass-border: rgba(0, 0, 0, 0.05);
     --card-bg: #ffffff;
@@ -102,15 +108,31 @@ body::before {
     pointer-events: none;
 }
 
-/* ─── MODAL POP ANIMATION ─── */
-@keyframes modalPop {
-    0% { transform: translate(-50%, -45%) scale(0.95); opacity: 0; }
-    60% { transform: translate(-50%, -52%) scale(1.02); opacity: 1; }
-    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+/* ─── MODAL FULLSCREEN ANIMATION ─── */
+@keyframes modalSlideUp {
+    0% { transform: translateY(100%); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+.modal-v4 {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--card-bg);
+    z-index: 1000;
+    overflow-y: auto;
+    transform: translateY(100%);
+    opacity: 0;
+    transition: all 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+    border-radius: 0; /* Fullscreen usually has no radius */
 }
 
 .modal-v4.active {
-    animation: modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+    animation: none !important; /* Use transition for smoother feel */
 }
 
 /* Global Theme Overrides for Tailwind Utility Classes */
@@ -603,13 +625,12 @@ body::before {
 }
 
 .modal-v4 {
-    transform: perspective(1000px) rotateX(10deg) scale(0.9);
+    transform: translateY(100%);
     opacity: 0;
-    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .modal-v4.active {
-    transform: perspective(1000px) rotateX(0deg) scale(1);
+    transform: translateY(0);
     opacity: 1;
 }
 

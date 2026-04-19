@@ -3,7 +3,7 @@
  * Final integrated entry point.
  */
 import { state, showToast } from './modules/common.js?v=4.3';
-import { initSplash, initCursor, initParticles, setupModal, initSidebar } from './modules/ui.js?v=4.3';
+import { initSplash, initCursor, initParticles, setupModal } from './modules/ui.js?v=4.3';
 import { loadPosts, initPostForm } from './modules/posts.js?v=4.3';
 import { initAuth } from './modules/auth.js?v=4.3';
 import { initNavigation, setupRoomCreation } from './modules/navigation.js?v=4.3';
@@ -51,15 +51,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         initPostDetailModal();
         initPostForm();
         initSettingsModal();
+        initProfileModal();
         
-        // Initialize feedback modal (requires feedback script if it's external, otherwise setup here)
+        setupModal('profile-modal', 'open-profile-modal', 'close-profile-modal');
+        setupModal('main-nav', 'mobile-hamburger', 'close-mobile-modal');
         setupModal('feedback-modal', 'open-feedback-btn', 'close-feedback-modal');
         initFeedbackLogic();
 
-        // Display user name
+        // Display user name and set dynamic avatar
         const usernameDisplay = document.getElementById('display-username');
-        if (usernameDisplay && state.currentUser) {
-            usernameDisplay.textContent = state.currentUser.name;
+        const userAvatar = document.getElementById('user-avatar');
+        if (state.currentUser) {
+            if (usernameDisplay) usernameDisplay.textContent = state.currentUser.name;
+            window.updateUserAvatar = () => {
+                const seed = state.currentUser.avatar_seed || state.currentUser.name;
+                const url = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
+                if (userAvatar) userAvatar.style.backgroundImage = `url("${url}")`;
+                const modalAvatar = document.getElementById('modal-user-avatar');
+                if (modalAvatar) modalAvatar.style.backgroundImage = `url("${url}")`;
+            };
+            window.updateUserAvatar();
         }
 
         // Load Rules Component
@@ -144,24 +155,28 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadComponents() {
     const components = [
-        { id: 'modal-container', files: ['settings-modal.html', 'write-modal.html', 'password-modal.html', 'hamburger-modal.html', 'master-modal.html', 'mobile-modal.html', 'system-modals.html', 'confirm-modal.html', 'post-detail-modal.html', 'comment-modal.html', 'qr-modal.html', 'feedback-modal.html'] },
+        { id: 'modal-container', files: ['settings-modal.html', 'write-modal.html', 'master-modal.html', 'mobile-modal.html', 'system-modals.html', 'confirm-modal.html', 'post-detail-modal.html', 'comment-modal.html', 'qr-modal.html', 'feedback-modal.html', 'profile-modal.html'] },
         { id: 'security-container', files: ['security-layers.html', 'prank-layers.html'] }
     ];
 
-    for (const group of components) {
+    const loadTasks = components.flatMap(group => {
         const container = document.getElementById(group.id);
-        if (!container) continue;
+        if (!container) return [];
 
-        for (const file of group.files) {
+        return group.files.map(async (file) => {
             try {
                 const response = await fetch(`/frontend/html/components/${file}`);
                 const html = await response.text();
+                // 순서를 유지하기 위해 각 그룹 내에서는 insertAdjacentHTML을 쓰되, 
+                // 전체 로딩은 병렬로 진행함.
                 container.insertAdjacentHTML('beforeend', html);
             } catch (err) {
                 console.error(`Failed to load component: ${file}`, err);
             }
-        }
-    }
+        });
+    });
+
+    await Promise.all(loadTasks);
 }
 
 // ---------------------------------------------------------
@@ -212,7 +227,7 @@ function initFeedbackLogic() {
         return;
     }
 
-    // 2. Secret Corner Unlock (for Student #12 Seo Min-jun)
+    // 2. Secret Corner Unlock (for Teacher/Admin)
     let cornerClicks = { tl: false, tr: false, br: false };
     
     // Define a function to show feedback list
@@ -260,9 +275,9 @@ function initFeedbackLogic() {
     document.addEventListener('click', (e) => {
         // Check if QR corner was clicked
         if (['qr-corner-tl', 'qr-corner-tr', 'qr-corner-br'].includes(e.target.id)) {
-            // Only active for Student 12 (Seo Min-jun)
-            if (!state.currentUser || state.currentUser.id !== "12") {
-                showToast('접근 권한이 없습니다.', 'error');
+            // Only active for Teachers
+            if (!state.currentUser || state.currentUser.role !== 'teacher') {
+                showToast('관리자 권한이 필요합니다.', 'error');
                 return;
             }
             
@@ -388,3 +403,44 @@ function initFeedbackLogic() {
     };
     initMagneticButtons();
 }
+
+function initProfileModal() {
+    const randomBtn = document.getElementById('random-avatar-btn');
+    const saveBtn = document.getElementById('save-avatar-btn');
+    const seedInput = document.getElementById('avatar-seed-input');
+    const logoutBtn = document.getElementById('profile-logout-btn');
+    
+    if (state.currentUser) {
+        const modalName = document.getElementById('modal-user-name');
+        const modalRole = document.getElementById('modal-user-role');
+        if (modalName) modalName.textContent = state.currentUser.name;
+        if (modalRole) modalRole.textContent = state.currentUser.role;
+        if (seedInput) seedInput.value = state.currentUser.avatar_seed || state.currentUser.name;
+    }
+
+    randomBtn?.addEventListener('click', () => {
+        const randomSeed = Math.random().toString(36).substring(7);
+        if (seedInput) seedInput.value = randomSeed;
+        state.currentUser.avatar_seed = randomSeed;
+        if (window.updateUserAvatar) window.updateUserAvatar();
+    });
+
+    saveBtn?.addEventListener('click', () => {
+        const newSeed = seedInput?.value.trim();
+        if (newSeed) {
+            state.currentUser.avatar_seed = newSeed;
+            localStorage.setItem('currentUser', JSON.stringify(state.currentUser));
+            if (window.updateUserAvatar) window.updateUserAvatar();
+            showToast('아바타 설정이 저장되었습니다!');
+        }
+    });
+
+    logoutBtn?.addEventListener('click', () => {
+        if (window.logout) window.logout();
+    });
+}
+
+window.openSettings = () => {
+    const trigger = document.getElementById('open-settings-btn');
+    if (trigger) trigger.click();
+};

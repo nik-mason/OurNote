@@ -37,9 +37,9 @@
                         "text-secondary": "#64748b",
                     },
                     fontFamily: {
-                        "sans": ["Cafe24SsurroundAir", "sans-serif"],
-                        "display": ["Cafe24SsurroundAir", "sans-serif"],
-                        "body": ["Cafe24SsurroundAir", "sans-serif"],
+                        "sans": ["var(--font-main)", "sans-serif"],
+                        "display": ["var(--font-main)", "sans-serif"],
+                        "body": ["var(--font-main)", "sans-serif"],
                     },
                     borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
                 },
@@ -124,16 +124,13 @@
                         <input class="block w-48 xl:w-64 rounded-full border-none bg-slate-100 py-1.5 pl-9 pr-4 text-sm focus:ring-2 focus:ring-primary" placeholder="검색" type="text"/>
                     </div>
 
-                        <div class="flex items-center gap-3 pl-4 border-l border-slate-100 ml-1">
-                            <div class="hidden sm:flex flex-col items-end">
-                                <span id="display-username" class="text-sm font-bold text-text-main">사용자</span>
-                                <button id="logout-btn" class="text-xs text-accent hover:underline font-bold flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-[14px]">logout</span>
-                                    Logout
-                                </button>
-                            </div>
-                            <div id="user-avatar" class="size-9 rounded-full bg-slate-200 border-2 border-white ring-1 ring-slate-100 overflow-hidden bg-center bg-cover" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCc8d_xph_dBxBD0-svxObnHS49uQJVSWx-08y_oLdylQvZhFVqCCxBtuwB-0s8FQUzFudID1A_PjoIb2aDxSt_2mB7YO_564JWgLzEGvbjyJAgUcnbje7loxy2ZYLyDrHOg2Q-AhaYaEYk3Sqx5psExSPqp1wJvS_H-k_2kGZK23G4RyXRvVGKMnkihIU7O4KXBgAU2agqzCGLkMko1DuoJ3ISVAQRGUlSSVAxWU4qxDNupVNWbNdsFsvIqOZPjtxahyBNs1E-QnW2");'></div>
-                        </div>
+                            <button id="open-profile-modal" class="flex items-center gap-3 pl-4 border-l border-slate-100 ml-1 group">
+                                <div class="hidden sm:flex flex-col items-end">
+                                    <span id="display-username" class="text-sm font-bold text-text-main group-hover:text-primary transition-colors">사용자</span>
+                                    <span class="text-[10px] text-text-dim font-bold uppercase tracking-widest">My Profile</span>
+                                </div>
+                                <div id="user-avatar" class="size-10 rounded-full bg-slate-200 border-2 border-white ring-1 ring-slate-100 overflow-hidden bg-center bg-cover transition-transform group-hover:scale-110 active:scale-95 shadow-sm" style='background-image: url("");'></div>
+                            </button>
 
                     <!-- Install & Mobile Toggle -->
                     <div class="flex items-center gap-2">
@@ -478,28 +475,6 @@
         </div>
     </div>
 
-    <!-- Bottom Navigation (Mobile Only) -->
-    <nav class="fixed bottom-0 left-0 right-0 z-[100] lg:hidden bg-white/80 backdrop-blur-2xl border-t border-slate-100 px-6 py-3 flex items-center justify-between pb-safe">
-        <button class="nav-link flex flex-col items-center gap-1 text-primary" data-cat="dashboard">
-            <span class="material-symbols-outlined text-[24px]">home</span>
-            <span class="text-[10px] font-black uppercase tracking-wider">Home</span>
-        </button>
-        <button class="nav-link flex flex-col items-center gap-1 text-slate-400" data-cat="homework">
-            <span class="material-symbols-outlined text-[24px]">assignment</span>
-            <span class="text-[10px] font-black uppercase tracking-wider">Hw</span>
-        </button>
-        <div class="relative -top-8 size-16 rounded-full bg-primary shadow-xl shadow-primary/40 flex items-center justify-center text-white" onclick="document.getElementById('open-write-modal-sidebar')?.click()">
-            <span class="material-symbols-outlined text-[32px]">add</span>
-        </div>
-        <button class="flex flex-col items-center gap-1 text-slate-400" onclick="window.toggleThemeFluid(localStorage.getItem('ournote_theme') === 'dark' ? 'white' : 'dark')">
-            <span class="material-symbols-outlined text-[24px]">contrast</span>
-            <span class="text-[10px] font-black uppercase tracking-wider">Mode</span>
-        </button>
-        <button class="flex flex-col items-center gap-1 text-slate-400" onclick="document.getElementById('mobile-hamburger')?.click()">
-            <span class="material-symbols-outlined text-[24px]">menu</span>
-            <span class="text-[10px] font-black uppercase tracking-wider">Menu</span>
-        </button>
-    </nav>
     <!-- Bottom Navigation (Mobile Only) -->
     <nav class="fixed bottom-0 left-0 right-0 z-[100] lg:hidden bg-white/80 backdrop-blur-2xl border-t border-slate-100 px-6 py-3 flex items-center justify-between pb-safe">
         <button class="nav-link flex flex-col items-center gap-1 text-primary" data-cat="dashboard">

@@ -374,6 +374,11 @@ export function renderPosts(posts) {
         const isLiked = likes.includes(String(state.currentUser?.id || state.currentUser?.name || ''));
         const commentCount = post.comments ? post.comments.length : 0;
         const isTeacher = state.currentUser?.role === 'teacher';
+        
+        // 본인 확인: author 필드에서 ID 추출 (형식: "이름 (#ID)")
+        const authorInfo = post.author || '';
+        const authorId = authorInfo.includes('(#') ? authorInfo.split('(#').pop().replace(')', '') : authorInfo;
+        const isOwner = state.currentUser && String(state.currentUser.id) === String(authorId);
 
         card.innerHTML = `
             <div class="flex items-center justify-between mb-4">
@@ -381,14 +386,14 @@ export function renderPosts(posts) {
                     <span class="px-2 py-1 bg-primary/10 rounded-lg text-[10px] font-black text-primary uppercase tracking-widest">${post.category}</span>
                     <span class="text-[10px] font-bold text-slate-400 italic">${post.date}</span>
                 </div>
-                ${isTeacher ? `
-                    <button onclick="event.stopPropagation(); window.deletePost(${post.id})" class="size-8 rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center border border-red-100">
+                ${(isTeacher || isOwner) ? `
+                    <button onclick="event.stopPropagation(); window.deletePost('${post.id}')" class="size-8 rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center border border-red-100">
                         <span class="material-symbols-outlined text-[18px]">delete_forever</span>
                     </button>
                 ` : ''}
             </div>
 
-            <div onclick="window.openPostDetail(${post.id})" class="flex-1 flex flex-col min-h-0">
+            <div onclick="window.openPostDetail('${post.id}')" class="flex-1 flex flex-col min-h-0">
                 <h3 class="text-4xl font-black text-text-main tracking-tighter mb-4 line-clamp-2 leading-none group-hover:text-primary transition-colors break-words">${post.title}</h3>
                 
                 <div class="relative mb-6 flex-1 flex flex-col">
@@ -396,7 +401,7 @@ export function renderPosts(posts) {
                     <p id="content-full-${post.id}" class="hidden text-base text-slate-500 font-medium leading-relaxed whitespace-pre-wrap break-words">${post.content}</p>
                     
                     ${(post.image_url ? post.content.split('\n').length > 6 || post.content.length > 150 : post.content.split('\n').length > 15 || post.content.length > 400) ? `
-                        <button onclick="event.stopPropagation(); window.toggleCardExpand(${post.id})" id="expand-btn-${post.id}" class="mt-2 text-primary font-black text-sm hover:underline flex items-center gap-1 w-fit">
+                        <button onclick="event.stopPropagation(); window.toggleCardExpand('${post.id}')" id="expand-btn-${post.id}" class="mt-2 text-primary font-black text-sm hover:underline flex items-center gap-1 w-fit">
                             더보기 <span class="material-symbols-outlined text-sm">expand_more</span>
                         </button>
                     ` : ''}
@@ -417,11 +422,11 @@ export function renderPosts(posts) {
                     <span class="text-[12px] font-bold text-text-main">${displayAuthor}</span>
                 </div>
                 <div class="flex items-center gap-4">
-                    <button onclick="event.stopPropagation(); window.toggleLikeV4(${post.id}, this, event)" class="flex items-center gap-1.5 ${isLiked ? 'text-red-500' : 'text-slate-400 hover:text-red-400'} transition-all">
+                    <button onclick="event.stopPropagation(); window.toggleLikeV4('${post.id}', this, event)" class="flex items-center gap-1.5 ${isLiked ? 'text-red-500' : 'text-slate-400 hover:text-red-400'} transition-all">
                         <span class="material-symbols-outlined text-[20px]">${isLiked ? 'favorite' : 'favorite_border'}</span>
                         <span class="text-[12px] font-black">${likes.length}</span>
                     </button>
-                    <button onclick="event.stopPropagation(); window.openCommentModal(${post.id})" class="flex items-center gap-1.5 text-slate-400 hover:text-primary transition-colors">
+                    <button onclick="event.stopPropagation(); window.openCommentModal('${post.id}')" class="flex items-center gap-1.5 text-slate-400 hover:text-primary transition-colors">
                         <span class="material-symbols-outlined text-[20px]">chat_bubble_outline</span>
                         <span class="text-[12px] font-black">${commentCount}</span>
                     </button>
@@ -548,12 +553,20 @@ window.deletePost = async (postId) => {
     if (!ok) return;
 
     try {
-        const res = await fetch(`/api/posts/${postId}`, { method: 'DELETE' });
+        const res = await fetch(`/api/posts/${postId}`, { 
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: state.currentUser?.id,
+                user_role: state.currentUser?.role
+            })
+        });
         if (res.ok) {
             showToast('이야기가 삭제되었습니다.');
             loadPosts();
         } else {
-            showToast('삭제에 실패했습니다.', 'error');
+            const data = await res.json();
+            showToast(data.error || '삭제에 실패했습니다.', 'error');
         }
     } catch (err) {
         showToast('서버 오류가 발생했습니다.', 'error');
@@ -631,7 +644,14 @@ window.updateDetailContent = (post, isHomework = false) => {
         delBtn.onclick = async () => {
             if (await showConfirm('이 항목을 영구적으로 삭제하시겠습니까?')) {
                 const endpoint = isHomework ? `/api/homework/${post.id}` : `/api/posts/${post.id}`;
-                const res = await fetch(endpoint, { method: 'DELETE' });
+                const res = await fetch(endpoint, { 
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: state.currentUser?.id,
+                        user_role: state.currentUser?.role
+                    })
+                });
                 if (res.ok) {
                     showToast('삭제되었습니다.');
                     modal.classList.add('hidden');
@@ -729,7 +749,7 @@ window.updateDetailContent = (post, isHomework = false) => {
             list.innerHTML = tasks.length > 0 ? `
                 <div class="space-y-4">
                     ${tasks.map((t, idx) => `
-                        <button onclick="window.toggleHomeworkTask(${post.id}, ${idx}, this)" 
+                        <button onclick="window.toggleHomeworkTask('${post.id}', ${idx}, this)" 
                                 class="w-full flex items-center justify-between p-6 rounded-[2rem] bg-slate-50 border ${myProgress[idx] ? 'border-primary bg-primary/5' : 'border-slate-100'} hover:border-primary/50 transition-all text-left">
                             <div class="flex items-center gap-4">
                                 <div class="size-8 rounded-xl ${myProgress[idx] ? 'bg-primary text-white' : 'bg-white text-slate-300'} border border-slate-100 flex items-center justify-center transition-all">
@@ -763,14 +783,20 @@ window.updateDetailContent = (post, isHomework = false) => {
                 </div>
                 <p class="text-text-main text-sm font-medium whitespace-pre-wrap leading-relaxed">${c.content}</p>
                 <div class="flex gap-4 mt-1 items-center">
-                    <button onclick="window.toggleCommentLike(${post.id}, ${c.id}, this)" class="flex items-center gap-1 ${cLiked ? 'text-red-500' : 'text-slate-400 hover:text-red-400'} transition-colors">
+                    <button onclick="window.toggleCommentLike('${post.id}', '${c.id}', this)" class="flex items-center gap-1 ${cLiked ? 'text-red-500' : 'text-slate-400 hover:text-red-400'} transition-colors">
                         <span class="material-symbols-outlined text-[14px]">${cLiked ? 'favorite' : 'favorite_border'}</span>
                         <span class="text-[10px] font-black">${clikes.length}</span>
                     </button>
                     ${!isReply ? `
-                    <button onclick="window.prepareReply(${post.id}, ${c.id}, '${c.author}')" class="flex items-center gap-1 text-slate-400 hover:text-primary transition-colors">
+                    <button onclick="window.prepareReply('${post.id}', '${c.id}', '${c.author}')" class="flex items-center gap-1 text-slate-400 hover:text-primary transition-colors">
                         <span class="material-symbols-outlined text-[14px]">reply</span>
                         <span class="text-[10px] font-black">답글쓰기</span>
+                    </button>
+                    ` : ''}
+                    ${(isTeacher || (state.currentUser && String(c.author).includes(`#${state.currentUser.id}`))) ? `
+                    <button onclick="window.deleteComment('${post.id}', '${c.id}')" class="flex items-center gap-1 text-slate-400 hover:text-red-500 transition-colors ml-auto">
+                        <span class="material-symbols-outlined text-[14px]">delete</span>
+                        <span class="text-[10px] font-black">삭제</span>
                     </button>
                     ` : ''}
                 </div>
@@ -969,6 +995,44 @@ window.submitComment = async (postId, modalContent = null) => {
         }
     } catch (err) {
         showToast('댓글 등록에 실패했습니다.', 'error');
+    }
+};
+
+window.prepareReply = (postId, commentId, author) => {
+    const input = document.getElementById('detail-comment-input');
+    if (input) {
+        window.currentReplyParentId = commentId;
+        const pureName = author.split(' (#')[0];
+        input.value = `@${pureName} `;
+        input.focus();
+        showToast(`${pureName}님에게 답글을 작성합니다.`);
+    }
+};
+
+window.deleteComment = async (postId, commentId) => {
+    if (!await showConfirm('댓글을 정말 삭제할까요?')) return;
+    try {
+        const res = await fetch(`/api/posts/${postId}/comments/${commentId}`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user_id: state.currentUser?.id,
+                user_role: state.currentUser?.role
+            })
+        });
+        if (res.ok) {
+            showToast('댓글이 삭제되었습니다.');
+            loadPosts();
+            // If in detail, silent update
+            if (window.currentOpenPostId === postId) {
+                const postsRes = await fetch('/api/posts');
+                window.currentPosts = await postsRes.json();
+                const updatedPost = window.currentPosts.find(p => p.id === postId);
+                if (updatedPost) updateDetailContent(updatedPost, window.currentOpenIsHomework);
+            }
+        }
+    } catch (e) {
+        showToast('삭제에 실패했습니다.', 'error');
     }
 };
 
@@ -1239,6 +1303,9 @@ export function initPostForm() {
 setInterval(async () => {
     if (!state.currentUser) return;
     
+    // Optimization: Only poll if window is focused
+    if (!document.hasFocus()) return;
+
     // Skip if typing
     const active = document.activeElement;
     if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
@@ -1268,4 +1335,4 @@ setInterval(async () => {
             }
         }
     } catch (e) {}
-}, 4000);
+}, 15000); // Optimized to 15s

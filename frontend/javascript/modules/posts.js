@@ -275,7 +275,13 @@ export async function loadPosts() {
         if (category === 'homework') {
             const res = await fetch('/api/homework');
             if (!res.ok) throw new Error('서버 응답 오류 (HW)');
-            const hws = await res.json();
+            let hws = await res.json();
+            
+            if (!Array.isArray(hws)) {
+                console.warn('API/HOMEWORK returned non-array:', hws);
+                hws = [];
+            }
+            
             window.currentHomework = hws;
             renderHomework(hws.slice().reverse());
         } else {

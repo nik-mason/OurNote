@@ -1,8 +1,8 @@
 <div id="post-detail-modal" class="fixed inset-0 z-[1500] hidden overflow-hidden">
-    <div class="absolute inset-0 bg-white/20 transition-opacity duration-500 opacity-0 modal-overlay" id="close-post-detail-overlay"></div>
-    <div class="modal-v4 bg-white flex flex-col">
+    <div class="absolute inset-0 bg-surface-light/20 transition-opacity duration-500 opacity-0 modal-overlay" id="close-post-detail-overlay"></div>
+    <div class="modal-v4 bg-surface-light flex flex-col">
         <!-- Sticky Header -->
-        <div class="px-6 pt-8 pb-4 sticky top-0 bg-white/95 backdrop-blur-md z-20 border-b border-slate-100 flex justify-between items-start">
+        <div class="px-6 pt-8 pb-4 sticky top-0 bg-surface-light/95 backdrop-blur-md z-20 border-b border-slate-100 flex justify-between items-start">
             <div class="flex flex-col flex-1 min-w-0 pr-4">
                 <div class="flex items-center gap-2 mb-2">
                     <span id="detail-meta" class="px-2 py-1 bg-primary/10 rounded-lg text-[10px] font-black text-primary uppercase tracking-widest">카테고리 | 날짜</span>
@@ -28,7 +28,7 @@
 
                 <p id="detail-content" class="text-lg text-slate-700 leading-relaxed font-medium whitespace-pre-wrap mb-10 break-words">내용이 표시됩니다.</p>
                 
-                <div id="detail-image-container" class="hidden mb-10 w-full rounded-3xl overflow-hidden border border-slate-100 bg-slate-50 relative flex items-center justify-center shadow-xl shadow-slate-200/50">
+                <div id="detail-image-container" class="hidden mb-10 w-full rounded-3xl overflow-hidden border border-slate-100 bg-background-light relative flex items-center justify-center shadow-xl shadow-slate-200/50">
                      <img id="detail-image" src="" class="max-h-[60vh] object-contain w-full h-full">
                 </div>
                 
@@ -45,10 +45,10 @@
         </div>
         
         <!-- Comment Input Section (Sticky Bottom) -->
-        <div class="p-6 bg-slate-50/80 backdrop-blur-md border-t border-slate-100 z-20 flex gap-4 shrink-0 pb-10 sm:pb-6">
+        <div class="p-6 bg-background-light/80 backdrop-blur-md border-t border-slate-100 z-20 flex gap-4 shrink-0 pb-10 sm:pb-6">
             <div class="max-w-2xl mx-auto w-full flex gap-3">
                 <input type="text" id="detail-comment-input" placeholder="따뜻한 댓글을 남겨주세요..." 
-                       class="flex-1 bg-white border border-slate-200 rounded-2xl px-6 py-4 text-base font-bold text-text-main focus:outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all shadow-sm">
+                       class="flex-1 bg-surface-light border border-slate-200 rounded-2xl px-6 py-4 text-base font-bold text-text-main focus:outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all shadow-sm">
                 <button id="detail-submit-comment" class="size-14 rounded-2xl bg-primary text-white flex items-center justify-center shadow-xl shadow-primary/30 shrink-0 hover:bg-primary-dark hover:scale-105 active:scale-95 transition-all">
                     <span class="material-symbols-outlined text-[28px]">send</span>
                 </button>

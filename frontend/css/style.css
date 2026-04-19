@@ -51,7 +51,7 @@
     --weight-global: normal;
 }
 
-.dark-mode {
+.dark-mode, .dark, [data-theme='dark'] {
     --bg-start: #0f172a;
     --bg-end: #1e293b;
     --bg-deep: #020617;
@@ -60,6 +60,13 @@
     --card-bg: #1e293b;
     --text-white: #f8fafc;
     --text-dim: #94a3b8;
+    --background-light: #020617;
+}
+
+/* 다크모드 강제 배경색 적용 */
+body.dark-mode, body.dark, [data-theme='dark'] body, .dark-mode body, .dark body {
+    background-color: #020617 !important;
+    color: #f1f5f9 !important;
 }
 
 /* 폰트 선택 클래스들 */
@@ -85,14 +92,13 @@
 }
 
 body {
-    background-color: var(--bg-deep);
     color: var(--text-white);
     font-family: var(--font-main);
     font-weight: var(--weight-global);
     overflow-x: hidden !important;
     line-height: 1.6;
     position: relative;
-    transition: background 0.3s, color 0.3s;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 body::before {

@@ -1,8 +1,8 @@
 <div id="write-modal" class="fixed inset-0 z-[1500] hidden overflow-hidden">
-    <div class="absolute inset-0 bg-white/20 transition-opacity duration-500 opacity-0 modal-overlay" id="close-write-modal-overlay"></div>
-    <div class="modal-v4 bg-white flex flex-col">
+    <div class="absolute inset-0 bg-surface-light/20 transition-opacity duration-500 opacity-0 modal-overlay" id="close-write-modal-overlay"></div>
+    <div class="modal-v4 bg-surface-light flex flex-col">
         
-        <div class="px-8 pt-8 pb-4 sticky top-0 bg-white/95 backdrop-blur-md z-20 border-b border-slate-100 flex justify-between items-center shrink-0">
+        <div class="px-8 pt-8 pb-4 sticky top-0 bg-surface-light/95 backdrop-blur-md z-20 border-b border-slate-100 flex justify-between items-center shrink-0">
             <div>
                 <h2 class="text-3xl font-black tracking-tighter italic uppercase text-text-main">새 이야기 작성</h2>
             </div>
@@ -26,7 +26,7 @@
                 <!-- Homework Specific -->
                 <div id="homework-target-container" class="hidden space-y-4">
                     <label class="text-xs font-black text-primary uppercase tracking-[0.3em] ml-1">수신 학생 선택</label>
-                    <div id="student-chips" class="flex flex-wrap gap-2 p-5 bg-slate-50 rounded-2xl border border-slate-100 max-h-40 overflow-y-auto">
+                    <div id="student-chips" class="flex flex-wrap gap-2 p-5 bg-background-light rounded-2xl border border-slate-100 max-h-40 overflow-y-auto">
                         <button type="button" class="stu-chip active px-4 py-2 rounded-xl bg-primary text-white font-bold text-xs" data-value="all">🌍 전체 공개</button>
                     </div>
                     <input type="hidden" id="homework-target-student-val" value="all">
@@ -35,11 +35,11 @@
                 <!-- Inputs -->
                 <div class="space-y-6">
                     <input type="text" id="post-title"
-                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-2xl font-black text-text-main placeholder:text-slate-400 focus:border-primary/40 focus:bg-white focus:ring-4 focus:ring-primary/5 outline-none transition-all shadow-sm"
+                        class="w-full bg-background-light border border-slate-200 rounded-2xl px-6 py-4 text-2xl font-black text-text-main placeholder:text-slate-400 focus:border-primary/40 focus:bg-surface-light focus:ring-4 focus:ring-primary/5 outline-none transition-all shadow-sm"
                         placeholder="제목을 입력하세요">
 
                     <textarea id="post-content" rows="8"
-                        class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-lg text-text-main placeholder:text-slate-400 focus:border-primary/40 focus:bg-white focus:ring-4 focus:ring-primary/5 outline-none transition-all resize-none shadow-sm"
+                        class="w-full bg-background-light border border-slate-200 rounded-2xl px-6 py-4 text-lg text-text-main placeholder:text-slate-400 focus:border-primary/40 focus:bg-surface-light focus:ring-4 focus:ring-primary/5 outline-none transition-all resize-none shadow-sm"
                         placeholder="친구들에게 들려주고 싶은 이야기가 있나요?"></textarea>
                 </div>
 
@@ -47,7 +47,7 @@
                 <div class="space-y-4">
                     <label class="text-xs font-black text-primary uppercase tracking-[0.3em] ml-1">사진 추가</label>
                     <div class="relative group">
-                        <div class="w-full h-40 bg-slate-50 border-2 border-dashed border-slate-200 rounded-3xl flex flex-col items-center justify-center gap-3 hover:border-primary/40 hover:bg-white transition-all cursor-pointer relative overflow-hidden shadow-sm">
+                        <div class="w-full h-40 bg-background-light border-2 border-dashed border-slate-200 rounded-3xl flex flex-col items-center justify-center gap-3 hover:border-primary/40 hover:bg-surface-light transition-all cursor-pointer relative overflow-hidden shadow-sm">
                             <span class="material-symbols-outlined text-4xl text-primary/40 group-hover:text-primary transition-colors">add_photo_alternate</span>
                             <span class="text-sm font-bold text-slate-500">사진 업로드하기</span>
                             <input type="file" id="post-image" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer">
@@ -72,12 +72,12 @@
         </div>
 
         <!-- Action Footer (Sticky Bottom) -->
-        <div class="p-8 bg-white border-t border-slate-100 z-20 flex items-center justify-between shrink-0 pb-12 sm:pb-8">
+        <div class="p-8 bg-surface-light border-t border-slate-100 z-20 flex items-center justify-between shrink-0 pb-12 sm:pb-8">
             <div class="max-w-2xl mx-auto w-full flex items-center justify-between">
                 <div class="flex items-center gap-4">
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="post-anonymous" class="sr-only peer">
-                        <div class="w-14 h-8 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary shadow-inner"></div>
+                        <div class="w-14 h-8 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-surface-light after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary shadow-inner"></div>
                     </label>
                     <span class="text-base font-black text-text-secondary">익명</span>
                 </div>

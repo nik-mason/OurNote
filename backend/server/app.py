@@ -133,13 +133,8 @@ def push_data(filename, data):
 
 @app.route('/api/students', methods=['GET'])
 def get_students():
-    # 학생 데이터는 항상 로컬 JSON 파일에서 직접 읽어서 반환
-    path = os.path.join(BASE_DIR, 'backend', 'data', 'students.json')
-    try:
-        with open(path, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except Exception as e:
-        return {"error": str(e)}, 500
+    return pull_data('students.json')
+
 @app.route('/api/students/pin', methods=['POST'])
 def update_student_pin():
     from flask import request
@@ -147,14 +142,13 @@ def update_student_pin():
     if not data or 'student_id' not in data or 'new_pin' not in data:
         return {"error": "Invalid data"}, 400
         
-    path = os.path.join(BASE_DIR, 'backend', 'data', 'students.json')
     try:
-        with open(path, 'r', encoding='utf-8') as f:
-            students = json.load(f)
+        students = pull_data('students.json')
+        if not students: return {"error": "Failed to load students"}, 500
         
         found = False
         for s in students:
-            if s['id'] == data['student_id']:
+            if s.get('id') == data['student_id']:
                 s['pin'] = data['new_pin']
                 found = True
                 break
@@ -162,14 +156,10 @@ def update_student_pin():
         if not found:
             return {"error": "Student not found"}, 404
             
-        with open(path, 'w', encoding='utf-8') as f:
-            json.dump(students, f, ensure_ascii=False, indent=4)
-        
-        # Also Push to Supabase if available
         push_data('students.json', students)
-        
         return {"success": True}
     except Exception as e:
+        print(f"[ERROR] PIN Update Error: {e}")
         return {"error": str(e)}, 500
 @app.route('/api/teacher', methods=['GET'])
 def get_teacher():

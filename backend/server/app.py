@@ -77,10 +77,19 @@ def pull_data(filename):
         except: pass
     
     path = os.path.join(BASE_DIR, 'backend', 'data', filename)
-    with open(path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-        if db: push_data(filename, data)
-        return data
+    if os.path.exists(path):
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                if db: push_data(filename, data)
+                return data
+        except Exception as e:
+            print(f"Error reading {filename}: {e}")
+            
+    # Default fallbacks based on name
+    if name in ['posts', 'homework', 'categories', 'feedback', 'students']:
+        return []
+    return {}
 
 def push_data(filename, data):
     name = filename.split('.')[0]
@@ -315,57 +324,59 @@ def toggle_like(post_id):
     from flask import request
     data = request.json or {}
     user_id = str(data.get('user_id', 'anon'))
-    posts = pull_data('posts.json')
-    for p in posts:
-        if p['id'] == post_id:
-            if not isinstance(p.get('likes'), list):
-                p['likes'] = []
-            likes = p['likes']
-            if user_id in likes:
-                likes.remove(user_id)
-            else:
-                likes.append(user_id)
-            p['likes'] = likes
-            push_data('posts.json', posts)
-            return {"success": True, "likes": len(likes)}
+    
+    for filename in ['posts.json', 'homework.json']:
+        items = pull_data(filename) or []
+        for p in items:
+            if str(p.get('id', '')) == str(post_id):
+                if not isinstance(p.get('likes'), list):
+                    p['likes'] = []
+                likes = p['likes']
+                if user_id in likes: likes.remove(user_id)
+                else: likes.append(user_id)
+                p['likes'] = likes
+                push_data(filename, items)
+                return {"success": True, "likes": len(likes)}
     return {"error": "Not found"}, 404
 
 @app.route('/api/posts/<int:post_id>/comments', methods=['POST'])
 def add_comment(post_id):
     from flask import request
     data = request.json
-    posts = pull_data('posts.json')
-    for p in posts:
-        if p['id'] == post_id:
-            if 'comments' not in p: p['comments'] = []
-            parent_id = data.get('parent_id')
-            if parent_id:
-                for c in p['comments']:
-                    if str(c.get('id')) == str(parent_id):
-                        if 'replies' not in c: c['replies'] = []
-                        new_reply = {
-                            "id": int(time.time() * 1000),
-                            "author": data.get('author', 'Anonymous'),
-                            "content": data.get('content', ''),
-                            "date": time.strftime('%Y-%m-%d %H:%M'),
-                            "likes": []
-                        }
-                        c['replies'].append(new_reply)
-                        push_data('posts.json', posts)
-                        return {"success": True, "reply": new_reply}
-                return {"error": "Parent not found"}, 404
-            else:
-                new_comment = {
-                    "id": int(time.time() * 1000),
-                    "author": data.get('author', 'Anonymous'),
-                    "content": data.get('content', ''),
-                    "date": time.strftime('%Y-%m-%d %H:%M'),
-                    "replies": [],
-                    "likes": []
-                }
-                p['comments'].append(new_comment)
-                push_data('posts.json', posts)
-                return {"success": True, "comment": new_comment}
+    
+    for filename in ['posts.json', 'homework.json']:
+        items = pull_data(filename) or []
+        for p in items:
+            if str(p.get('id', '')) == str(post_id):
+                if 'comments' not in p: p['comments'] = []
+                parent_id = data.get('parent_id')
+                if parent_id:
+                    for c in p['comments']:
+                        if str(c.get('id')) == str(parent_id):
+                            if 'replies' not in c: c['replies'] = []
+                            new_reply = {
+                                "id": int(time.time() * 1000),
+                                "author": data.get('author', 'Anonymous'),
+                                "content": data.get('content', ''),
+                                "date": time.strftime('%Y-%m-%d %H:%M'),
+                                "likes": []
+                            }
+                            c['replies'].append(new_reply)
+                            push_data(filename, items)
+                            return {"success": True, "reply": new_reply}
+                    return {"error": "Parent not found"}, 404
+                else:
+                    new_comment = {
+                        "id": int(time.time() * 1000),
+                        "author": data.get('author', 'Anonymous'),
+                        "content": data.get('content', ''),
+                        "date": time.strftime('%Y-%m-%d %H:%M'),
+                        "replies": [],
+                        "likes": []
+                    }
+                    p['comments'].append(new_comment)
+                    push_data(filename, items)
+                    return {"success": True, "comment": new_comment}
     return {"error": "Not found"}, 404
 
 @app.route('/api/posts/<int:post_id>/comments/<int:comment_id>/like', methods=['POST'])
@@ -374,27 +385,27 @@ def toggle_comment_like(post_id, comment_id):
     data = request.json or {}
     user_id = str(data.get('user_id', 'anon'))
     
-    posts = pull_data('posts.json')
-    for p in posts:
-        if p['id'] == post_id:
-            for c in p.get('comments', []):
-                if str(c.get('id')) == str(comment_id):
-                    likes = c.get('likes', [])
-                    if user_id in likes: likes.remove(user_id)
-                    else: likes.append(user_id)
-                    c['likes'] = likes
-                    push_data('posts.json', posts)
-                    return {"success": True, "likes": len(likes)}
-                for r in c.get('replies', []):
-                    if str(r.get('id')) == str(comment_id):
-                        likes = r.get('likes', [])
+    for filename in ['posts.json', 'homework.json']:
+        items = pull_data(filename) or []
+        for p in items:
+            if str(p.get('id', '')) == str(post_id):
+                for c in p.get('comments', []):
+                    if str(c.get('id')) == str(comment_id):
+                        likes = c.get('likes', [])
                         if user_id in likes: likes.remove(user_id)
                         else: likes.append(user_id)
-                        r['likes'] = likes
-                        push_data('posts.json', posts)
+                        c['likes'] = likes
+                        push_data(filename, items)
                         return {"success": True, "likes": len(likes)}
-            return {"error": "Comment not found"}, 404
-    return {"error": "Post not found"}, 404
+                    for r in c.get('replies', []):
+                        if str(r.get('id')) == str(comment_id):
+                            likes = r.get('likes', [])
+                            if user_id in likes: likes.remove(user_id)
+                            else: likes.append(user_id)
+                            r['likes'] = likes
+                            push_data(filename, items)
+                            return {"success": True, "likes": len(likes)}
+    return {"error": "Not found"}, 404
 
 @app.route('/api/posts/<post_id>', methods=['DELETE'])
 def delete_post(post_id):

@@ -154,6 +154,7 @@ def get_students():
     return jsonify([])
 
 @app.route('/api/auth/identify', methods=['POST'])
+@app.route('/api/identify', methods=['POST'])
 def identify_student():
     data = request.json
     s_id = str(data.get('id', ''))
@@ -167,6 +168,7 @@ def identify_student():
     return jsonify({"success": False, "error": "학생 정보를 찾을 수 없습니다."}), 404
 
 @app.route('/api/auth/login', methods=['POST'])
+@app.route('/api/login', methods=['POST'])
 def login():
     data = request.json
     login_type = data.get('type') # 'student' or 'teacher'

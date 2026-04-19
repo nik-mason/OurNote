@@ -88,23 +88,21 @@ export function setupModal(modalId, triggerId, closeId) {
     if (!trigger || !modal) return;
 
     trigger.addEventListener('click', (e) => {
-        // Haptic Feedback (Visual + Vibration if supported)
-        if (window.navigator.vibrate) window.navigator.vibrate(10);
-        trigger.style.transform = 'scale(0.9) rotate(-2deg)';
-        setTimeout(() => trigger.style.transform = '', 150);
-
-        // POPUP OPENING
-        modal.classList.remove('hidden');
-        setTimeout(() => {
-            if(overlay) overlay.style.opacity = '1';
-            if(body) body.classList.add('active');
-        }, 10);
+        if (window.navigator.vibrate) window.navigator.vibrate(5);
         
+        modal.classList.remove('hidden');
+        // Force reflow
+        modal.offsetHeight;
+        
+        if (overlay) overlay.style.opacity = '1';
+        if (body) body.classList.add('active');
+        document.body.style.overflow = 'hidden';
     });
     
     const close = () => {
-        if(body) body.classList.remove('active'); 
-        if(overlay) overlay.style.opacity = '0';
+        if (body) body.classList.remove('active'); 
+        if (overlay) overlay.style.opacity = '0';
+        document.body.style.overflow = '';
         setTimeout(() => modal.classList.add('hidden'), 500);
     };
     

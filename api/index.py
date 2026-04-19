@@ -2,6 +2,7 @@ from flask import Flask, send_from_directory, jsonify, request
 import os
 import json
 import time
+import sys
 import traceback
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -20,11 +21,11 @@ def add_cors_headers(response):
 
 @app.errorhandler(Exception)
 def handle_exception(e):
-    print(f"[ERROR] Unhandled exception: {e}")
+    err_msg = f"Unhandled exception: {str(e)}"
+    log_error(err_msg)
     traceback.print_exc()
     response = jsonify({"error": str(e), "success": False})
     response.status_code = 500
-    # 에러 응답에도 CORS 헤더 필수 추가
     response.headers['Access-Control-Allow-Origin'] = '*'
     return response
 
@@ -50,6 +51,23 @@ def api_test():
         "env_keys": list(os.environ.keys()),
         "files": os.listdir(os.path.join(BASE_DIR, 'backend', 'data')) if os.path.exists(os.path.join(BASE_DIR, 'backend', 'data')) else "not found"
     })
+
+# Global error log for debugging
+error_logs = []
+
+@app.route('/api/debug')
+def api_debug():
+    return jsonify({
+        "last_errors": error_logs[-20:],
+        "supabase_connected": bool(get_db()),
+        "base_dir": BASE_DIR,
+        "python_version": sys.version
+    })
+
+def log_error(msg):
+    ts = time.strftime('%Y-%m-%d %H:%M:%S')
+    error_logs.append(f"[{ts}] {msg}")
+    print(f"[DEBUG_LOG] {msg}")
 
 @app.route('/')
 def index():
@@ -187,7 +205,12 @@ def identify_student():
             s_id_str = str(s.get('id', ''))
             
             if s_id_str == s_id and s_name == name:
-                return jsonify({"success": True, "user": {"id": s.get('id'), "name": s.get('name')}})
+                return jsonify({"success": True, "user": {
+                    "id": s.get('id'), 
+                    "name": s.get('name'),
+                    "nickname": s.get('nickname', s.get('name')),
+                    "avatar_seed": s.get('avatar_seed')
+                }})
                 
         # 404 응답에도 CORS 헤더가 필요하므로 명시적 반환
         resp = jsonify({"success": False, "error": "학생 정보를 찾을 수 없습니다."})
@@ -217,7 +240,9 @@ def login():
                 return jsonify({"success": True, "user": {
                     "id": user['id'],
                     "name": user['name'],
-                    "role": "student"
+                    "nickname": user.get('nickname', user['name']),
+                    "role": "student",
+                    "avatar_seed": user.get('avatar_seed')
                 }})
         return jsonify({"success": False, "error": "아이디 또는 비밀번호가 틀렸습니다."}), 401
         
@@ -255,6 +280,48 @@ def update_student_pin():
         return jsonify({"error": "Student not found"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/user/nickname', methods=['POST'])
+def update_nickname():
+    data = request.json
+    uid = str(data.get('user_id', ''))
+    new_nickname = data.get('nickname', '')
+    
+    def update_fn(students):
+        found = False
+        for s in students:
+            if str(s.get('id')) == uid:
+                s['nickname'] = new_nickname
+                found = True
+                break
+        return students if found else None
+
+    if update_data('students.json', update_fn):
+        return jsonify({"success": True})
+    return jsonify({"error": "User not found"}), 404
+
+@app.route('/api/user/avatar', methods=['POST'])
+def update_avatar_url():
+    data = request.json
+    uid = str(data.get('user_id', ''))
+    url = data.get('url', '')
+    
+    def update_fn(students):
+        found = False
+        for s in students:
+            if str(s.get('id')) == uid:
+                s['avatar_url'] = url
+                found = True
+                break
+        return students if found else None
+
+    try:
+        if update_data('students.json', update_fn):
+            return jsonify({"success": True})
+        return jsonify({"success": False, "error": "User not found"}), 404
+    except Exception as e:
+        log_error(f"update_avatar_url error: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
 
 
 @app.route('/api/posts', methods=['GET'])

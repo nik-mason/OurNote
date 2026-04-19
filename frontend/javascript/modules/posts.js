@@ -237,6 +237,29 @@ window.toggleCommentLike = async (postId, commentId, btn) => {
     } catch (err) {}
 };
 
+window.deleteComment = async (postId, commentId) => {
+    const ok = await showConfirm('댓글을 삭제하시겠습니까?', '댓글 삭제');
+    if (!ok) return;
+
+    try {
+        const res = await fetch(`/api/posts/${postId}/comments/${commentId}`, { method: 'DELETE' });
+        if (res.ok) {
+            showToast('댓글이 삭제되었습니다.');
+            // Refresh data silently
+            const isHw = (window.currentHomework || []).some(h => h.id === postId);
+            const postsRes = await fetch(isHw ? '/api/homework' : '/api/posts');
+            const data = await postsRes.json();
+            if (isHw) window.currentHomework = data; else window.currentPosts = data;
+            const updated = data.find(p => p.id === postId);
+            if (updated) updateDetailContent(updated, isHw);
+        } else {
+            showToast('삭제에 실패했습니다.', 'error');
+        }
+    } catch (err) {
+        showToast('서버 오류가 발생했습니다.', 'error');
+    }
+};
+
 export async function loadPosts() {
     const container = document.getElementById('posts-container');
     if (!container) return;
@@ -773,6 +796,12 @@ window.updateDetailContent = (post, isHomework = false) => {
                         <span class="text-[10px] font-black">답글쓰기</span>
                     </button>
                     ` : ''}
+                    ${(state.currentUser?.role === 'teacher' || c.author === state.currentUser?.name) ? `
+                    <button onclick="window.deleteComment(${post.id}, ${c.id})" class="flex items-center gap-1 text-slate-400 hover:text-red-500 transition-colors ml-auto">
+                        <span class="material-symbols-outlined text-[14px]">delete</span>
+                        <span class="text-[10px] font-black">삭제</span>
+                    </button>
+                    ` : ''}
                 </div>
                 ${!isReply && replies.length > 0 ? `
                     <div class="mt-3 space-y-3 border-l-2 border-slate-200">
@@ -1239,9 +1268,12 @@ export function initPostForm() {
 setInterval(async () => {
     if (!state.currentUser) return;
     
-    // Skip if typing
+    // Skip if typing OR if a modal is open to prevent background UI hangs
     const active = document.activeElement;
     if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
+    
+    const isModalOpen = !!document.querySelector('.modal-v4.active') || !document.getElementById('post-detail-modal')?.classList.contains('hidden');
+    if (isModalOpen) return;
 
     try {
         if (state.currentCategory === 'homework') {
@@ -1250,10 +1282,6 @@ setInterval(async () => {
             if (JSON.stringify(hws) !== JSON.stringify(window.currentHomework)) {
                 window.currentHomework = hws;
                 renderHomework(hws.slice().reverse());
-                if (window.currentOpenPostId && window.currentOpenIsHomework) {
-                    const post = hws.find(h => h.id === window.currentOpenPostId);
-                    if (post) updateDetailContent(post, true);
-                }
             }
         } else {
             const res = await fetch('/api/posts');
@@ -1261,11 +1289,7 @@ setInterval(async () => {
             if (JSON.stringify(posts) !== JSON.stringify(window.currentPosts)) {
                 window.currentPosts = posts;
                 renderPosts(posts.slice().reverse());
-                if (window.currentOpenPostId && !window.currentOpenIsHomework) {
-                    const post = posts.find(p => p.id === window.currentOpenPostId);
-                    if (post) updateDetailContent(post, false);
-                }
             }
         }
     } catch (e) {}
-}, 4000);
+}, 20000); // 4초 -> 20초로 변경하여 불필요한 연산 및 네트워크 통신 감소

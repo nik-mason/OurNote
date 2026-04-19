@@ -80,30 +80,55 @@ def get_db():
         print(f"[WARN] Failed to initialize Supabase client: {e}")
         return None
 
+# Simple In-Memory Cache
+_cache = {}
+CACHE_TTL = 10 # seconds
+
 def pull_data(filename):
+    global _cache
     name = filename.split('.')[0]
+    
+    # Check cache first
+    now = time.time()
+    if name in _cache:
+        cached_val, expiry = _cache[name]
+        if now < expiry:
+            return cached_val
+
     db = get_db()
+    data = None
     if db:
         try:
             res = db.table('app_state').select('data').eq('id', name).execute()
             if res.data and len(res.data) > 0:
-                return res.data[0]['data']
+                data = res.data[0]['data']
         except Exception as db_err:
             print(f"[ERROR] pull_data({filename}) Supabase error: {db_err}")
     
-    path = os.path.join(BASE_DIR, 'backend', 'data', filename)
-    if os.path.exists(path):
-        try:
-            with open(path, 'r', encoding='utf-8') as f:
-                return json.load(f)
-        except Exception as e:
-            print(f"[ERROR] pull_data({filename}) local read error: {e}")
-            
-    if name in ['posts', 'homework', 'categories', 'feedback', 'students']: return []
-    return {}
+    if data is None:
+        path = os.path.join(BASE_DIR, 'backend', 'data', filename)
+        if os.path.exists(path):
+            try:
+                with open(path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+            except Exception as e:
+                print(f"[ERROR] pull_data({filename}) local read error: {e}")
+    
+    if data is None:
+        if name in ['posts', 'homework', 'categories', 'feedback', 'students']: data = []
+        else: data = {}
+    
+    # Update cache
+    _cache[name] = (data, now + CACHE_TTL)
+    return data
 
 def push_data(filename, data):
+    global _cache
     name = filename.split('.')[0]
+    # Invalidate cache
+    if name in _cache:
+        del _cache[name]
+    
     db = get_db()
     if db:
         try:
@@ -341,6 +366,40 @@ def toggle_comment_like(post_id, comment_id):
                             push_data(filename, items)
                             return jsonify({"success": True, "likes": len(likes)})
     return jsonify({"error": "Not found"}), 404
+
+@app.route('/api/posts/<int:post_id>/comments/<int:comment_id>', methods=['DELETE'])
+def delete_comment(post_id, comment_id):
+    try:
+        found = False
+        for filename in ['posts.json', 'homework.json']:
+            items = pull_data(filename) or []
+            for p in items:
+                if str(p.get('id', '')) == str(post_id):
+                    # Filter top-level comments
+                    comments = p.get('comments', [])
+                    initial_len = len(comments)
+                    new_comments = [c for c in comments if str(c.get('id')) != str(comment_id)]
+                    
+                    if len(new_comments) < initial_len:
+                        p['comments'] = new_comments
+                        found = True
+                    else:
+                        # Check replies inside each comment
+                        for c in comments:
+                            if 'replies' in c:
+                                replies = c.get('replies', [])
+                                initial_reply_len = len(replies)
+                                c['replies'] = [r for r in replies if str(r.get('id')) != str(comment_id)]
+                                if len(c['replies']) < initial_reply_len:
+                                    found = True
+                                    break
+                    
+                    if found:
+                        push_data(filename, items)
+                        return jsonify({"success": True})
+        return jsonify({"error": "Comment not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/posts/<post_id>', methods=['DELETE'])
 def delete_post(post_id):

@@ -270,21 +270,46 @@ export async function loadPosts() {
         // Render Roadmap first
         renderRoadmap();
 
-        if (state.currentCategory === 'homework') {
+        const category = window.location.hash.replace('#', '') || state.currentCategory || 'dashboard';
+        
+        if (category === 'homework') {
             const res = await fetch('/api/homework');
+            if (!res.ok) throw new Error('서버 응답 오류 (HW)');
             const hws = await res.json();
             window.currentHomework = hws;
             renderHomework(hws.slice().reverse());
         } else {
             const res = await fetch('/api/posts');
-            const posts = await res.json();
+            if (!res.ok) throw new Error('서버 응답 오류 (POSTS)');
+            let posts = await res.json();
+            
+            // Apply category filtering if hash exists
+            if (category !== 'dashboard') {
+                posts = posts.filter(p => p.category === category);
+            }
+            
             window.currentPosts = posts;
             renderPosts(posts.slice().reverse());
         }
     } catch (err) {
-        container.innerHTML = '<div class="col-span-full py-20 text-center text-text-dim text-xl font-bold">데이터를 불러오는 데 실패했습니다.</div>';
+        console.error('Data Load Error:', err);
+        container.innerHTML = `
+            <div class="col-span-full py-20 text-center space-y-4">
+                <div class="size-20 rounded-full bg-red-50 flex items-center justify-center mx-auto text-red-500 mb-4">
+                    <span class="material-symbols-outlined text-4xl">database_off</span>
+                </div>
+                <p class="text-text-main text-xl font-black">데이터를 불러오는 데 실패했습니다.</p>
+                <p class="text-text-secondary text-sm font-bold">네트워크 상태를 확인하거나 잠시 후 다시 시도해주세요.<br>(${err.message})</p>
+                <button onclick="location.reload()" class="px-6 py-2 rounded-xl bg-primary text-white font-black text-sm shadow-lg shadow-primary/20">새로고침</button>
+            </div>
+        `;
     }
 }
+
+// Listen for shortcut-driven hash changes
+window.addEventListener('hashchange', () => {
+    loadPosts();
+});
 
 export function renderRoadmap() {
     const parent = document.getElementById('posts-container')?.parentElement;

@@ -150,8 +150,8 @@ function playPaperPlaneAnimation(onComplete) {
             plane.remove();
             overlay.remove();
             if (onComplete) onComplete();
-        }, 300);
-    }, 1200);
+        }, 200);
+    }, 800);
 }
 
 // ── CSS Keyframes 주입 (한 번만) ──
@@ -1317,18 +1317,22 @@ export function initPostForm() {
             });
 
             if (res.ok) {
-                // ... (생략)
+                // ✈️ Start animation and loading simultaneously for speed
+                const writeModal = document.getElementById('write-modal');
+                if (writeModal) writeModal.classList.add('hidden');
+                
+                playPaperPlaneAnimation(() => {
+                    showToast('이야기가 등록되었습니다! ✈️✨');
+                });
+                
+                // Reset form silently
                 document.getElementById('post-title').value = '';
                 document.getElementById('post-content').value = '';
                 document.getElementById('image-preview').classList.add('hidden');
                 imageInput.value = '';
-
-                const writeModal = document.getElementById('write-modal');
-                playPaperPlaneAnimation(() => {
-                    if (writeModal) writeModal.classList.add('hidden');
-                    showToast('이야기가 등록되었습니다! ✈️✨');
-                    loadPosts();
-                });
+                
+                // Immediate refresh
+                loadPosts();
             } else {
                 const errData = await res.json().catch(() => ({}));
                 showToast(`게시물 등록 실패: ${errData.error || '알 수 없는 오류'}`, 'error');

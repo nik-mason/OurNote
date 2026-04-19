@@ -1295,6 +1295,7 @@ export function initPostForm() {
             const payload = {
                 title, content, category, 
                 author: state.currentUser?.name || 'Anonymous',
+                user_role: state.currentUser?.role || 'student',
                 is_anonymous: isAnonymous,
                 image_url: imageUrl,
                 student_id: state.currentUser?.id || 'anon',
@@ -1309,13 +1310,12 @@ export function initPostForm() {
             });
 
             if (res.ok) {
-                // Reset form
+                // ... (생략)
                 document.getElementById('post-title').value = '';
                 document.getElementById('post-content').value = '';
                 document.getElementById('image-preview').classList.add('hidden');
                 imageInput.value = '';
 
-                // ✈️ 종이 비행기 애니메이션 후 모달 닫기
                 const writeModal = document.getElementById('write-modal');
                 playPaperPlaneAnimation(() => {
                     if (writeModal) writeModal.classList.add('hidden');
@@ -1323,7 +1323,8 @@ export function initPostForm() {
                     loadPosts();
                 });
             } else {
-                showToast('게시물 등록에 실패했습니다.', 'error');
+                const errData = await res.json().catch(() => ({}));
+                showToast(`게시물 등록 실패: ${errData.error || '알 수 없는 오류'}`, 'error');
             }
         } catch (err) {
             showToast('서버 오류가 발생했습니다.', 'error');

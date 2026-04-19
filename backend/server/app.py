@@ -25,6 +25,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__fil
 FRONTEND_DIR = os.path.join(BASE_DIR, 'frontend')
 ASSETS_DIR = os.path.join(BASE_DIR, 'backend', 'assets')
 
+@app.route('/health')
+def health():
+    return jsonify({"status": "ok", "time": time.time()})
+
 @app.route('/')
 def index():
     return send_from_directory(os.path.join(FRONTEND_DIR, 'html'), 'login.html')
@@ -88,28 +92,21 @@ def pull_data(filename):
         try:
             res = db.table('app_state').select('data').eq('id', name).execute()
             if res.data and len(res.data) > 0:
-                print(f"[DEBUG] pull_data({filename}): loaded {len(res.data[0]['data']) if isinstance(res.data[0]['data'], list) else 1} item(s) from Supabase")
+                print(f"[DEBUG] pull_data({filename}): loaded from Supabase")
                 return res.data[0]['data']
-            else:
-                print(f"[DEBUG] pull_data({filename}): no data in Supabase for key '{name}'")
         except Exception as db_err:
             print(f"[ERROR] pull_data({filename}): Supabase error: {db_err}")
-    else:
-        print(f"[WARN] pull_data({filename}): No Supabase connection available")
     
     path = os.path.join(BASE_DIR, 'backend', 'data', filename)
     if os.path.exists(path):
         try:
             with open(path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-                print(f"[DEBUG] pull_data({filename}): loaded from local file")
-                if db: push_data(filename, data)
                 return data
         except Exception as e:
             print(f"[ERROR] pull_data({filename}): local file read error: {e}")
             
-    # Default fallbacks based on name
-    print(f"[WARN] pull_data({filename}): returning empty default")
+    # Default fallbacks
     if name in ['posts', 'homework', 'categories', 'feedback', 'students']:
         return []
     return {}
@@ -124,12 +121,16 @@ def push_data(filename, data):
         except Exception as db_err:
             print(f"[ERROR] push_data({filename}): Supabase error: {db_err}")
     
+    # Skip local write on Vercel (Read-only FS)
+    if os.environ.get('VERCEL'):
+        return
+
     path = os.path.join(BASE_DIR, 'backend', 'data', filename)
     try:
         with open(path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
     except Exception as e:
-        print(f"[WARN] push_data({filename}): local file write failed (expected on Vercel): {e}")
+        print(f"[WARN] push_data({filename}): local file write failed: {e}")
 
 @app.route('/api/students', methods=['GET'])
 def get_students():

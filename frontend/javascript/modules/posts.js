@@ -870,8 +870,10 @@ window.updateDetailContent = (post, isHomework = false) => {
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[20px]">sync</span>';
                 try {
+                    const authorName = state.currentUser?.name || 'Anonymous';
+                    const authorId = state.currentUser?.id || 'anon';
                     const payload = { 
-                        author: state.currentUser?.name || 'Anonymous', 
+                        author: `${authorName} (#${authorId})`, 
                         content: txt 
                     };
                     if (window.currentReplyParentId) payload.parent_id = window.currentReplyParentId;
@@ -1011,11 +1013,13 @@ window.submitComment = async (postId, modalContent = null) => {
     if (!content) return;
     
     try {
+        const authorName = state.currentUser?.name || 'Anonymous';
+        const authorId = state.currentUser?.id || 'anon';
         const res = await fetch(`/api/posts/${postId}/comments`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                author: state.currentUser?.name || 'Anonymous',
+                author: `${authorName} (#${authorId})`,
                 content: content
             })
         });
@@ -1292,13 +1296,16 @@ export function initPostForm() {
             }
 
             const endpoint = category === 'homework' ? '/api/homework' : '/api/posts';
+            const authorName = state.currentUser?.name || 'Anonymous';
+            const authorId = state.currentUser?.id || 'anon';
+            
             const payload = {
                 title, content, category, 
-                author: state.currentUser?.name || 'Anonymous',
+                author: `${authorName} (#${authorId})`,
                 user_role: state.currentUser?.role || 'student',
                 is_anonymous: isAnonymous,
                 image_url: imageUrl,
-                student_id: state.currentUser?.id || 'anon',
+                student_id: authorId,
                 assigned_students: assigned_students,
                 tasks: tasks
             };

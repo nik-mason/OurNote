@@ -140,7 +140,37 @@ def get_students():
             return json.load(f)
     except Exception as e:
         return {"error": str(e)}, 500
-
+@app.route('/api/students/pin', methods=['POST'])
+def update_student_pin():
+    from flask import request
+    data = request.json
+    if not data or 'student_id' not in data or 'new_pin' not in data:
+        return {"error": "Invalid data"}, 400
+        
+    path = os.path.join(BASE_DIR, 'backend', 'data', 'students.json')
+    try:
+        with open(path, 'r', encoding='utf-8') as f:
+            students = json.load(f)
+        
+        found = False
+        for s in students:
+            if s['id'] == data['student_id']:
+                s['pin'] = data['new_pin']
+                found = True
+                break
+        
+        if not found:
+            return {"error": "Student not found"}, 404
+            
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump(students, f, ensure_ascii=False, indent=4)
+        
+        # Also Push to Supabase if available
+        push_data('students.json', students)
+        
+        return {"success": True}
+    except Exception as e:
+        return {"error": str(e)}, 500
 @app.route('/api/teacher', methods=['GET'])
 def get_teacher():
     return pull_data('teacher.json')

@@ -32,11 +32,26 @@ ASSETS_DIR = os.path.join(BASE_DIR, 'backend', 'assets')
 
 @app.route('/health')
 def health():
-    return jsonify({"status": "ok", "time": time.time(), "env": "vercel" if os.environ.get('VERCEL') else "local"})
+    return jsonify({"status": "ok", "version": "4.3", "time": time.time(), "env": "vercel" if os.environ.get('VERCEL') else "local"})
+
+@app.route('/api/test')
+def api_test():
+    url, key = get_supabase_envs()
+    db = get_db()
+    return jsonify({
+        "supabase_url": url[:15] + "..." if url else None,
+        "supabase_key_present": bool(key),
+        "db_connected": bool(db),
+        "base_dir": BASE_DIR,
+        "env_keys": list(os.environ.keys()),
+        "files": os.listdir(os.path.join(BASE_DIR, 'backend', 'data')) if os.path.exists(os.path.join(BASE_DIR, 'backend', 'data')) else "not found"
+    })
 
 @app.route('/')
 def index():
-    return send_from_directory(os.path.join(FRONTEND_DIR, 'html'), 'login.html')
+    resp = send_from_directory(os.path.join(FRONTEND_DIR, 'html'), 'login.html')
+    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    return resp
 
 @app.route('/dashboard')
 def dashboard():
@@ -156,16 +171,19 @@ def get_students():
 @app.route('/api/auth/identify', methods=['POST'])
 @app.route('/api/identify', methods=['POST'])
 def identify_student():
-    data = request.json
-    s_id = str(data.get('id', ''))
-    name = data.get('name', '').replace(' ', '')
-    
-    students = pull_data('students.json') or []
-    for s in students:
-        if str(s.get('id')) == s_id and s.get('name', '').replace(' ', '') == name:
-            return jsonify({"success": True, "user": {"id": s.get('id'), "name": s.get('name')}})
-            
-    return jsonify({"success": False, "error": "학생 정보를 찾을 수 없습니다."}), 404
+    try:
+        data = request.json or {}
+        s_id = str(data.get('id', ''))
+        name = data.get('name', '').replace(' ', '')
+        
+        students = pull_data('students.json') or []
+        for s in students:
+            if str(s.get('id')) == s_id and s.get('name', '').replace(' ', '') == name:
+                return jsonify({"success": True, "user": {"id": s.get('id'), "name": s.get('name')}})
+                
+        return jsonify({"success": False, "error": "학생 정보를 찾을 수 없습니다."}), 404
+    except Exception as e:
+        return jsonify({"error": f"Identify error: {str(e)}"}), 500
 
 @app.route('/api/auth/login', methods=['POST'])
 @app.route('/api/login', methods=['POST'])
@@ -450,8 +468,12 @@ def update_homework_task(hw_id):
                     progress[student_id][task_idx] = is_completed
                     db.table('homework').update({"progress": progress}).eq('id', hw_id).execute()
                     return jsonify({"success": True})
+                return jsonify({"error": "Homework not found in DB"}), 404
         except Exception as e:
             print(f"[ERROR] update homework task in Supabase: {e}")
+            return jsonify({"error": str(e)}), 500
+            
+    return jsonify({"error": "Database offline"}), 503
 
 @app.route('/api/posts/<string:post_id>/comments/<string:comment_id>', methods=['DELETE'])
 def delete_comment(post_id, comment_id):
@@ -753,10 +775,6 @@ def upload_image():
         return jsonify({"success": True, "url": final_url})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
-
-# Vercel entry point
-def handler(event, context):
-    return app(event, context)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

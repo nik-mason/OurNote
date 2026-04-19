@@ -10,6 +10,7 @@ import { initNavigation, setupRoomCreation } from './modules/navigation.js?v=4.3
 import { initWriteModal } from './modules/popups/write-modal.js?v=4.3';
 import { initPostDetailModal } from './modules/popups/post-detail-modal.js?v=4.3';
 import { initSettingsModal } from './modules/popups/settings-modal.js?v=4.3';
+import { initCommandPalette } from './modules/popups/command-palette.js?v=4.3';
 
 // GLOBAL FAILSAFE: Ensure splash disappears even if script fails
 setTimeout(() => {
@@ -29,6 +30,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initSplash();
     initCursor();
     initParticles();
+    initCommandPalette();
     
     // 2. Initialize Auth
     initAuth();
@@ -370,4 +372,34 @@ function initFeedbackLogic() {
             showToast('오늘 하루 동안 알림이 표시되지 않습니다.');
         }
     });
+
+    // ─── EXTRA PREMIUM FEATURES ───
+
+    // 1. Scroll Progress Bar
+    window.addEventListener('scroll', () => {
+        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const scrolled = (winScroll / height) * 100;
+        const bar = document.getElementById('ultra-bar');
+        if (bar) bar.style.width = scrolled + "%";
+    });
+
+    // 2. Magnetic Buttons Interaction
+    const initMagneticButtons = () => {
+        const magnets = document.querySelectorAll('.liquid-btn, .nav-link, .post-cat-chip, #mobile-hamburger, .size-12.rounded-full');
+        magnets.forEach(m => {
+            m.addEventListener('mousemove', (e) => {
+                const rect = m.getBoundingClientRect();
+                const x = e.clientX - rect.left - rect.width / 2;
+                const y = e.clientY - rect.top - rect.height / 2;
+                m.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
+                if (m.classList.contains('nav-link')) m.style.zIndex = "10";
+            });
+            m.addEventListener('mouseleave', () => {
+                m.style.transform = '';
+                m.style.zIndex = "";
+            });
+        });
+    };
+    initMagneticButtons();
 }

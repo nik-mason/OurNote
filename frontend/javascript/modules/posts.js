@@ -241,6 +241,22 @@ export async function loadPosts() {
     const container = document.getElementById('posts-container');
     if (!container) return;
 
+    // Show Skeletons immediately
+    container.innerHTML = Array(6).fill(0).map(() => `
+        <div class="skeleton-card">
+            <div class="skeleton-shimmer"></div>
+            <div class="flex items-center gap-2 mb-4">
+                <div class="skeleton-box w-16 h-4"></div>
+                <div class="skeleton-box w-20 h-4"></div>
+            </div>
+            <div class="skeleton-box w-full h-12 mb-4"></div>
+            <div class="skeleton-box w-3/4 h-8 mb-6"></div>
+            <div class="mt-auto pt-6 border-t border-slate-100/10 flex justify-between">
+                <div class="skeleton-box w-24 h-6"></div>
+                <div class="skeleton-box w-12 h-6"></div>
+            </div>
+        </div>
+    `).join('');
 
     // 학생 이름 캐시 (선생님 숙제 진행도 뷰용)
     if (!window.cachedStudents || window.cachedStudents.length === 0) {
@@ -250,17 +266,71 @@ export async function loadPosts() {
         } catch (e) { window.cachedStudents = []; }
     }
 
-    if (state.currentCategory === 'homework') {
-        const res = await fetch('/api/homework');
-        const hws = await res.json();
-        window.currentHomework = hws; // Cache homework
-        renderHomework(hws.slice().reverse());
-    } else {
-        const res = await fetch('/api/posts');
-        const posts = await res.json();
-        window.currentPosts = posts; // Cache for detail view
-        renderPosts(posts.slice().reverse());
+    try {
+        // Render Roadmap first
+        renderRoadmap();
+
+        if (state.currentCategory === 'homework') {
+            const res = await fetch('/api/homework');
+            const hws = await res.json();
+            window.currentHomework = hws;
+            renderHomework(hws.slice().reverse());
+        } else {
+            const res = await fetch('/api/posts');
+            const posts = await res.json();
+            window.currentPosts = posts;
+            renderPosts(posts.slice().reverse());
+        }
+    } catch (err) {
+        container.innerHTML = '<div class="col-span-full py-20 text-center text-text-dim text-xl font-bold">데이터를 불러오는 데 실패했습니다.</div>';
     }
+}
+
+export function renderRoadmap() {
+    const parent = document.getElementById('posts-container')?.parentElement;
+    if (!parent || state.currentCategory !== 'dashboard') {
+        document.getElementById('roadmap-ui')?.remove();
+        return;
+    }
+
+    if (document.getElementById('roadmap-ui')) return;
+
+    const roadmap = document.createElement('div');
+    roadmap.id = 'roadmap-ui';
+    roadmap.className = 'stagger-item transition-all duration-500';
+    
+    // Calculate stats (Real stats would need synced data, using cached for now)
+    const postCount = window.currentPosts?.length || 0;
+    const hwCount = window.currentHomework?.length || 0;
+    const completedHw = window.currentHomework?.filter(h => {
+        const myId = state.currentUser?.id || 'all';
+        return h.progress?.[myId]?.every(t => t);
+    }).length || 0;
+
+    roadmap.innerHTML = `
+        <div class="roadmap-container mb-12">
+            <div class="stat-item">
+                <span class="text-[10px] font-black uppercase tracking-widest text-text-dim">Our Story</span>
+                <div class="stat-value">${postCount}</div>
+                <p class="text-[10px] font-bold text-slate-400">함께 만든 이야기</p>
+            </div>
+            <div class="stat-item border-l border-slate-100 pl-8">
+                <span class="text-[10px] font-black uppercase tracking-widest text-text-dim">My Growth</span>
+                <div class="stat-value">${completedHw}<span class="text-lg opacity-30">/${hwCount}</span></div>
+                <p class="text-[10px] font-bold text-slate-400">완료한 숙제 지수</p>
+            </div>
+            <div class="stat-item border-l border-slate-100 pl-8 flex justify-center">
+                <div class="size-20 rounded-full border-4 border-primary/20 flex items-center justify-center relative">
+                    <svg class="absolute inset-0 rotate-[-90deg]" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="var(--primary)" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="${283 - (283 * (completedHw / (hwCount || 1)))}" stroke-linecap="round"></circle>
+                    </svg>
+                    <span class="text-xs font-black text-primary">${Math.round((completedHw / (hwCount || 1)) * 100)}%</span>
+                </div>
+            </div>
+        </div>
+    `;
+    const container = document.getElementById('posts-container');
+    container.parentNode.insertBefore(roadmap, container);
 }
 
 export function renderPosts(posts) {
@@ -271,15 +341,29 @@ export function renderPosts(posts) {
     const filtered = state.currentCategory === 'all' ? posts : posts.filter(p => p.category === state.currentCategory);
     
     if (filtered.length === 0) {
-        container.innerHTML = '<div class="col-span-full py-20 text-center text-text-dim text-xl font-bold">작성된 이야기가 없습니다.</div>';
+        const illustrations = {
+            'dashboard': { emoji: '✨', msg: '아직 등록된 이야기가 없어요. 첫 번째 주인공이 되어보세요!' },
+            'notice': { emoji: '📢', msg: '중요한 소식이 들어오면 여기에 나타날 거예요.' },
+            'event': { emoji: '🎉', msg: '즐거운 소식을 준비 중입니다!' },
+            'all': { emoji: '📖', msg: '모든 이야기가 여기에 모입니다.' }
+        };
+        const config = illustrations[state.currentCategory] || { emoji: '🔍', msg: '검색된 결과가 없어요.' };
+        
+        container.innerHTML = `
+            <div class="col-span-full empty-state-v4">
+                <div class="empty-illustration">${config.emoji}</div>
+                <h3 class="text-2xl font-black text-text-main mb-2">${config.msg}</h3>
+                <p class="text-sm text-text-dim font-bold">새로운 소식을 기다리는 중...</p>
+            </div>
+        `;
         return;
     }
 
     filtered.forEach((post, index) => {
         const card = document.createElement('article');
-        // Clean White Card Style
-        card.className = 'group relative w-full ultra-card bg-white border border-slate-100 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-700 overflow-hidden cursor-pointer flex flex-col p-8';
-        card.style.transitionDelay = `${index * 0.03}s`;
+        // Clean White Card Style + Staggered Animation
+        card.className = 'group relative w-full ultra-card stagger-item bg-white border border-slate-100 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-700 overflow-hidden cursor-pointer flex flex-col p-8';
+        card.style.animationDelay = `${index * 0.08}s`;
         
         let displayAuthor = post.author || '익명 사용자';
         if (post.is_anonymous) {
@@ -354,14 +438,20 @@ export function renderHomework(hws) {
     container.innerHTML = '';
     
     if (hws.length === 0) {
-        container.innerHTML = '<div class="col-span-full py-20 text-center text-text-dim text-xl font-bold">등록된 숙제가 없습니다. ✨</div>';
+        container.innerHTML = `
+            <div class="col-span-full empty-state-v4">
+                <div class="empty-illustration">📝</div>
+                <h3 class="text-2xl font-black text-text-main mb-2">등록된 숙제가 없습니다.</h3>
+                <p class="text-sm text-text-dim font-bold">지금은 자유 시간! 멋진 하루를 보내세요. ✨</p>
+            </div>
+        `;
         return;
     }
 
     hws.forEach((hw, index) => {
         const card = document.createElement('article');
-        card.className = 'group relative w-full ultra-card bg-white border border-slate-100 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-700 overflow-hidden cursor-pointer flex flex-col p-8';
-        card.style.transitionDelay = `${index * 0.03}s`;
+        card.className = 'group relative w-full ultra-card stagger-item bg-white border border-slate-100 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-700 overflow-hidden cursor-pointer flex flex-col p-8';
+        card.style.animationDelay = `${index * 0.08}s`;
         
         // Add explicit click handler to the card for better desktop UX
         card.onclick = () => window.openPostDetail(hw.id, true);

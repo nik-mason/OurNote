@@ -11,7 +11,7 @@ export function initSettingsModal() {
     let teacherPwVisible = false;
     let teacherData = null;
 
-    // ─── Theme switching ───
+    // ─── Theme switching (Enhanced with Ink Spill) ───
     const updateThemeUI = (theme) => {
         const isDark = theme === 'dark';
         const checkLight = document.getElementById('check-light');
@@ -37,8 +37,46 @@ export function initSettingsModal() {
         localStorage.setItem('ournote_theme', theme);
     };
 
-    document.getElementById('theme-light-btn')?.addEventListener('click', () => updateThemeUI('white'));
-    document.getElementById('theme-dark-btn')?.addEventListener('click', () => updateThemeUI('dark'));
+    window.toggleThemeFluid = (nextTheme, e) => {
+        const current = localStorage.getItem('ournote_theme') || 'white';
+        if (current === nextTheme) return;
+
+        // 1. Create/Get Ink Spill
+        let spill = document.getElementById('ink-spill');
+        if (!spill) {
+            spill = document.createElement('div');
+            spill.id = 'ink-spill';
+            spill.innerHTML = '<div class="ink-circle"></div>';
+            document.body.appendChild(spill);
+        }
+        const circle = spill.querySelector('.ink-circle');
+
+        // 2. Position Circle
+        const x = e ? e.clientX : window.innerWidth / 2;
+        const y = e ? e.clientY : window.innerHeight / 2;
+        circle.style.left = `${x}px`;
+        circle.style.top = `${y}px`;
+        
+        // Use background color of next theme
+        circle.style.background = nextTheme === 'dark' ? '#0f172a' : '#f8fafc';
+
+        // 3. Animate
+        circle.classList.add('active');
+        
+        setTimeout(() => {
+            updateThemeUI(nextTheme);
+            setTimeout(() => {
+                circle.style.transition = 'none';
+                circle.classList.remove('active');
+                setTimeout(() => {
+                    circle.style.transition = '';
+                }, 50);
+            }, 800);
+        }, 600);
+    };
+
+    document.getElementById('theme-light-btn')?.addEventListener('click', (e) => window.toggleThemeFluid('white', e));
+    document.getElementById('theme-dark-btn')?.addEventListener('click', (e) => window.toggleThemeFluid('dark', e));
 
     // Initialize theme from saved state
     const savedTheme = localStorage.getItem('ournote_theme') || 'white';

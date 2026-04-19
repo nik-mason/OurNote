@@ -81,22 +81,71 @@ export function initParticles() {
 
 export function setupModal(modalId, triggerId, closeId) {
     const modal = document.getElementById(modalId);
+    const trigger = document.getElementById(triggerId);
     const overlay = modal?.querySelector('.modal-overlay') || document.getElementById(`close-${modalId}-overlay`);
     const body = modal?.querySelector('.modal-v4');
     
-    document.getElementById(triggerId)?.addEventListener('click', () => {
+    if (!trigger || !modal) return;
+
+    trigger.addEventListener('click', (e) => {
+        // Haptic Feedback (Visual + Vibration if supported)
+        if (window.navigator.vibrate) window.navigator.vibrate(10);
+        trigger.style.transform = 'scale(0.9) rotate(-2deg)';
+        setTimeout(() => trigger.style.transform = '', 150);
+
         // If it's the hamburger menu, reload as requested by user
         if (triggerId === 'mobile-hamburger') {
             localStorage.setItem('open_menu_on_load', 'true');
             window.location.reload();
             return;
         }
-        modal.classList.remove('hidden');
-        setTimeout(() => { if(overlay) overlay.style.opacity = '1'; if(body) body.classList.add('active'); }, 10);
+
+        // 🟢 MORPHING ANIMATION for Write Modal
+        if (modalId === 'write-modal') {
+            const rect = trigger.getBoundingClientRect();
+            modal.classList.remove('hidden');
+            
+            // Create a temporary morphing element
+            const morph = document.createElement('div');
+            morph.style.cssText = `
+                position: fixed;
+                left: ${rect.left}px; top: ${rect.top}px;
+                width: ${rect.width}px; height: ${rect.height}px;
+                background: var(--primary);
+                border-radius: 1.5rem;
+                z-index: 9999;
+                transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+            `;
+            document.body.appendChild(morph);
+
+            setTimeout(() => {
+                morph.style.left = '50%';
+                morph.style.top = '50%';
+                morph.style.width = '90vw';
+                morph.style.maxWidth = '600px';
+                morph.style.height = '80vh';
+                morph.style.transform = 'translate(-50%, -50%)';
+                morph.style.borderRadius = '2.5rem';
+                morph.style.opacity = '0';
+            }, 10);
+
+            setTimeout(() => {
+                if(overlay) overlay.style.opacity = '1';
+                if(body) body.classList.add('active');
+                setTimeout(() => morph.remove(), 600);
+            }, 400);
+        } else {
+            modal.classList.remove('hidden');
+            setTimeout(() => { 
+                if(overlay) overlay.style.opacity = '1'; 
+                if(body) body.classList.add('active'); 
+            }, 10);
+        }
     });
     
     const close = () => {
-        if(body) body.classList.remove('active'); if(overlay) overlay.style.opacity = '0';
+        if(body) body.classList.remove('active'); 
+        if(overlay) overlay.style.opacity = '0';
         setTimeout(() => modal.classList.add('hidden'), 500);
     };
     

@@ -11,7 +11,7 @@ export function initSettingsModal() {
     let teacherPwVisible = false;
     let teacherData = null;
 
-    // ─── Theme switching (Enhanced with Ink Spill) ───
+    // ─── Theme switching ───
     const updateThemeUI = (theme) => {
         const isDark = theme === 'dark';
         const checkLight = document.getElementById('check-light');
@@ -37,70 +37,60 @@ export function initSettingsModal() {
         localStorage.setItem('ournote_theme', theme);
     };
 
-    window.toggleThemeFluid = (nextTheme, e) => {
+    window.toggleThemeFluid = (nextTheme) => {
         const current = localStorage.getItem('ournote_theme') || 'white';
         if (current === nextTheme) return;
+        updateThemeUI(nextTheme);
+    };
 
-        // 🟢 BLOODY LIQUID SPREAD EFFECT
-        const splashCount = 8;
-        const x = e ? e.clientX : window.innerWidth / 2;
-        const y = e ? e.clientY : window.innerHeight / 2;
-        const color = nextTheme === 'dark' ? '#0f172a' : '#f8fafc';
+    document.getElementById('theme-light-btn')?.addEventListener('click', () => window.toggleThemeFluid('white'));
+    document.getElementById('theme-dark-btn')?.addEventListener('click', () => window.toggleThemeFluid('dark'));
 
-        for (let i = 0; i < splashCount; i++) {
-            const drop = document.createElement('div');
-            drop.className = 'blood-drop';
-            
-            // Randomize organic shape and timing
-            const delay = i * 80;
-            const size = 15 + Math.random() * 20;
-            const tilt = Math.random() * 360;
-            const r1 = 40 + Math.random() * 20;
-            const r2 = 40 + Math.random() * 20;
-            const r3 = 40 + Math.random() * 20;
-            const r4 = 40 + Math.random() * 20;
+    // ─── Font & Typography Logic ───
+    const fonts = ['cafe24', 'nanum', 'jua', 'konkon', 'score'];
+    const updateFontUI = (activeFont) => {
+        document.body.classList.remove(...fonts.map(f => `font-${f}`));
+        document.body.classList.add(`font-${activeFont}`);
+        localStorage.setItem('ournote_font', activeFont || 'cafe24');
+        
+        document.querySelectorAll('.font-select-btn').forEach(btn => {
+            if (btn.dataset.font === activeFont) {
+                btn.classList.add('border-primary', 'bg-primary/5');
+                btn.classList.remove('border-slate-100', 'bg-slate-50');
+            } else {
+                btn.classList.remove('border-primary', 'bg-primary/5');
+                btn.classList.add('border-slate-100', 'bg-slate-50');
+            }
+        });
+    };
 
-            drop.style.cssText = `
-                position: fixed;
-                left: ${x}px; top: ${y}px;
-                width: ${size}px; height: ${size}px;
-                background: ${color};
-                border-radius: ${r1}% ${100-r1}% ${r2}% ${100-r2}% / ${r3}% ${r4}% ${100-r4}% ${100-r3}%;
-                z-index: 10000;
-                transform: translate(-50%, -50%) rotate(${tilt}deg) scale(0);
-                pointer-events: none;
-                transition: transform 1.5s cubic-bezier(0.19, 1, 0.22, 1) ${delay}ms, opacity 1s;
-                opacity: ${1 - (i * 0.05)};
-            `;
-            
-            document.body.appendChild(drop);
+    document.querySelectorAll('.font-select-btn').forEach(btn => {
+        btn.addEventListener('click', () => updateFontUI(btn.dataset.font));
+    });
 
-            requestAnimationFrame(() => {
-                const scale = 300 + (i * 50);
-                drop.style.transform = `translate(-50%, -50%) rotate(${tilt + 20}deg) scale(${scale})`;
-            });
-
-            // Cleanup
-            setTimeout(() => {
-                if (i === splashCount - 1) {
-                    updateThemeUI(nextTheme);
-                    setTimeout(() => {
-                        document.querySelectorAll('.blood-drop').forEach(d => {
-                            d.style.opacity = '0';
-                            setTimeout(() => d.remove(), 1000);
-                        });
-                    }, 500);
-                }
-            }, 1000 + (splashCount * 80));
+    const toggleBold = (force) => {
+        const isBold = force !== undefined ? force : !document.body.classList.contains('global-bold');
+        document.body.classList.toggle('global-bold', isBold);
+        localStorage.setItem('ournote_bold', isBold ? 'true' : 'false');
+        
+        const boldBtn = document.getElementById('toggle-global-bold');
+        if (boldBtn) {
+            boldBtn.classList.toggle('bg-primary', isBold);
+            boldBtn.classList.toggle('text-white', isBold);
+            boldBtn.classList.toggle('border-primary', isBold);
         }
     };
 
-    document.getElementById('theme-light-btn')?.addEventListener('click', (e) => window.toggleThemeFluid('white', e));
-    document.getElementById('theme-dark-btn')?.addEventListener('click', (e) => window.toggleThemeFluid('dark', e));
+    document.getElementById('toggle-global-bold')?.addEventListener('click', () => toggleBold());
 
-    // Initialize theme from saved state
+    // Initialize typography from saved state
     const savedTheme = localStorage.getItem('ournote_theme') || 'white';
+    const savedFont = localStorage.getItem('ournote_font') || 'cafe24';
+    const savedBold = localStorage.getItem('ournote_bold') === 'true';
+    
     updateThemeUI(savedTheme);
+    updateFontUI(savedFont);
+    if (savedBold) toggleBold(true);
 
     // ─── Student PIN change logic ───
     document.getElementById('save-pin-btn')?.addEventListener('click', async () => {

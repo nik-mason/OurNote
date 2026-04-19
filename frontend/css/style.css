@@ -1,14 +1,29 @@
-/* Cafe24 Ssurround Air Font */
+/* ─── FONTS & THEMES ─── */
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic:wght@400;700;800&family=Jua&display=swap');
+
+/* Cafe24 Ssurround Air */
 @font-face {
     font-family: 'Cafe24SsurroundAir';
-    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2105_2@1.0/Cafe24SsurroundAir.woff') format('woff');
+    src: url('https://gcore.jsdelivr.net/gh/projectnoonnu/noonfonts_2105_2@1.0/Cafe24SsurroundAir.woff') format('woff');
     font-weight: normal;
     font-style: normal;
 }
 
-/* ---------------------------------------------------------
-   OURNOTE ULTRA-DESIGN SYSTEM (V4)
---------------------------------------------------------- */
+/* Ongleip Konkon (온글잎 콘콘체) */
+@font-face {
+    font-family: 'OngleipKonkon';
+    src: url('https://gcore.jsdelivr.net/gh/projectnoonnu/noonfonts_2310@1.0/Ownglyph_Konkon-Rg.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* S-Core Dream (에스코어 드림) */
+@font-face {
+    font-family: 'S-CoreDream';
+    src: url('https://gcore.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/S-CoreDream-4Regular.woff') format('woff');
+    font-weight: normal;
+}
+
 :root {
     --bg-start: #f8fafc;
     --bg-end: #ffffff;
@@ -22,12 +37,14 @@
     --card-bg: #ffffff;
     --text-white: #0f172a;
     --text-dim: #64748b;
-    --font-display: 'Cafe24SsurroundAir', sans-serif;
     --sidebar-width: 280px;
     --sidebar-collapsed: 80px;
+    
+    /* Font Selection (Default) */
+    --font-main: 'Cafe24SsurroundAir', sans-serif;
+    --weight-global: normal;
 }
 
-/* Theme overrides */
 .dark-mode {
     --bg-start: #0f172a;
     --bg-end: #1e293b;
@@ -39,51 +56,37 @@
     --text-dim: #94a3b8;
 }
 
-.dark-mode #particle-canvas {
-    background: #020617 !important;
-}
+/* 폰트 선택 클래스들 */
+.font-cafe24 { --font-main: 'Cafe24SsurroundAir', sans-serif; }
+.font-nanum { --font-main: 'Nanum Gothic', sans-serif; }
+.font-jua { --font-main: 'Jua', sans-serif; }
+.font-konkon { --font-main: 'OngleipKonkon', sans-serif; }
+.font-score { --font-main: 'S-CoreDream', sans-serif; }
 
+/* 볼드체 테마 */
+.global-bold { --weight-global: 700; }
+.global-bold * { font-weight: var(--weight-global) !important; }
+.global-bold .material-symbols-outlined, 
+.global-bold i, 
+.global-bold .tab-icon { font-weight: normal !important; }
 
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    -ms-overflow-style: none; /* Hide IE scrollbar */
-    scrollbar-width: none;    /* Hide Firefox scrollbar */
-}
-
-/* Custom Premium Scrollbar */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-}
-.dark-mode ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
-}
-::-webkit-scrollbar-thumb:hover {
-    background: var(--primary);
-}
-
-/* Premium Selection */
-::selection {
-    background: var(--primary);
-    color: white;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
 body {
     background-color: var(--bg-deep);
     color: var(--text-white);
-    font-family: 'Cafe24SsurroundAir', sans-serif;
+    font-family: var(--font-main);
+    font-weight: var(--weight-global);
     overflow-x: hidden !important;
     line-height: 1.6;
     position: relative;
+    transition: background 0.3s, color 0.3s;
 }
 
 body::before {
@@ -97,6 +100,17 @@ body::before {
         radial-gradient(at 100% 100%, rgba(43, 140, 238, 0.05) 0px, transparent 50%),
         radial-gradient(at 0% 100%, rgba(244, 63, 94, 0.03) 0px, transparent 50%);
     pointer-events: none;
+}
+
+/* ─── MODAL POP ANIMATION ─── */
+@keyframes modalPop {
+    0% { transform: translate(-50%, -45%) scale(0.95); opacity: 0; }
+    60% { transform: translate(-50%, -52%) scale(1.02); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+.modal-v4.active {
+    animation: modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
 }
 
 /* Global Theme Overrides for Tailwind Utility Classes */
@@ -859,23 +873,6 @@ button:not(.nav-link) {
     color: #00fff0;
     z-index: -2;
     animation: glitch-offset 1.5s infinite linear alternate;
-}
-
-/* ─── LIQUID / BLOOD SPREAD ANIMATION (Optimized) ─── */
-.blood-drop {
-    filter: blur(1px); /* Reduced blur for performance */
-    will-change: transform; /* Minimized will-change */
-    background: var(--bg-deep); /* Use theme-consistent colors */
-}
-
-@keyframes liquid-wobble-simple {
-    0%, 100% { border-radius: 2.5rem; }
-    50% { border-radius: 2rem 3rem 2.5rem 3.5rem / 2.5rem 2rem 4rem 2.5rem; }
-}
-
-.modal-v4.active {
-    animation: revealIn 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-    /* Infinite wobble removed to prevent high CPU usage on open modal */
 }
 
 /* ─── COMMAND PALETTE (V4) ─── */

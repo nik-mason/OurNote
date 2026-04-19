@@ -93,47 +93,13 @@ export function setupModal(modalId, triggerId, closeId) {
         trigger.style.transform = 'scale(0.9) rotate(-2deg)';
         setTimeout(() => trigger.style.transform = '', 150);
 
-        // 🟢 MORPHING ANIMATION for Write Modal
-        if (modalId === 'write-modal') {
-            const rect = trigger.getBoundingClientRect();
-            modal.classList.remove('hidden');
-            
-            // Create a temporary morphing element
-            const morph = document.createElement('div');
-            morph.style.cssText = `
-                position: fixed;
-                left: ${rect.left}px; top: ${rect.top}px;
-                width: ${rect.width}px; height: ${rect.height}px;
-                background: var(--primary);
-                border-radius: 1.5rem;
-                z-index: 9999;
-                transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-            `;
-            document.body.appendChild(morph);
-
-            setTimeout(() => {
-                morph.style.left = '50%';
-                morph.style.top = '50%';
-                morph.style.width = '90vw';
-                morph.style.maxWidth = '600px';
-                morph.style.height = '80vh';
-                morph.style.transform = 'translate(-50%, -50%)';
-                morph.style.borderRadius = '2.5rem';
-                morph.style.opacity = '0';
-            }, 10);
-
-            setTimeout(() => {
-                if(overlay) overlay.style.opacity = '1';
-                if(body) body.classList.add('active');
-                setTimeout(() => morph.remove(), 600);
-            }, 400);
-        } else {
-            modal.classList.remove('hidden');
-            setTimeout(() => { 
-                if(overlay) overlay.style.opacity = '1'; 
-                if(body) body.classList.add('active'); 
-            }, 10);
-        }
+        // POPUP OPENING
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            if(overlay) overlay.style.opacity = '1';
+            if(body) body.classList.add('active');
+        }, 10);
+        
     });
     
     const close = () => {

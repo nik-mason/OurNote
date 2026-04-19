@@ -85,6 +85,12 @@ export function setupModal(modalId, triggerId, closeId) {
     const body = modal?.querySelector('.modal-v4');
     
     document.getElementById(triggerId)?.addEventListener('click', () => {
+        // If it's the hamburger menu, reload as requested by user
+        if (triggerId === 'mobile-hamburger') {
+            localStorage.setItem('open_menu_on_load', 'true');
+            window.location.reload();
+            return;
+        }
         modal.classList.remove('hidden');
         setTimeout(() => { if(overlay) overlay.style.opacity = '1'; if(body) body.classList.add('active'); }, 10);
     });

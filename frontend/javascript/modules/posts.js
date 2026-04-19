@@ -745,7 +745,15 @@ window.updateDetailContent = (post, isHomework = false) => {
                             }, 50);
                         }
                     } else {
-                        showToast('댓글 등록에 실패했습니다.', 'error');
+                        let errMsg = '댓글 등록에 실패했습니다.';
+                        try {
+                            const errData = await res.json();
+                            console.error('[OurNote] Comment failed:', res.status, errData);
+                            if (errData.error) errMsg = `댓글 등록 실패: ${errData.error}`;
+                        } catch(_) {
+                            console.error('[OurNote] Comment failed:', res.status, res.statusText);
+                        }
+                        showToast(errMsg, 'error');
                     }
                 } catch (err) {
                     showToast('서버 오류가 발생했습니다.', 'error');

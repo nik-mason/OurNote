@@ -1,9 +1,24 @@
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, jsonify
 import os
 import json
 import time
+import traceback
 
 app = Flask(__name__)
+
+# CORS 헤더 자동 추가 (Vercel 환경 대응)
+@app.after_request
+def add_cors_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+    return response
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    print(f"[ERROR] Unhandled exception: {e}")
+    traceback.print_exc()
+    return jsonify({"error": str(e)}), 500
 
 # Base directory for the project
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -73,20 +88,28 @@ def pull_data(filename):
         try:
             res = db.table('app_state').select('data').eq('id', name).execute()
             if res.data and len(res.data) > 0:
+                print(f"[DEBUG] pull_data({filename}): loaded {len(res.data[0]['data']) if isinstance(res.data[0]['data'], list) else 1} item(s) from Supabase")
                 return res.data[0]['data']
-        except: pass
+            else:
+                print(f"[DEBUG] pull_data({filename}): no data in Supabase for key '{name}'")
+        except Exception as db_err:
+            print(f"[ERROR] pull_data({filename}): Supabase error: {db_err}")
+    else:
+        print(f"[WARN] pull_data({filename}): No Supabase connection available")
     
     path = os.path.join(BASE_DIR, 'backend', 'data', filename)
     if os.path.exists(path):
         try:
             with open(path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
+                print(f"[DEBUG] pull_data({filename}): loaded from local file")
                 if db: push_data(filename, data)
                 return data
         except Exception as e:
-            print(f"Error reading {filename}: {e}")
+            print(f"[ERROR] pull_data({filename}): local file read error: {e}")
             
     # Default fallbacks based on name
+    print(f"[WARN] pull_data({filename}): returning empty default")
     if name in ['posts', 'homework', 'categories', 'feedback', 'students']:
         return []
     return {}
@@ -97,13 +120,16 @@ def push_data(filename, data):
     if db:
         try:
             db.table('app_state').upsert({"id": name, "data": data}).execute()
-        except: pass
+            print(f"[DEBUG] push_data({filename}): saved to Supabase")
+        except Exception as db_err:
+            print(f"[ERROR] push_data({filename}): Supabase error: {db_err}")
     
     path = os.path.join(BASE_DIR, 'backend', 'data', filename)
     try:
         with open(path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
-    except: pass
+    except Exception as e:
+        print(f"[WARN] push_data({filename}): local file write failed (expected on Vercel): {e}")
 
 @app.route('/api/students', methods=['GET'])
 def get_students():
@@ -339,45 +365,61 @@ def toggle_like(post_id):
                 return {"success": True, "likes": len(likes)}
     return {"error": "Not found"}, 404
 
-@app.route('/api/posts/<int:post_id>/comments', methods=['POST'])
+@app.route('/api/posts/<int:post_id>/comments', methods=['POST', 'OPTIONS'])
 def add_comment(post_id):
     from flask import request
-    data = request.json
+    if request.method == 'OPTIONS':
+        return jsonify({}), 200
     
-    for filename in ['posts.json', 'homework.json']:
-        items = pull_data(filename) or []
-        for p in items:
-            if str(p.get('id', '')) == str(post_id):
-                if 'comments' not in p: p['comments'] = []
-                parent_id = data.get('parent_id')
-                if parent_id:
-                    for c in p['comments']:
-                        if str(c.get('id')) == str(parent_id):
-                            if 'replies' not in c: c['replies'] = []
-                            new_reply = {
-                                "id": int(time.time() * 1000),
-                                "author": data.get('author', 'Anonymous'),
-                                "content": data.get('content', ''),
-                                "date": time.strftime('%Y-%m-%d %H:%M'),
-                                "likes": []
-                            }
-                            c['replies'].append(new_reply)
-                            push_data(filename, items)
-                            return {"success": True, "reply": new_reply}
-                    return {"error": "Parent not found"}, 404
-                else:
-                    new_comment = {
-                        "id": int(time.time() * 1000),
-                        "author": data.get('author', 'Anonymous'),
-                        "content": data.get('content', ''),
-                        "date": time.strftime('%Y-%m-%d %H:%M'),
-                        "replies": [],
-                        "likes": []
-                    }
-                    p['comments'].append(new_comment)
-                    push_data(filename, items)
-                    return {"success": True, "comment": new_comment}
-    return {"error": "Not found"}, 404
+    try:
+        data = request.json
+        if not data:
+            return jsonify({"error": "No data provided"}), 400
+        
+        print(f"[DEBUG] add_comment called: post_id={post_id}, data={data}")
+        
+        for filename in ['posts.json', 'homework.json']:
+            items = pull_data(filename) or []
+            print(f"[DEBUG] Looking in {filename}: {len(items)} items")
+            for p in items:
+                if str(p.get('id', '')) == str(post_id):
+                    if 'comments' not in p: p['comments'] = []
+                    parent_id = data.get('parent_id')
+                    if parent_id:
+                        for c in p['comments']:
+                            if str(c.get('id')) == str(parent_id):
+                                if 'replies' not in c: c['replies'] = []
+                                new_reply = {
+                                    "id": int(time.time() * 1000),
+                                    "author": data.get('author', 'Anonymous'),
+                                    "content": data.get('content', ''),
+                                    "date": time.strftime('%Y-%m-%d %H:%M'),
+                                    "likes": []
+                                }
+                                c['replies'].append(new_reply)
+                                push_data(filename, items)
+                                return jsonify({"success": True, "reply": new_reply})
+                        return jsonify({"error": "Parent comment not found"}), 404
+                    else:
+                        new_comment = {
+                            "id": int(time.time() * 1000),
+                            "author": data.get('author', 'Anonymous'),
+                            "content": data.get('content', ''),
+                            "date": time.strftime('%Y-%m-%d %H:%M'),
+                            "replies": [],
+                            "likes": []
+                        }
+                        p['comments'].append(new_comment)
+                        push_data(filename, items)
+                        print(f"[DEBUG] Comment added successfully to post {post_id}")
+                        return jsonify({"success": True, "comment": new_comment})
+        
+        print(f"[DEBUG] Post {post_id} not found in any file")
+        return jsonify({"error": f"Post {post_id} not found"}), 404
+    except Exception as e:
+        print(f"[ERROR] add_comment failed: {e}")
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/api/posts/<int:post_id>/comments/<int:comment_id>/like', methods=['POST'])
 def toggle_comment_like(post_id, comment_id):

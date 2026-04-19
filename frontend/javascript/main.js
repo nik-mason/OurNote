@@ -99,7 +99,22 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.querySelectorAll('.hidden-by-role').forEach(el => el.classList.remove('hidden-by-role'));
             document.getElementById('btn-add-room')?.classList.remove('hidden');
             setupModal('room-modal', 'btn-add-room', 'close-room-modal');
-            setupRoomCreation();
+            // setupRoomCreation is already called inside initNavigation()
+        }
+
+        // AUTO-OPEN MOBILE NAV AFTER RELOAD (Requested feature)
+        if (localStorage.getItem('open_menu_on_load')) {
+            localStorage.removeItem('open_menu_on_load');
+            const mobileModal = document.getElementById('mobile-modal');
+            if (mobileModal) {
+                mobileModal.classList.remove('hidden');
+                setTimeout(() => {
+                    const overlay = document.getElementById('close-mobile-modal-overlay');
+                    const body = mobileModal.querySelector('.modal-v4');
+                    if(overlay) overlay.style.opacity = '1';
+                    if(body) body.classList.add('active');
+                }, 100);
+            }
         }
     }
 

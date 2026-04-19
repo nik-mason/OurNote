@@ -145,7 +145,7 @@ export function initAuth() {
                     showToast(result.error || '학생 정보를 찾을 수 없습니다.', 'error');
                 }
             } catch (err) {
-                showToast('서버 연결 오류가 발생했습니다.', 'error');
+                showToast(`서버 연결 실패: ${err.message}`, 'error');
             }
         } else {
             const id = document.getElementById('teacher-id').value.trim();
@@ -177,7 +177,7 @@ export function initAuth() {
                     showToast(result.error || 'ID 또는 비밀번호가 틀렸습니다.', 'error');
                 }
             } catch (err) {
-                showToast('서버 연결 오류가 발생했습니다.', 'error');
+                showToast(`서버 연결 실패: ${err.message}`, 'error');
             }
         }
     });

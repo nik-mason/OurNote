@@ -22,7 +22,11 @@ def add_cors_headers(response):
 def handle_exception(e):
     print(f"[ERROR] Unhandled exception: {e}")
     traceback.print_exc()
-    return jsonify({"error": str(e)}), 500
+    response = jsonify({"error": str(e), "success": False})
+    response.status_code = 500
+    # 에러 응답에도 CORS 헤더 필수 추가
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    return response
 
 # Base directory for the project logic
 # api/index.py -> BASE_DIR is project root
@@ -178,12 +182,19 @@ def identify_student():
         
         students = pull_data('students.json') or []
         for s in students:
-            if str(s.get('id')) == s_id and s.get('name', '').replace(' ', '') == name:
+            # ID와 이름을 더 견고하게 비교 (문자열 변환 및 공백 제거)
+            s_name = str(s.get('name', '')).replace(' ', '')
+            s_id_str = str(s.get('id', ''))
+            
+            if s_id_str == s_id and s_name == name:
                 return jsonify({"success": True, "user": {"id": s.get('id'), "name": s.get('name')}})
                 
-        return jsonify({"success": False, "error": "학생 정보를 찾을 수 없습니다."}), 404
+        # 404 응답에도 CORS 헤더가 필요하므로 명시적 반환
+        resp = jsonify({"success": False, "error": "학생 정보를 찾을 수 없습니다."})
+        resp.status_code = 404
+        return resp
     except Exception as e:
-        return jsonify({"error": f"Identify error: {str(e)}"}), 500
+        return jsonify({"error": f"Identify error: {str(e)}", "success": False}), 500
 
 @app.route('/api/auth/login', methods=['POST'])
 @app.route('/api/login', methods=['POST'])

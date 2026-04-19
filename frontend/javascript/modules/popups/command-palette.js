@@ -11,7 +11,7 @@ export function initCommandPalette() {
                 <div class="palette-input-area">
                     <span class="material-symbols-outlined text-primary">search</span>
                     <input type="text" id="palette-input" placeholder="무엇을 도와드릴까요? (명령어 검색...)" autocomplete="off">
-                    <span class="px-2 py-1 bg-slate-100 rounded text-[10px] font-black text-slate-400">ESC</span>
+                    <span class="px-2 py-1 bg-slate-100 rounded text-[10px] font-black text-slate-400">Ctrl + /</span>
                 </div>
                 <div id="palette-list" class="palette-list">
                     <!-- Dynamic Items -->
@@ -70,9 +70,9 @@ export function initCommandPalette() {
         palette.classList.remove('active');
     };
 
-    // Hotkey: Ctrl + K
+    // Hotkey: Ctrl + / (Changed from Ctrl + K to avoid conflict with QR)
     window.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        if ((e.ctrlKey || e.metaKey) && e.key === '/') {
             e.preventDefault();
             open();
         }

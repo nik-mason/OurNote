@@ -283,9 +283,15 @@ export async function loadPosts() {
             if (!res.ok) throw new Error('서버 응답 오류 (POSTS)');
             let posts = await res.json();
             
+            // Safety Check: Ensure posts is an array
+            if (!Array.isArray(posts)) {
+                console.warn('API/POSTS returned non-array:', posts);
+                posts = [];
+            }
+            
             // Apply category filtering if hash exists
             if (category !== 'dashboard') {
-                posts = posts.filter(p => p.category === category);
+                posts = posts.filter(p => p && p.category === category);
             }
             
             window.currentPosts = posts;

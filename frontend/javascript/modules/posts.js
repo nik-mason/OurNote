@@ -273,7 +273,7 @@ export async function loadPosts() {
         const category = window.location.hash.replace('#', '') || state.currentCategory || 'dashboard';
         
         if (category === 'homework') {
-            const res = await fetch('/api/homework');
+            const res = await fetch(`/api/homework?t=${Date.now()}`);
             if (!res.ok) throw new Error('서버 응답 오류 (HW)');
             let hws = await res.json();
             
@@ -285,7 +285,7 @@ export async function loadPosts() {
             window.currentHomework = hws;
             renderHomework(hws.slice().reverse());
         } else {
-            const res = await fetch('/api/posts');
+            const res = await fetch(`/api/posts?t=${Date.now()}`);
             if (!res.ok) throw new Error('서버 응답 오류 (POSTS)');
             let posts = await res.json();
             
@@ -601,7 +601,13 @@ window.deletePost = async (postId) => {
         });
         if (res.ok) {
             showToast('이야기가 삭제되었습니다.');
-            loadPosts();
+            // 즉각적인 로컬 동기화 (두 번 삭제 방지)
+            if (window.currentPosts) {
+                window.currentPosts = window.currentPosts.filter(p => String(p.id) !== String(postId));
+                renderPosts(window.currentPosts.slice().reverse());
+            }
+            // 약간의 지연 후 서버 데이터 최종 확인 (DB 동기화 대기)
+            setTimeout(() => loadPosts(), 300);
         } else {
             const data = await res.json();
             showToast(data.error || '삭제에 실패했습니다.', 'error');

@@ -2984,3 +2984,27 @@ main#main-area::-webkit-scrollbar-thumb:hover {
     0%, 100% { transform: translateY(0) rotate(5deg); }
     50% { transform: translateY(-15px) rotate(-5deg); }
 }
+
+/* ─── PREMIUM MODAL V4 (Spring-Bounce) ─── */
+.modal-v4 {
+    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-v4.active {
+    animation: modalPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes modalPop {
+    0% {
+        transform: scale(0.85) translateY(30px);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-overlay {
+    transition: opacity 0.5s ease;
+}

@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function loadComponents() {
     const components = [
-        { id: 'modal-container', files: ['settings-modal.html', 'write-modal.html', 'master-modal.html', 'mobile-modal.html', 'system-modals.html', 'confirm-modal.html', 'post-detail-modal.html', 'comment-modal.html', 'qr-modal.html', 'feedback-modal.html'] },
+        { id: 'modal-container', files: ['settings-modal.html', 'write-modal.html', 'password-modal.html', 'hamburger-modal.html', 'master-modal.html', 'mobile-modal.html', 'system-modals.html', 'confirm-modal.html', 'post-detail-modal.html', 'comment-modal.html', 'qr-modal.html', 'feedback-modal.html'] },
         { id: 'security-container', files: ['security-layers.html', 'prank-layers.html'] }
     ];
 

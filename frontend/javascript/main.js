@@ -54,9 +54,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         initProfileModal();
         
         setupModal('profile-modal', 'open-profile-modal', 'close-profile-modal');
-        setupModal('main-nav', 'mobile-hamburger', 'close-mobile-modal');
+        setupModal('main-nav', 'mobile-hamburger', 'close-nav-modal');
+        setupModal('qr-modal', 'open-qr-modal', 'close-qr-modal');
         setupModal('feedback-modal', 'open-feedback-btn', 'close-feedback-modal');
         initFeedbackLogic();
+
+        if (window.updateUserAvatar) window.updateUserAvatar();
 
         // Display user name and set dynamic avatar
         const usernameDisplay = document.getElementById('display-username');
@@ -440,7 +443,40 @@ function initProfileModal() {
     });
 }
 
+window.updateUserAvatar = () => {
+    const user = state.currentUser;
+    if (!user) return;
+    const seed = user.avatar_seed || user.name || 'default';
+    const avatarUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}`;
+    
+    const avatarElements = [
+        document.getElementById('user-avatar'),
+        document.getElementById('modal-user-avatar')
+    ];
+    
+    avatarElements.forEach(el => {
+        if (el) {
+            el.style.backgroundImage = `url("${avatarUrl}")`;
+            el.style.backgroundSize = 'cover';
+            el.style.backgroundPosition = 'center';
+        }
+    });
+};
+
 window.openSettings = () => {
-    const trigger = document.getElementById('open-settings-btn');
+    const trigger = document.getElementById('header-settings-btn');
     if (trigger) trigger.click();
+    else {
+        // Fallback: manually open settings-modal if trigger not found
+        const modal = document.getElementById('settings-modal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                const content = modal.querySelector('.settings-fullscreen');
+                if (content) {
+                    content.classList.remove('translate-y-full', 'opacity-0');
+                }
+            }, 10);
+        }
+    }
 };

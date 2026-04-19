@@ -377,8 +377,9 @@ export function renderPosts(posts) {
         
         // 본인 확인: author 필드에서 ID 추출 (형식: "이름 (#ID)")
         const authorInfo = post.author || '';
-        const authorId = authorInfo.includes('(#') ? authorInfo.split('(#').pop().replace(')', '') : authorInfo;
-        const isOwner = state.currentUser && String(state.currentUser.id) === String(authorId);
+        // 작성자 ID 추출 (예: "홍길동 (#12)" -> "12")
+        const authorId = authorInfo.includes('(#') ? authorInfo.split('(#').pop().split(')')[0].trim() : authorInfo;
+        const isOwner = state.currentUser && (String(state.currentUser.id) === String(authorId) || state.currentUser.name === authorId);
 
         card.innerHTML = `
             <div class="flex items-center justify-between mb-4">

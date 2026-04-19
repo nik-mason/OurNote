@@ -52,20 +52,30 @@
 }
 
 .dark-mode, .dark, [data-theme='dark'] {
-    --bg-start: #0f172a;
-    --bg-end: #1e293b;
+    --bg-start: #020617;
+    --bg-end: #0f172a;
     --bg-deep: #020617;
-    --glass-bg: rgba(15, 23, 42, 0.8);
-    --glass-border: rgba(255, 255, 255, 0.05);
-    --card-bg: #1e293b;
+    --glass-bg: rgba(15, 23, 42, 0.9);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --card-bg: #0f172a;
     --text-white: #f8fafc;
     --text-dim: #94a3b8;
     --background-light: #020617;
+    --surface-light: #0f172a;
+    --text-main: #f1f5f9;
 }
 
-/* 다크모드 강제 배경색 적용 */
-body.dark-mode, body.dark, [data-theme='dark'] body, .dark-mode body, .dark body {
+/* 다크모드 강제 배경 및 텍스트 색상 고정 (Contrast 최우선) */
+html.dark-mode, html.dark, body.dark-mode, body.dark {
     background-color: #020617 !important;
+    color: #f1f5f9 !important;
+}
+
+.dark-mode .bg-white, .dark .bg-white, .dark-mode .bg-surface-light, .dark .bg-surface-light {
+    background-color: #0f172a !important;
+}
+
+.dark-mode .text-text-main, .dark .text-text-main {
     color: #f1f5f9 !important;
 }
 

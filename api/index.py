@@ -474,12 +474,7 @@ def delete_comment(post_id, comment_id):
             print(f"[ERROR] delete comment in Supabase: {e}")
 
     # Fallback to JSON (if needed)
-    return jsonify({"success": True}) # Simplified fallback
-        return hws if found else None
-
-    if update_data('homework.json', update_fn):
-        return jsonify({"success": True})
-    return jsonify({"error": "Not found"}), 404
+    return jsonify({"success": True})
 
 @app.route('/api/homework/<string:hw_id>', methods=['DELETE'])
 def delete_homework(hw_id):

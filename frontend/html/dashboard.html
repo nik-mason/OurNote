@@ -560,5 +560,49 @@
             </div>
         </div>
     </div>
+    <!-- Bottom Navigation (Mobile Only) -->
+    <nav class="fixed bottom-0 left-0 right-0 z-[100] lg:hidden bg-white/80 backdrop-blur-2xl border-t border-slate-100 px-6 py-3 flex items-center justify-between pb-safe">
+        <button class="nav-link flex flex-col items-center gap-1 text-primary" data-cat="dashboard">
+            <span class="material-symbols-outlined text-[24px]">home</span>
+            <span class="text-[10px] font-black uppercase tracking-wider">Home</span>
+        </button>
+        <button class="nav-link flex flex-col items-center gap-1 text-slate-400" data-cat="homework">
+            <span class="material-symbols-outlined text-[24px]">assignment</span>
+            <span class="text-[10px] font-black uppercase tracking-wider">Hw</span>
+        </button>
+        <div class="relative -top-8 size-16 rounded-full bg-primary shadow-xl shadow-primary/40 flex items-center justify-center text-white" onclick="document.getElementById('open-write-modal-sidebar')?.click()">
+            <span class="material-symbols-outlined text-[32px]">add</span>
+        </div>
+        <button class="flex flex-col items-center gap-1 text-slate-400" onclick="window.toggleThemeFluid(localStorage.getItem('ournote_theme') === 'dark' ? 'white' : 'dark')">
+            <span class="material-symbols-outlined text-[24px]">contrast</span>
+            <span class="text-[10px] font-black uppercase tracking-wider">Mode</span>
+        </button>
+        <button class="flex flex-col items-center gap-1 text-slate-400" onclick="document.getElementById('mobile-hamburger')?.click()">
+            <span class="material-symbols-outlined text-[24px]">menu</span>
+            <span class="text-[10px] font-black uppercase tracking-wider">Menu</span>
+        </button>
+    </nav>
+    <!-- Bottom Navigation (Mobile Only) -->
+    <nav class="fixed bottom-0 left-0 right-0 z-[100] lg:hidden bg-white/80 backdrop-blur-2xl border-t border-slate-100 px-6 py-3 flex items-center justify-between pb-safe">
+        <button class="nav-link flex flex-col items-center gap-1 text-primary" data-cat="dashboard">
+            <span class="material-symbols-outlined text-[24px]">home</span>
+            <span class="text-[10px] font-black uppercase tracking-wider">Home</span>
+        </button>
+        <button class="nav-link flex flex-col items-center gap-1 text-slate-400" data-cat="homework">
+            <span class="material-symbols-outlined text-[24px]">assignment</span>
+            <span class="text-[10px] font-black uppercase tracking-wider">Hw</span>
+        </button>
+        <div class="relative -top-8 size-16 rounded-full bg-primary shadow-xl shadow-primary/40 flex items-center justify-center text-white" onclick="document.getElementById('open-write-modal-sidebar')?.click()">
+            <span class="material-symbols-outlined text-[32px]">add</span>
+        </div>
+        <button class="flex flex-col items-center gap-1 text-slate-400" onclick="window.toggleThemeFluid(localStorage.getItem('ournote_theme') === 'dark' ? 'white' : 'dark')">
+            <span class="material-symbols-outlined text-[24px]">contrast</span>
+            <span class="text-[10px] font-black uppercase tracking-wider">Mode</span>
+        </button>
+        <button class="flex flex-col items-center gap-1 text-slate-400" onclick="document.getElementById('mobile-hamburger')?.click()">
+            <span class="material-symbols-outlined text-[24px]">menu</span>
+            <span class="text-[10px] font-black uppercase tracking-wider">Menu</span>
+        </button>
+    </nav>
 </body>
 </html>

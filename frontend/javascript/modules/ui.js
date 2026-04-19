@@ -93,13 +93,6 @@ export function setupModal(modalId, triggerId, closeId) {
         trigger.style.transform = 'scale(0.9) rotate(-2deg)';
         setTimeout(() => trigger.style.transform = '', 150);
 
-        // If it's the hamburger menu, reload as requested by user
-        if (triggerId === 'mobile-hamburger') {
-            localStorage.setItem('open_menu_on_load', 'true');
-            window.location.reload();
-            return;
-        }
-
         // 🟢 MORPHING ANIMATION for Write Modal
         if (modalId === 'write-modal') {
             const rect = trigger.getBoundingClientRect();

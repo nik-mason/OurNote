@@ -1,0 +1,55 @@
+<!-- PIN Code Modal (Premium v4.3) -->
+<div id="pin-modal" class="fixed inset-0 z-[12000] hidden flex items-center justify-center p-4">
+    <div id="close-pin-overlay" class="absolute inset-0 bg-slate-900/60 backdrop-blur-md modal-overlay transition-opacity"></div>
+    
+    <div class="modal-v4 bg-white max-w-sm w-full overflow-hidden flex flex-col shadow-2xl relative z-10 scale-90 opacity-0 transition-all duration-300">
+        <!-- Header -->
+        <div class="p-8 text-center space-y-2 border-b border-slate-50">
+            <div class="size-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mx-auto mb-4">
+                <span class="material-symbols-outlined text-4xl">lock</span>
+            </div>
+            <h2 id="pin-target-name" class="text-xl font-black text-text-main tracking-tight">사용자님, 비밀번호를 입력하세요</h2>
+            <p class="text-[10px] text-text-dim font-bold uppercase tracking-widest">Security Verification Required</p>
+        </div>
+
+        <!-- Body: PIN Display -->
+        <div class="p-10 space-y-10 bg-slate-50/50">
+            <div id="pin-dots" class="flex justify-center gap-4">
+                <div class="pin-dot size-4 rounded-full border-2 border-slate-200 transition-all"></div>
+                <div class="pin-dot size-4 rounded-full border-2 border-slate-200 transition-all"></div>
+                <div class="pin-dot size-4 rounded-full border-2 border-slate-200 transition-all"></div>
+                <div class="pin-dot size-4 rounded-full border-2 border-slate-200 transition-all"></div>
+                <div class="pin-dot size-4 rounded-full border-2 border-slate-200 transition-all"></div>
+                <div class="pin-dot size-4 rounded-full border-2 border-slate-200 transition-all"></div>
+            </div>
+
+            <!-- Hidden Input for Mobile Keyboard -->
+            <input type="password" id="pin-input-real" class="absolute -top-[5000px] left-0 opacity-0 pointer-events-none" maxlength="6" inputmode="numeric">
+
+            <!-- Keypad -->
+            <div class="grid grid-cols-3 gap-3">
+                <button class="keypad-btn h-16 rounded-2xl bg-white border border-slate-100 font-black text-2xl text-text-main hover:bg-slate-50 active:scale-95 transition-all shadow-sm" data-val="1">1</button>
+                <button class="keypad-btn h-16 rounded-2xl bg-white border border-slate-100 font-black text-2xl text-text-main hover:bg-slate-50 active:scale-95 transition-all shadow-sm" data-val="2">2</button>
+                <button class="keypad-btn h-16 rounded-2xl bg-white border border-slate-100 font-black text-2xl text-text-main hover:bg-slate-50 active:scale-95 transition-all shadow-sm" data-val="3">3</button>
+                <button class="keypad-btn h-16 rounded-2xl bg-white border border-slate-100 font-black text-2xl text-text-main hover:bg-slate-50 active:scale-95 transition-all shadow-sm" data-val="4">4</button>
+                <button class="keypad-btn h-16 rounded-2xl bg-white border border-slate-100 font-black text-2xl text-text-main hover:bg-slate-50 active:scale-95 transition-all shadow-sm" data-val="5">5</button>
+                <button class="keypad-btn h-16 rounded-2xl bg-white border border-slate-100 font-black text-2xl text-text-main hover:bg-slate-50 active:scale-95 transition-all shadow-sm" data-val="6">6</button>
+                <button class="keypad-btn h-16 rounded-2xl bg-white border border-slate-100 font-black text-2xl text-text-main hover:bg-slate-50 active:scale-95 transition-all shadow-sm" data-val="7">7</button>
+                <button class="keypad-btn h-16 rounded-2xl bg-white border border-slate-100 font-black text-2xl text-text-main hover:bg-slate-50 active:scale-95 transition-all shadow-sm" data-val="8">8</button>
+                <button class="keypad-btn h-16 rounded-2xl bg-white border border-slate-100 font-black text-2xl text-text-main hover:bg-slate-50 active:scale-95 transition-all shadow-sm" data-val="9">9</button>
+                <button id="pin-clear" class="h-16 rounded-2xl bg-slate-100 text-text-dim hover:text-red-500 transition-all flex items-center justify-center active:scale-95 shadow-sm">
+                    <span class="material-symbols-outlined text-2xl">close</span>
+                </button>
+                <button class="keypad-btn h-16 rounded-2xl bg-white border border-slate-100 font-black text-2xl text-text-main hover:bg-slate-50 active:scale-95 transition-all shadow-sm" data-val="0">0</button>
+                <button id="pin-delete" class="h-16 rounded-2xl bg-slate-100 text-text-dim hover:text-primary transition-all flex items-center justify-center active:scale-95 shadow-sm">
+                    <span class="material-symbols-outlined text-2xl">backspace</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-8 py-6 bg-white border-t border-slate-50 flex justify-center items-center">
+            <button id="close-pin-modal" class="text-xs font-black text-text-dim uppercase tracking-widest hover:text-primary transition-all">취소하고 돌아가기</button>
+        </div>
+    </div>
+</div>

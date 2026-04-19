@@ -2827,3 +2827,146 @@ main#main-area::-webkit-scrollbar-thumb:hover {
 
 .size-14 { width: 3.5rem; height: 3.5rem; }
 .size-16 { width: 4rem; height: 4rem; }
+/* ─── ULTRA V4.3 PREMIUM UI SYSTEM ─── */
+
+:root {
+    --primary-glow: rgba(43, 140, 238, 0.4);
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.3);
+}
+
+.dark-mode {
+    --glass-bg: rgba(15, 23, 42, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.05);
+}
+
+/* ─── MODAL V4 MORPHING ─── */
+.modal-v4 {
+    position: relative;
+    background: var(--glass-bg);
+    backdrop-filter: blur(40px) saturate(200%);
+    border: 1px solid var(--glass-border);
+    border-radius: 2.5rem;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.3);
+    opacity: 0;
+    transform: scale(0.9) translateY(40px);
+    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: transform, opacity;
+}
+
+.modal-v4.active {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+
+.modal-overlay {
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(15px);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+/* ─── SKELETON LOADING ─── */
+.skeleton {
+    background: linear-gradient(90deg, 
+        rgba(0,0,0,0.05) 25%, 
+        rgba(0,0,0,0.1) 50%, 
+        rgba(0,0,0,0.05) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s infinite;
+}
+
+.dark-mode .skeleton {
+    background: linear-gradient(90deg, 
+        rgba(255,255,255,0.03) 25%, 
+        rgba(255,255,255,0.08) 50%, 
+        rgba(255,255,255,0.03) 75%
+    );
+    background-size: 200% 100%;
+}
+
+@keyframes skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ─── STAGGER ENTRANCE ─── */
+.stagger-item {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: staggerReveal 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes staggerReveal {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.stagger-item:nth-child(1) { animation-delay: 0.1s; }
+.stagger-item:nth-child(2) { animation-delay: 0.2s; }
+.stagger-item:nth-child(3) { animation-delay: 0.3s; }
+.stagger-item:nth-child(4) { animation-delay: 0.4s; }
+.stagger-item:nth-child(5) { animation-delay: 0.5s; }
+
+/* ─── SCROLL BAR PREMIUM ─── */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.1);
+    border-radius: 10px;
+    transition: background 0.3s;
+}
+
+.dark-mode::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+}
+
+/* ─── SELECTION ─── */
+::selection {
+    background: var(--primary);
+    color: white;
+}
+
+/* ─── CUSTOM UTILS ─── */
+.pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+#ultra-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 3px;
+    background: var(--primary);
+    z-index: 10000;
+    width: 0%;
+    transition: width 0.1s ease-out;
+    box-shadow: 0 0 10px var(--primary-glow);
+}
+
+@keyframes revealIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes float3D {
+    0%, 100% { transform: translateY(0) rotate(5deg); }
+    50% { transform: translateY(-15px) rotate(-5deg); }
+}

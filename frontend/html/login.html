@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OurNote - 로그인</title>
-    <link rel="stylesheet" href="/frontend/css/style.css">
+    <link rel="stylesheet" href="/frontend/css/style.css?v=4.3">
     <link rel="icon" type="image/png" href="/assets/logo.png">
     <link rel="manifest" href="/frontend/manifest.json">
     <!-- Legacy Fonts Removed -->
@@ -212,6 +212,9 @@
             </div>
         </div>
     </section>
+    <div class="text-center pb-8 opacity-20 hover:opacity-100 transition-opacity">
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-[4px]">OurNote v4.3 Ultra-Premium Edition</p>
+    </div>
     <script>
         fetch('/api/rules')
             .then(r => r.json())
@@ -287,7 +290,7 @@
 
     <div id="toast-container" class="fixed bottom-10 right-10 z-[300] flex flex-col gap-4"></div>
 
-    <script type="module" src="/frontend/javascript/main.js"></script>
+    <script type="module" src="/frontend/javascript/main.js?v=4.3"></script>
 </body>
 
 

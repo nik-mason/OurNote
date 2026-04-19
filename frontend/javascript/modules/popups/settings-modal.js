@@ -41,38 +41,58 @@ export function initSettingsModal() {
         const current = localStorage.getItem('ournote_theme') || 'white';
         if (current === nextTheme) return;
 
-        // 1. Create/Get Ink Spill
-        let spill = document.getElementById('ink-spill');
-        if (!spill) {
-            spill = document.createElement('div');
-            spill.id = 'ink-spill';
-            spill.innerHTML = '<div class="ink-circle"></div>';
-            document.body.appendChild(spill);
-        }
-        const circle = spill.querySelector('.ink-circle');
-
-        // 2. Position Circle
+        // 🟢 BLOODY LIQUID SPREAD EFFECT
+        const splashCount = 8;
         const x = e ? e.clientX : window.innerWidth / 2;
         const y = e ? e.clientY : window.innerHeight / 2;
-        circle.style.left = `${x}px`;
-        circle.style.top = `${y}px`;
-        
-        // Use background color of next theme
-        circle.style.background = nextTheme === 'dark' ? '#0f172a' : '#f8fafc';
+        const color = nextTheme === 'dark' ? '#0f172a' : '#f8fafc';
 
-        // 3. Animate
-        circle.classList.add('active');
-        
-        setTimeout(() => {
-            updateThemeUI(nextTheme);
+        for (let i = 0; i < splashCount; i++) {
+            const drop = document.createElement('div');
+            drop.className = 'blood-drop';
+            
+            // Randomize organic shape and timing
+            const delay = i * 80;
+            const size = 15 + Math.random() * 20;
+            const tilt = Math.random() * 360;
+            const r1 = 40 + Math.random() * 20;
+            const r2 = 40 + Math.random() * 20;
+            const r3 = 40 + Math.random() * 20;
+            const r4 = 40 + Math.random() * 20;
+
+            drop.style.cssText = `
+                position: fixed;
+                left: ${x}px; top: ${y}px;
+                width: ${size}px; height: ${size}px;
+                background: ${color};
+                border-radius: ${r1}% ${100-r1}% ${r2}% ${100-r2}% / ${r3}% ${r4}% ${100-r4}% ${100-r3}%;
+                z-index: 10000;
+                transform: translate(-50%, -50%) rotate(${tilt}deg) scale(0);
+                pointer-events: none;
+                transition: transform 1.5s cubic-bezier(0.19, 1, 0.22, 1) ${delay}ms, opacity 1s;
+                opacity: ${1 - (i * 0.05)};
+            `;
+            
+            document.body.appendChild(drop);
+
+            requestAnimationFrame(() => {
+                const scale = 300 + (i * 50);
+                drop.style.transform = `translate(-50%, -50%) rotate(${tilt + 20}deg) scale(${scale})`;
+            });
+
+            // Cleanup
             setTimeout(() => {
-                circle.style.transition = 'none';
-                circle.classList.remove('active');
-                setTimeout(() => {
-                    circle.style.transition = '';
-                }, 50);
-            }, 800);
-        }, 600);
+                if (i === splashCount - 1) {
+                    updateThemeUI(nextTheme);
+                    setTimeout(() => {
+                        document.querySelectorAll('.blood-drop').forEach(d => {
+                            d.style.opacity = '0';
+                            setTimeout(() => d.remove(), 1000);
+                        });
+                    }, 500);
+                }
+            }, 1000 + (splashCount * 80));
+        }
     };
 
     document.getElementById('theme-light-btn')?.addEventListener('click', (e) => window.toggleThemeFluid('white', e));

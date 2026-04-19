@@ -861,6 +861,20 @@ button:not(.nav-link) {
     animation: glitch-offset 1.5s infinite linear alternate;
 }
 
+/* ─── LIQUID / BLOOD SPREAD ANIMATION ─── */
+.blood-drop {
+    filter: blur(2px) contrast(1.2);
+    will-change: transform, opacity;
+}
+
+@keyframes liquid-wobble {
+    0% { border-radius: 50%; }
+    25% { border-radius: 40% 60% 60% 40% / 40% 40% 60% 60%; }
+    50% { border-radius: 30% 70% 50% 50% / 50% 30% 70% 50%; }
+    75% { border-radius: 60% 40% 30% 70% / 60% 70% 30% 40%; }
+    100% { border-radius: 50%; }
+}
+
 /* ─── COMMAND PALETTE (V4) ─── */
 #command-palette {
     position: fixed;

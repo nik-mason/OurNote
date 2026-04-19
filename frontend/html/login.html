@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OurNote - 로그인</title>
+    <title>OurNote v4.3 - 로그인</title>
     <link rel="stylesheet" href="/frontend/css/style.css?v=4.3">
     <link rel="icon" type="image/png" href="/assets/logo.png">
-    <link rel="manifest" href="/frontend/manifest.json">
+    <link rel="manifest" href="/frontend/manifest.json?v=4.3">
     <!-- Legacy Fonts Removed -->
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
         rel="stylesheet">
@@ -18,12 +18,12 @@
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#2b8cee",
-                        "primary-dark": "#1a6bbd",
-                        "accent": "#f43f5e",
-                        "background-light": "#f8fafc",
-                        "surface-light": "#ffffff",
-                        "text-main": "#0f172a",
+                        "primary": "var(--primary)",
+                        "primary-dark": "var(--primary-dark)",
+                        "accent": "var(--accent)",
+                        "background-light": "var(--background-light)",
+                        "surface-light": "var(--surface-light)",
+                        "text-main": "var(--text-main)",
                     },
                     fontFamily: {
                         "sans": ["Cafe24SsurroundAir", "sans-serif"],
@@ -82,6 +82,16 @@
             }, 3000); // 3s failsafe
         });
     </script>
+    <style>
+        /* 다크모드 강제 스타일 */
+        .dark-mode, .dark {
+            background-color: #020617 !important;
+            color: #f1f5f9 !important;
+        }
+        .dark-mode .bg-background-light, .dark .bg-background-light {
+            background-color: #020617 !important;
+        }
+    </style>
 </head>
 
 <body class="overflow-x-hidden font-body bg-background-light dark:bg-slate-900 transition-colors duration-300">
@@ -111,7 +121,7 @@
             <h1 class="text-4xl font-black text-primary tracking-tighter mb-2">OURNOTE</h1>
             <h2 class="text-2xl font-bold text-text-main dark:text-white mb-6">천사반</h2>
             
-            <p class="text-text-secondary tracking-[10px] text-[10px] font-black uppercase opacity-70">Angel Ed. v4.2 Ultra</p>
+            <p class="text-text-secondary tracking-[10px] text-[10px] font-black uppercase opacity-70">Angel Ed. v4.3 Premium</p>
         </div>
     </div>
 

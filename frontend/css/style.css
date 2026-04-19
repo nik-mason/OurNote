@@ -28,10 +28,16 @@
     --bg-start: #f8fafc;
     --bg-end: #ffffff;
     --bg-deep: #f8fafc;
-    --primary: #2b8cee;
+    --primary: #2b8ce6;
+    --primary-dark: #1e70bd;
     --primary-glow: rgba(43, 140, 238, 0.1);
     --accent: #f43f5e;
     --accent-glow: rgba(244, 63, 94, 0.1);
+    --background-light: #f8fafc;
+    --surface-light: #ffffff;
+    --text-main: #0f172a;
+    --text-secondary: #64748b;
+    --text-dim: #94a3b8;
     --glass-bg: rgba(255, 255, 255, 0.8);
     --glass-border: rgba(0, 0, 0, 0.05);
     --card-bg: #ffffff;
@@ -45,15 +51,32 @@
     --weight-global: normal;
 }
 
-.dark-mode {
-    --bg-start: #0f172a;
-    --bg-end: #1e293b;
+.dark-mode, .dark, [data-theme='dark'] {
+    --bg-start: #020617;
+    --bg-end: #0f172a;
     --bg-deep: #020617;
-    --glass-bg: rgba(15, 23, 42, 0.8);
-    --glass-border: rgba(255, 255, 255, 0.05);
-    --card-bg: #1e293b;
+    --glass-bg: rgba(15, 23, 42, 0.9);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --card-bg: #0f172a;
     --text-white: #f8fafc;
     --text-dim: #94a3b8;
+    --background-light: #020617;
+    --surface-light: #0f172a;
+    --text-main: #f1f5f9;
+}
+
+/* 다크모드 강제 배경 및 텍스트 색상 고정 (Contrast 최우선) */
+html.dark-mode, html.dark, body.dark-mode, body.dark {
+    background-color: #020617 !important;
+    color: #f1f5f9 !important;
+}
+
+.dark-mode .bg-white, .dark .bg-white, .dark-mode .bg-surface-light, .dark .bg-surface-light {
+    background-color: #0f172a !important;
+}
+
+.dark-mode .text-text-main, .dark .text-text-main {
+    color: #f1f5f9 !important;
 }
 
 /* 폰트 선택 클래스들 */
@@ -79,14 +102,13 @@
 }
 
 body {
-    background-color: var(--bg-deep);
     color: var(--text-white);
     font-family: var(--font-main);
     font-weight: var(--weight-global);
     overflow-x: hidden !important;
     line-height: 1.6;
     position: relative;
-    transition: background 0.3s, color 0.3s;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 body::before {
@@ -102,15 +124,31 @@ body::before {
     pointer-events: none;
 }
 
-/* ─── MODAL POP ANIMATION ─── */
-@keyframes modalPop {
-    0% { transform: translate(-50%, -45%) scale(0.95); opacity: 0; }
-    60% { transform: translate(-50%, -52%) scale(1.02); opacity: 1; }
-    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+/* ─── MODAL FULLSCREEN ANIMATION ─── */
+@keyframes modalSlideUp {
+    0% { transform: translateY(100%); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+.modal-v4 {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--card-bg);
+    z-index: 1000;
+    overflow-y: auto;
+    transform: translateY(100%);
+    opacity: 0;
+    transition: all 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+    border-radius: 0; /* Fullscreen usually has no radius */
 }
 
 .modal-v4.active {
-    animation: modalPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards !important;
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+    animation: none !important; /* Use transition for smoother feel */
 }
 
 /* Global Theme Overrides for Tailwind Utility Classes */
@@ -603,13 +641,12 @@ body::before {
 }
 
 .modal-v4 {
-    transform: perspective(1000px) rotateX(10deg) scale(0.9);
+    transform: translateY(100%);
     opacity: 0;
-    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .modal-v4.active {
-    transform: perspective(1000px) rotateX(0deg) scale(1);
+    transform: translateY(0);
     opacity: 1;
 }
 
@@ -2987,11 +3024,29 @@ main#main-area::-webkit-scrollbar-thumb:hover {
 
 /* ─── PREMIUM MODAL V4 (Spring-Bounce) ─── */
 .modal-v4 {
-    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: translateY(20px) scale(0.95);
+    opacity: 0;
 }
 
 .modal-v4.active {
-    animation: modalPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}
+
+/* Full Screen Modal Override */
+.modal-v4.full-screen {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+    transform: translateY(100%) scale(1);
+    opacity: 1;
+}
+
+.modal-v4.full-screen.active {
+    transform: translateY(0) scale(1);
 }
 
 @keyframes modalPop {
@@ -3007,4 +3062,19 @@ main#main-area::-webkit-scrollbar-thumb:hover {
 
 .modal-overlay {
     transition: opacity 0.5s ease;
+}
+
+/* Custom Scrollbar for Premium Feel */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.1);
+    border-radius: 10px;
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
 }

@@ -2,7 +2,12 @@ from flask import Flask, send_from_directory, jsonify, request
 import os
 import json
 import time
+import sys
 import traceback
+from werkzeug.security import generate_password_hash, check_password_hash
+
+import threading
+import uuid
 
 app = Flask(__name__)
 
@@ -16,9 +21,13 @@ def add_cors_headers(response):
 
 @app.errorhandler(Exception)
 def handle_exception(e):
-    print(f"[ERROR] Unhandled exception: {e}")
+    err_msg = f"Unhandled exception: {str(e)}"
+    log_error(err_msg)
     traceback.print_exc()
-    return jsonify({"error": str(e)}), 500
+    response = jsonify({"error": str(e), "success": False})
+    response.status_code = 500
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    return response
 
 # Base directory for the project logic
 # api/index.py -> BASE_DIR is project root
@@ -28,11 +37,43 @@ ASSETS_DIR = os.path.join(BASE_DIR, 'backend', 'assets')
 
 @app.route('/health')
 def health():
-    return jsonify({"status": "ok", "time": time.time(), "env": "vercel" if os.environ.get('VERCEL') else "local"})
+    return jsonify({"status": "ok", "version": "4.3", "time": time.time(), "env": "vercel" if os.environ.get('VERCEL') else "local"})
+
+@app.route('/api/test')
+def api_test():
+    url, key = get_supabase_envs()
+    db = get_db()
+    return jsonify({
+        "supabase_url": url[:15] + "..." if url else None,
+        "supabase_key_present": bool(key),
+        "db_connected": bool(db),
+        "base_dir": BASE_DIR,
+        "env_keys": list(os.environ.keys()),
+        "files": os.listdir(os.path.join(BASE_DIR, 'backend', 'data')) if os.path.exists(os.path.join(BASE_DIR, 'backend', 'data')) else "not found"
+    })
+
+# Global error log for debugging
+error_logs = []
+
+@app.route('/api/debug')
+def api_debug():
+    return jsonify({
+        "last_errors": error_logs[-20:],
+        "supabase_connected": bool(get_db()),
+        "base_dir": BASE_DIR,
+        "python_version": sys.version
+    })
+
+def log_error(msg):
+    ts = time.strftime('%Y-%m-%d %H:%M:%S')
+    error_logs.append(f"[{ts}] {msg}")
+    print(f"[DEBUG_LOG] {msg}")
 
 @app.route('/')
 def index():
-    return send_from_directory(os.path.join(FRONTEND_DIR, 'html'), 'login.html')
+    resp = send_from_directory(os.path.join(FRONTEND_DIR, 'html'), 'login.html')
+    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    return resp
 
 @app.route('/dashboard')
 def dashboard():
@@ -122,6 +163,23 @@ def pull_data(filename):
     _cache[name] = (data, now + CACHE_TTL)
     return data
 
+# --- Data Concurrency Handling ---
+data_lock = threading.Lock()
+
+def update_data(filename, update_fn):
+    """
+    Atomically updates data by locking, pulling, applying update_fn, and pushing.
+    This prevents race conditions within a single server process.
+    """
+    with data_lock:
+        data = pull_data(filename)
+        # update_fn should return the modified data if changes were made, or None/False to skip push
+        new_data = update_fn(data)
+        if new_data is not None:
+            push_data(filename, new_data)
+            return new_data
+        return None
+
 def push_data(filename, data):
     global _cache
     name = filename.split('.')[0]
@@ -140,6 +198,8 @@ def push_data(filename, data):
 
     path = os.path.join(BASE_DIR, 'backend', 'data', filename)
     try:
+        # Ensure directory exists
+        os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=4)
     except Exception as e:
@@ -148,7 +208,82 @@ def push_data(filename, data):
 # --- API Endpoints ---
 @app.route('/api/students', methods=['GET'])
 def get_students():
-    return pull_data('students.json')
+    # 보안: 일반 학생은 전체 명단을 볼 필요가 없음 (선생님만 보거나, 아이디 제외하고 이름만 노출)
+    students = pull_data('students.json')
+    if isinstance(students, list):
+        # 이름만 노출하여 최소한의 정보만 제공
+        return jsonify([{"name": s.get('name')} for s in students])
+    return jsonify([])
+
+@app.route('/api/auth/identify', methods=['POST'])
+@app.route('/api/identify', methods=['POST'])
+def identify_student():
+    try:
+        data = request.json or {}
+        s_id = str(data.get('id', ''))
+        name = data.get('name', '').replace(' ', '')
+        
+        students = pull_data('students.json') or []
+        for s in students:
+            # ID와 이름을 더 견고하게 비교 (문자열 변환 및 공백 제거)
+            s_name = str(s.get('name', '')).replace(' ', '')
+            s_id_str = str(s.get('id', ''))
+            
+            if s_id_str == s_id and s_name == name:
+                return jsonify({"success": True, "user": {
+                    "id": s.get('id'), 
+                    "name": s.get('name'),
+                    "nickname": s.get('nickname', s.get('name')),
+                    "avatar_seed": s.get('avatar_seed')
+                }})
+                
+        # 404 응답에도 CORS 헤더가 필요하므로 명시적 반환
+        resp = jsonify({"success": False, "error": "학생 정보를 찾을 수 없습니다."})
+        resp.status_code = 404
+        return resp
+    except Exception as e:
+        return jsonify({"error": f"Identify error: {str(e)}", "success": False}), 500
+
+@app.route('/api/auth/login', methods=['POST'])
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.json
+    login_type = data.get('type') # 'student' or 'teacher'
+    
+    if login_type == 'student':
+        sid = data.get('id')
+        pin = data.get('pin')
+        students = pull_data('students.json')
+        user = next((s for s in students if str(s.get('id')) == str(sid)), None)
+        
+        if user:
+            # 기존 평문 PIN과 새로운 해시 PIN 모두 대응 (이주 기간용)
+            stored_pin = str(user.get('pin', ''))
+            is_valid = (pin == stored_pin) or (stored_pin.startswith('pbkdf2:') and check_password_hash(stored_pin, pin))
+            
+            if is_valid:
+                return jsonify({"success": True, "user": {
+                    "id": user['id'],
+                    "name": user['name'],
+                    "nickname": user.get('nickname', user['name']),
+                    "role": "student",
+                    "avatar_seed": user.get('avatar_seed')
+                }})
+        return jsonify({"success": False, "error": "아이디 또는 비밀번호가 틀렸습니다."}), 401
+        
+    elif login_type == 'teacher':
+        username = data.get('id')
+        password = data.get('password')
+        teacher = pull_data('teacher.json')
+        
+        if teacher.get('username') == username and teacher.get('password') == password:
+            return jsonify({"success": True, "user": {
+                "name": "선생님",
+                "role": "teacher"
+            }})
+        return jsonify({"success": False, "error": "ID 또는 비밀번호가 틀렸습니다."}), 401
+    
+    return jsonify({"success": False, "error": "잘못된 로그인 요청입니다."}), 400
 
 @app.route('/api/students/pin', methods=['POST'])
 def update_student_pin():
@@ -160,7 +295,8 @@ def update_student_pin():
         found = False
         for s in students:
             if str(s.get('id', '')) == str(sid):
-                s['pin'] = new_pin
+                # 보안: PIN을 해시(암호화)하여 저장
+                s['pin'] = generate_password_hash(new_pin)
                 found = True
                 break
         if found:
@@ -170,12 +306,78 @@ def update_student_pin():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/teacher', methods=['GET'])
-def get_teacher():
-    return jsonify(pull_data('teacher.json'))
+@app.route('/api/user/nickname', methods=['POST'])
+def update_nickname():
+    data = request.json
+    uid = str(data.get('user_id', ''))
+    new_nickname = data.get('nickname', '')
+    
+    def update_fn(students):
+        found = False
+        for s in students:
+            if str(s.get('id')) == uid:
+                s['nickname'] = new_nickname
+                found = True
+                break
+        return students if found else None
+
+    if update_data('students.json', update_fn):
+        return jsonify({"success": True})
+    return jsonify({"error": "User not found"}), 404
+
+@app.route('/api/user/avatar', methods=['POST'])
+def update_avatar_url():
+    data = request.json
+    uid = str(data.get('user_id', ''))
+    url = data.get('url', '')
+    
+    def update_fn(students):
+        found = False
+        for s in students:
+            if str(s.get('id')) == uid:
+                s['avatar_url'] = url
+                found = True
+                break
+        return students if found else None
+
+    try:
+        if update_data('students.json', update_fn):
+            return jsonify({"success": True})
+        return jsonify({"success": False, "error": "User not found"}), 404
+    except Exception as e:
+        log_error(f"update_avatar_url error: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
 
 @app.route('/api/posts', methods=['GET'])
 def get_posts():
+    db = get_db()
+    if db:
+        try:
+            # 1. 게시글 가져오기
+            res = db.table('posts').select('*').order('created_at', desc=True).execute()
+            posts = res.data or []
+            
+            # 2. 모든 댓글 가져오기 (성능을 위해 한 번에 가져와서 메모리에서 매칭)
+            # 데이터가 아주 많아지면 게시글 ID별로 쿼리하는 방식으로 바꿔야 함.
+            c_res = db.table('comments').select('*').execute()
+            all_comments = c_res.data or []
+            
+            # 3. 게시글에 댓글 심어주기
+            for post in posts:
+                p_comments = [c for c in all_comments if str(c.get('post_id')) == str(post.get('id'))]
+                # 대댓글 구조 재구성 (parent_id가 없는 게 최상위 댓글)
+                top_level = [c for c in p_comments if c.get('parent_id') is None]
+                for tc in top_level:
+                    tc['replies'] = [c for c in p_comments if str(c.get('parent_id')) == str(tc.get('id'))]
+                post['comments'] = top_level
+                # 프론트엔드 날짜 필드 호환 (date)
+                post['date'] = post.get('created_at')
+                
+            return jsonify(posts)
+        except Exception as e:
+            print(f"[ERROR] get_posts with comments from Supabase: {e}")
+            
     return jsonify(pull_data('posts.json'))
 
 @app.route('/api/rules', methods=['GET', 'POST'])
@@ -183,102 +385,293 @@ def handle_rules():
     if request.method == 'POST':
         data = request.json
         if not data or 'rules' not in data: return jsonify({"error": "Invalid data"}), 400
-        push_data('rules.json', data)
+        update_data('rules.json', lambda _: data)
         return jsonify({"success": True})
     return jsonify(pull_data('rules.json'))
 
 @app.route('/api/categories', methods=['GET', 'POST'])
 def handle_categories():
+    db = get_db()
     if request.method == 'POST':
         data = request.json
         if not data or 'name' not in data: return jsonify({"error": "Invalid data"}), 400
-        cats = pull_data('categories.json') or []
+        
         cat_id = data['name'].replace(' ', '_').lower() + f"_{int(time.time())}"
         new_row = {"id": cat_id, "name": data['name'], "icon": data.get('icon', 'forum')}
-        cats.append(new_row)
-        push_data('categories.json', cats)
+
+        if db:
+            try:
+                db.table('categories').insert(new_row).execute()
+                return jsonify({"success": True, "category": new_row})
+            except Exception as e:
+                print(f"[ERROR] add category to Supabase: {e}")
+
+        # DB 실패 시 폴백
+        update_data('categories.json', lambda cats: (cats or []) + [new_row])
         return jsonify({"success": True, "category": new_row})
-    cats = pull_data('categories.json') or []
-    return jsonify([c for c in cats if c.get('name') not in ['ㅅㄷㄴㅅ', 'ㅅㄷㄴㅅ2', 'ㅎㅇ']])
+
+    if db:
+        try:
+            res = db.table('categories').select('*').execute()
+            if res.data is not None: return jsonify(res.data)
+        except Exception as e:
+            print(f"[ERROR] get categories from Supabase: {e}")
+
+    return jsonify(pull_data('categories.json') or [])
 
 @app.route('/api/categories/<string:cat_id>', methods=['DELETE'])
 def delete_category(cat_id):
     import urllib.parse
     cat_id = urllib.parse.unquote(cat_id)
-    cats = pull_data('categories.json') or []
-    new_cats = [c for c in cats if isinstance(c, dict) and c.get('id') != cat_id and c.get('name') != cat_id]
-    if len(new_cats) == len(cats): return jsonify({"error": "Category not found"}), 404
-    push_data('categories.json', new_cats)
-    return jsonify({"success": True})
+    db = get_db()
+    
+    if db:
+        try:
+            # ID 또는 이름으로 삭제 시도
+            db.table('categories').delete().or_(f"id.eq.{cat_id},name.eq.{cat_id}").execute()
+            return jsonify({"success": True})
+        except Exception as e:
+            print(f"[ERROR] delete category from Supabase: {e}")
+
+    # DB 실패 시 폴백
+    def update_fn(cats):
+        cats = cats or []
+        new_cats = [c for c in cats if isinstance(c, dict) and c.get('id') != cat_id and c.get('name') != cat_id]
+        if len(new_cats) == len(cats): return None
+        return new_cats
+
+    if update_data('categories.json', update_fn):
+        return jsonify({"success": True})
+    return jsonify({"error": "Category not found"}), 404
 
 @app.route('/api/posts', methods=['POST'])
 def add_post():
     new_post = request.json
-    posts = pull_data('posts.json')
-    new_post['id'] = max([p['id'] for p in posts], default=0) + 1
-    new_post['date'] = time.strftime('%Y-%m-%d %H:%M')
-    new_post['likes'] = []
-    new_post['comments'] = []
-    posts.append(new_post)
-    push_data('posts.json', posts)
+    category = new_post.get('category', 'dashboard')
+    user_role = new_post.get('user_role', 'student')
+
+    # 보안 검증: 선생님 전용 카테고리는 확실하게 차단
+    if category in ['notice', 'event', 'homework'] and user_role != 'teacher':
+        return jsonify({"error": "이 카테고리에는 선생님만 작성할 수 있습니다."}), 403
+
+    db = get_db()
+    
+    if db:
+        try:
+            # Supabase 전용 필드로 정리
+            insert_data = {
+                "title": new_post.get('title'),
+                "content": new_post.get('content'),
+                "author": new_post.get('author'),
+                "category": new_post.get('category'),
+                "image_url": new_post.get('image_url'),
+                "is_anonymous": new_post.get('is_anonymous', False),
+                "likes": [],
+                "created_at": time.strftime('%Y-%m-%d %H:%M:%S')
+            }
+            db.table('posts').insert(insert_data).execute()
+            return jsonify({"success": True})
+        except Exception as e:
+            print(f"[ERROR] add_post to Supabase: {e}")
+
+    # DB 실패 시 기존 JSON 방식 폴백
+    def update_fn(posts):
+        if not isinstance(posts, list):
+            posts = []
+        
+        # Ensure new_post is a dict
+        post_to_add = new_post.copy() if isinstance(new_post, dict) else {}
+        post_to_add['id'] = uuid.uuid4().hex
+        post_to_add['date'] = time.strftime('%Y-%m-%d %H:%M')
+        post_to_add['likes'] = []
+        post_to_add['comments'] = []
+        posts.append(post_to_add)
+        return posts
+
+    update_data('posts.json', update_fn)
     return jsonify({"success": True})
 
-@app.route('/api/homework', methods=['GET', 'POST'])
-def handle_homework():
-    if request.method == 'POST':
-        new_hw = request.json
-        hws = pull_data('homework.json') or []
-        new_hw['id'] = int(time.time())
-        new_hw['date'] = time.strftime('%Y-%m-%d')
-        if 'assigned_students' not in new_hw: new_hw['assigned_students'] = [new_hw.get('student_id', 'all')]
-        tasks_count = len(new_hw.get('tasks', []))
-        new_hw['progress'] = { sid: [False] * tasks_count for sid in new_hw['assigned_students'] }
-        hws.append(new_hw)
-        push_data('homework.json', hws)
+@app.route('/api/homework', methods=['POST', 'OPTIONS'])
+def create_homework():
+    if request.method == 'OPTIONS': return jsonify({}), 200
+    try:
+        data = request.json
+        user_role = data.get('user_role', 'student')
+        
+        # 보안 검증: 숙제는 선생님만 생성 가능
+        if user_role != 'teacher':
+            return jsonify({"error": "선생님만 숙제를 생성할 수 있습니다."}), 403
+
+        db = get_db()
+        hw_id = uuid.uuid4().hex
+        date = time.strftime('%Y-%m-%d')
+        
+        assigned_students = data.get('assigned_students', ['all'])
+        tasks = data.get('tasks', [])
+        progress = { sid: [False] * len(tasks) for sid in assigned_students }
+        
+        insert_data = {
+            "id": hw_id,
+            "title": data.get('title'),
+            "content": data.get('content'),
+            "tasks": tasks,
+            "assigned_students": assigned_students,
+            "progress": progress,
+            "created_at": date
+        }
+
+        if db:
+            try:
+                db.table('homework').insert(insert_data).execute()
+                return jsonify({"success": True})
+            except Exception as e:
+                print(f"[ERROR] add homework to Supabase: {e}")
+
+        # DB 실패 시 폴백
+        def update_fn(hws):
+            if not isinstance(hws, list):
+                hws = []
+            new_hw = insert_data.copy()
+            new_hw['date'] = date
+            hws.append(new_hw)
+            return hws
+        update_data('homework.json', update_fn)
         return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/homework', methods=['GET'])
+def get_homework():
+    db = get_db()
+    if db:
+        try:
+            res = db.table('homework').select('*').order('created_at', desc=True).execute()
+            if res.data is not None: return jsonify(res.data)
+        except Exception as e:
+            print(f"[ERROR] get homework from Supabase: {e}")
+            
     return jsonify(pull_data('homework.json'))
 
-@app.route('/api/homework/<int:hw_id>/task', methods=['POST'])
+@app.route('/api/homework/<string:hw_id>/task', methods=['POST'])
 def update_homework_task(hw_id):
     data = request.json
     student_id = data.get('student_id')
     task_idx = data.get('task_index')
     is_completed = data.get('completed')
-    hws = pull_data('homework.json') or []
-    for hw in hws:
-        if hw['id'] == hw_id:
-            if 'progress' not in hw: hw['progress'] = {}
-            if student_id not in hw['progress']:
-                tasks_count = len(hw.get('tasks', []))
-                hw['progress'][student_id] = [False] * tasks_count
-            if 0 <= task_idx < len(hw['progress'][student_id]):
-                hw['progress'][student_id][task_idx] = is_completed
-                push_data('homework.json', hws)
-                return jsonify({"success": True})
-    return jsonify({"error": "Not found"}), 404
+    db = get_db()
+    
+    if db:
+        try:
+            # 1. 현재 진행도 가져오기
+            res = db.table('homework').select('progress', 'tasks').eq('id', hw_id).execute()
+            if res.data and len(res.data) > 0:
+                hw_data = res.data[0]
+                progress = hw_data.get('progress', {})
+                tasks = hw_data.get('tasks', [])
+                
+                if student_id not in progress:
+                    progress[student_id] = [False] * len(tasks)
+                
+                if 0 <= task_idx < len(progress[student_id]):
+                    progress[student_id][task_idx] = is_completed
+                    db.table('homework').update({"progress": progress}).eq('id', hw_id).execute()
+                    return jsonify({"success": True})
+                return jsonify({"error": "Homework not found in DB"}), 404
+        except Exception as e:
+            print(f"[ERROR] update homework task in Supabase: {e}")
+            return jsonify({"error": str(e)}), 500
+            
+    return jsonify({"error": "Database offline"}), 503
 
-@app.route('/api/homework/<hw_id>', methods=['DELETE'])
+@app.route('/api/posts/<string:post_id>/comments/<string:comment_id>', methods=['DELETE'])
+def delete_comment(post_id, comment_id):
+    data = request.json
+    user_id = str(data.get('user_id', ''))
+    user_role = data.get('user_role', '')
+    
+    db = get_db()
+    if db:
+        try:
+            # 1. 댓글 정보 확인
+            res = db.table('comments').select('*').eq('id', comment_id).execute()
+            if res.data:
+                comment = res.data[0]
+                # 권한 체크: 선생님이거나 작성자 본인인 경우
+                is_author = f"#{user_id}" in str(comment.get('author', ''))
+                if user_role == 'teacher' or is_author:
+                    db.table('comments').delete().eq('id', comment_id).execute()
+                    return jsonify({"success": True})
+                return jsonify({"error": "Unauthorized"}), 403
+        except Exception as e:
+            print(f"[ERROR] delete comment in Supabase: {e}")
+
+    # Fallback to JSON (if needed)
+    def update_fn(items):
+        found = False
+        for p in items:
+            if str(p.get('id', '')) == str(post_id):
+                if 'comments' not in p: continue
+                # Filter top-level
+                orig_len = len(p['comments'])
+                p['comments'] = [c for c in p['comments'] if str(c.get('id', '')) != str(comment_id)]
+                if len(p['comments']) < orig_len:
+                    found = True
+                else:
+                    # Check replies
+                    for c in p['comments']:
+                        if 'replies' in c:
+                            r_len = len(c['replies'])
+                            c['replies'] = [r for r in c['replies'] if str(r.get('id', '')) != str(comment_id)]
+                            if len(c['replies']) < r_len:
+                                found = True
+                                break
+                if found: break
+        return items if found else None
+
+    for filename in ['posts.json', 'homework.json']:
+        if update_data(filename, update_fn):
+            return jsonify({"success": True})
+            
+    return jsonify({"success": True}) # Even if not found in JSON, return success to match Supabase behavior if it was deleted there
+
+@app.route('/api/homework/<string:hw_id>', methods=['DELETE'])
 def delete_homework(hw_id):
-    hws = pull_data('homework.json') or []
-    new_hws = [h for h in hws if str(h.get('id', '')) != str(hw_id)]
-    if len(new_hws) == len(hws): return jsonify({"error": "Homework not found"}), 404
-    push_data('homework.json', new_hws)
-    return jsonify({"success": True})
+    db = get_db()
+    if db:
+        try:
+            db.table('homework').delete().eq('id', hw_id).execute()
+            return jsonify({"success": True})
+        except Exception as e:
+            print(f"[ERROR] delete homework from Supabase: {e}")
+
+    # DB 실패 시 폴백
+    def update_fn(hws):
+        hws = hws or []
+        new_hws = [h for h in hws if str(h.get('id', '')) != str(hw_id)]
+        if len(new_hws) == len(hws): return None
+        return new_hws
+
+    if update_data('homework.json', update_fn):
+        return jsonify({"success": True})
+    return jsonify({"error": "Homework not found"}), 404
 
 @app.route('/api/feedback', methods=['GET', 'POST'])
 def handle_feedback():
     if request.method == 'POST':
         data = request.json
-        feedbacks = pull_data('feedback.json') or []
-        new_fb = {
-            "id": int(time.time()),
-            "author": data.get('author', '익명'),
-            "role": data.get('role', 'student'),
-            "content": data.get('content', ''),
-            "date": time.strftime('%Y-%m-%d %H:%M')
-        }
-        feedbacks.append(new_fb)
-        push_data('feedback.json', feedbacks)
+        def update_fn(feedbacks):
+            feedbacks = feedbacks or []
+            new_fb = {
+                "id": int(time.time()),
+                "author": data.get('author', '익명'),
+                "role": data.get('role', 'student'),
+                "content": data.get('content', ''),
+                "date": time.strftime('%Y-%m-%d %H:%M')
+            }
+            feedbacks.append(new_fb)
+            return feedbacks
+
+        update_data('feedback.json', update_fn)
         return jsonify({"success": True})
     return jsonify(pull_data('feedback.json') or [])
 
@@ -286,40 +679,90 @@ def handle_feedback():
 def handle_alert():
     if request.method == 'POST':
         data = request.json
-        push_data('alert.json', data)
+        update_data('alert.json', lambda _: data)
         return jsonify({"success": True})
     return jsonify(pull_data('alert.json') or {})
 
-@app.route('/api/posts/<int:post_id>/like', methods=['POST'])
+@app.route('/api/posts/<string:post_id>/like', methods=['POST'])
 def toggle_like(post_id):
     data = request.json or {}
     user_id = str(data.get('user_id', 'anon'))
-    for filename in ['posts.json', 'homework.json']:
-        items = pull_data(filename) or []
+    db = get_db()
+    
+    if db:
+        try:
+            # 1. 현재 좋아요 상태 가져오기
+            res = db.table('posts').select('likes').eq('id', post_id).execute()
+            if res.data and len(res.data) > 0:
+                likes = res.data[0].get('likes', [])
+                # 2. 토글 로직
+                if user_id in likes: likes.remove(user_id)
+                else: likes.append(user_id)
+                # 3. 업데이트
+                db.table('posts').update({"likes": likes}).eq('id', post_id).execute()
+                return jsonify({"success": True, "likes": len(likes)})
+        except Exception as e:
+            print(f"[ERROR] toggle_like in Supabase: {e}")
+
+    # DB 실패 시 기존 JSON 방식 폴백
+    context = {"likes_count": 0, "found": False}
+    def update_fn(items):
+        items = items or []
+        found = False
         for p in items:
             if str(p.get('id', '')) == str(post_id):
                 likes = p.get('likes', [])
                 if user_id in likes: likes.remove(user_id)
                 else: likes.append(user_id)
                 p['likes'] = likes
-                push_data(filename, items)
-                return jsonify({"success": True, "likes": len(likes)})
+                context["likes_count"] = len(likes)
+                context["found"] = True
+                found = True
+                break
+        return items if found else None
+
+    for filename in ['posts.json', 'homework.json']:
+        if update_data(filename, update_fn):
+            return jsonify({"success": True, "likes": context["likes_count"]})
+            
     return jsonify({"error": "Not found"}), 404
 
-@app.route('/api/posts/<int:post_id>/comments', methods=['POST', 'OPTIONS'])
+@app.route('/api/posts/<string:post_id>/comments', methods=['POST', 'OPTIONS'])
 def add_comment(post_id):
     if request.method == 'OPTIONS': return jsonify({}), 200
     try:
         data = request.json
         if not data: return jsonify({"error": "No data"}), 400
-        for filename in ['posts.json', 'homework.json']:
-            items = pull_data(filename) or []
+        db = get_db()
+        
+        insert_data = {
+            "post_id": post_id,
+            "parent_id": data.get('parent_id'), # 대댓글인 경우
+            "author": data.get('author', 'Anonymous'),
+            "content": data.get('content', ''),
+            "likes": [],
+            "created_at": time.strftime('%Y-%m-%d %H:%M')
+        }
+
+        if db:
+            try:
+                res = db.table('comments').insert(insert_data).execute()
+                if res.data:
+                    return jsonify({"success": True, "comment" if not insert_data["parent_id"] else "reply": res.data[0]})
+            except Exception as e:
+                print(f"[ERROR] add comment to Supabase: {e}")
+
+        # DB 실패 시 폴백
+        context = {"response": None}
+        def update_fn(items):
+            items = items or []
+            found = False
             for p in items:
                 if str(p.get('id', '')) == str(post_id):
                     if 'comments' not in p: p['comments'] = []
                     parent_id = data.get('parent_id')
                     new_item = {
-                        "id": int(time.time() * 1000),
+                        "id": uuid.uuid4().hex,
                         "author": data.get('author', 'Anonymous'),
                         "content": data.get('content', ''),
                         "date": time.strftime('%Y-%m-%d %H:%M'),
@@ -330,23 +773,50 @@ def add_comment(post_id):
                             if str(c.get('id')) == str(parent_id):
                                 if 'replies' not in c: c['replies'] = []
                                 c['replies'].append(new_item)
-                                push_data(filename, items)
-                                return jsonify({"success": True, "reply": new_item})
+                                context["response"] = jsonify({"success": True, "reply": new_item})
+                                found = True
+                                break
                     else:
                         new_item["replies"] = []
                         p['comments'].append(new_item)
-                        push_data(filename, items)
-                        return jsonify({"success": True, "comment": new_item})
+                        context["response"] = jsonify({"success": True, "comment": new_item})
+                        found = True
+                    if found: break
+            return items if found else None
+
+        for filename in ['posts.json', 'homework.json']:
+            if update_data(filename, update_fn):
+                return context["response"]
+                
         return jsonify({"error": "Post not found"}), 404
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@app.route('/api/posts/<int:post_id>/comments/<int:comment_id>/like', methods=['POST'])
+@app.route('/api/posts/<string:post_id>/comments/<string:comment_id>/like', methods=['POST'])
 def toggle_comment_like(post_id, comment_id):
     data = request.json or {}
     user_id = str(data.get('user_id', 'anon'))
-    for filename in ['posts.json', 'homework.json']:
-        items = pull_data(filename) or []
+    db = get_db()
+    
+    if db:
+        try:
+            # 1. 현재 좋아요 상태 가져오기
+            res = db.table('comments').select('likes').eq('id', comment_id).execute()
+            if res.data and len(res.data) > 0:
+                likes = res.data[0].get('likes', [])
+                if user_id in likes: likes.remove(user_id)
+                else: likes.append(user_id)
+                # 2. 업데이트
+                db.table('comments').update({"likes": likes}).eq('id', comment_id).execute()
+                return jsonify({"success": True, "likes": len(likes)})
+        except Exception as e:
+            print(f"[ERROR] toggle_comment_like in Supabase: {e}")
+
+    # DB 실패 시 폴백
+    context = {"likes_count": 0}
+    def update_fn(items):
+        items = items or []
+        found = False
         for p in items:
             if str(p.get('id', '')) == str(post_id):
                 for c in p.get('comments', []):
@@ -355,59 +825,72 @@ def toggle_comment_like(post_id, comment_id):
                         if user_id in likes: likes.remove(user_id)
                         else: likes.append(user_id)
                         c['likes'] = likes
-                        push_data(filename, items)
-                        return jsonify({"success": True, "likes": len(likes)})
+                        context["likes_count"] = len(likes)
+                        found = True
+                        break
                     for r in c.get('replies', []):
                         if str(r.get('id')) == str(comment_id):
                             likes = r.get('likes', [])
                             if user_id in likes: likes.remove(user_id)
                             else: likes.append(user_id)
                             r['likes'] = likes
-                            push_data(filename, items)
-                            return jsonify({"success": True, "likes": len(likes)})
-    return jsonify({"error": "Not found"}), 404
+                            context["likes_count"] = len(likes)
+                            found = True
+                            break
+                if found: break
+        return items if found else None
 
-@app.route('/api/posts/<int:post_id>/comments/<int:comment_id>', methods=['DELETE'])
-def delete_comment(post_id, comment_id):
-    try:
-        found = False
-        for filename in ['posts.json', 'homework.json']:
-            items = pull_data(filename) or []
-            for p in items:
-                if str(p.get('id', '')) == str(post_id):
-                    # Filter top-level comments
-                    comments = p.get('comments', [])
-                    initial_len = len(comments)
-                    new_comments = [c for c in comments if str(c.get('id')) != str(comment_id)]
-                    
-                    if len(new_comments) < initial_len:
-                        p['comments'] = new_comments
-                        found = True
-                    else:
-                        # Check replies inside each comment
-                        for c in comments:
-                            if 'replies' in c:
-                                replies = c.get('replies', [])
-                                initial_reply_len = len(replies)
-                                c['replies'] = [r for r in replies if str(r.get('id')) != str(comment_id)]
-                                if len(c['replies']) < initial_reply_len:
-                                    found = True
-                                    break
-                    
-                    if found:
-                        push_data(filename, items)
-                        return jsonify({"success": True})
-        return jsonify({"error": "Comment not found"}), 404
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    for filename in ['posts.json', 'homework.json']:
+        if update_data(filename, update_fn):
+            return jsonify({"success": True, "likes": context["likes_count"]})
+            
+    return jsonify({"error": "Not found"}), 404
 
 @app.route('/api/posts/<post_id>', methods=['DELETE'])
 def delete_post(post_id):
-    posts = pull_data('posts.json') or []
-    new_posts = [p for p in posts if str(p.get('id', '')) != str(post_id)]
-    if len(new_posts) == len(posts): return jsonify({"error": "Not found"}), 404
-    push_data('posts.json', new_posts)
-    return jsonify({"success": True})
+    # 권한 체크를 위해 요청자 정보 필요
+    data = request.json or {}
+    requester_id = data.get('user_id')
+    requester_role = data.get('user_role')
+    db = get_db()
+
+    if db:
+        try:
+            # 1. 작성자 확인
+            res = db.table('posts').select('author').eq('id', post_id).execute()
+            if res.data and len(res.data) > 0:
+                author_info = res.data[0].get('author', '')
+                author_id = author_info.split('(#')[-1].replace(')', '') if '(#' in author_info else author_info
+                
+                if requester_role == 'teacher' or str(author_id) == str(requester_id):
+                    db.table('posts').delete().eq('id', post_id).execute()
+                    return jsonify({"success": True})
+                else:
+                    return jsonify({"error": "삭제 권한이 없습니다."}), 403
+        except Exception as e:
+            print(f"[ERROR] delete_post in Supabase: {e}")
+
+    # DB 실패 시 기존 JSON 방식 폴백
+    def update_fn(posts):
+        posts = posts or []
+        target_post = next((p for p in posts if str(p.get('id')) == str(post_id)), None)
+        if not target_post: return None
+        
+        author_info = target_post.get('author', '')
+        author_id = author_info.split('(#')[-1].replace(')', '') if '(#' in author_info else author_info
+        
+        if requester_role != 'teacher' and str(author_id) != str(requester_id):
+            return "FORBIDDEN"
+
+        new_posts = [p for p in posts if str(p.get('id', '')) != str(post_id)]
+        return new_posts
+
+    result = update_data('posts.json', update_fn)
+    if result == "FORBIDDEN":
+        return jsonify({"error": "삭제 권한이 없습니다."}), 403
+    if result:
+        return jsonify({"success": True})
+    return jsonify({"error": "Not found"}), 404
 
 @app.route('/api/upload', methods=['POST'])
 def upload_image():
@@ -426,10 +909,6 @@ def upload_image():
         return jsonify({"success": True, "url": final_url})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
-
-# Vercel entry point
-def handler(event, context):
-    return app(event, context)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

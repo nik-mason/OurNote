@@ -3,10 +3,10 @@
  * Final integrated entry point.
  */
 import { state, showToast } from './modules/common.js?v=4.3';
-import { initSplash, initCursor, initParticles, setupModal, initSidebar } from './modules/ui.js?v=4.3';
+import { initSplash, initCursor, initParticles, setupModal } from './modules/ui.js?v=4.3';
 import { loadPosts, initPostForm } from './modules/posts.js?v=4.3';
 import { initAuth } from './modules/auth.js?v=4.3';
-import { initNavigation, setupRoomCreation } from './modules/navigation.js?v=4.3';
+import { initNavigation } from './modules/navigation.js?v=4.3';
 import { initWriteModal } from './modules/popups/write-modal.js?v=4.3';
 import { initPostDetailModal } from './modules/popups/post-detail-modal.js?v=4.3';
 import { initSettingsModal } from './modules/popups/settings-modal.js?v=4.3';
@@ -40,351 +40,207 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.log("OurNote: Dashboard mode active.");
         initNavigation();
         
-        setupModal('main-nav', 'mobile-hamburger', 'close-mobile-modal');
+        // Modal Setup
+        setupModal('hamburger-modal', 'mobile-hamburger', 'close-hamburger-modal');
+        setupModal('profile-modal', 'open-profile-modal', 'close-profile-modal');
         setupModal('qr-modal', 'open-qr-modal', 'close-qr-modal');
         setupModal('write-modal', 'open-write-modal', 'close-write-modal');
-        setupModal('write-modal', 'open-write-modal-sidebar', 'close-write-modal');
-        setupModal('master-modal', 'xxx', 'close-master-modal'); // Placeholder for master trigger if any
+        setupModal('feedback-modal', 'open-feedback-btn', 'close-feedback-modal');
         
-        // Load initial data
+        // Shortcuts Initialization
+        initShortcuts();
+
+        // Business Logic
         loadPosts();
         initPostDetailModal();
         initPostForm();
         initSettingsModal();
-        
-        // Initialize feedback modal (requires feedback script if it's external, otherwise setup here)
-        setupModal('feedback-modal', 'open-feedback-btn', 'close-feedback-modal');
         initFeedbackLogic();
+        initProfileLogic();
 
-        // Display user name
+        if (window.updateUserAvatar) window.updateUserAvatar();
+
+        // Sync Profile Data
         const usernameDisplay = document.getElementById('display-username');
-        if (usernameDisplay && state.currentUser) {
-            usernameDisplay.textContent = state.currentUser.name;
-        }
-
-        // Load Rules Component
-        try {
-            fetch('/api/rules').then(r => r.json()).then(data => {
-                if (data && data.rules) {
-                    const rulesSec = document.getElementById('rules-section');
-                    const rulesContent = document.getElementById('rules-content');
-                    if (rulesSec && rulesContent) {
-                        rulesSec.classList.remove('hidden');
-                        rulesContent.textContent = data.rules;
-                    }
-                }
-            });
-        } catch(e) {}
-
-        // Load Daily Alert
-        try {
-            fetch('/api/alert').then(r => r.json()).then(data => {
-                if (data && data.message) {
-                    const today = new Date().toLocaleDateString();
-                    const dismissedDate = localStorage.getItem('dismissed_alert_date');
-                    
-                    if (dismissedDate !== today) {
-                        const alertModal = document.getElementById('daily-alert-modal');
-                        const alertText = document.getElementById('daily-alert-text');
-                        if (alertModal && alertText) {
-                            alertText.textContent = data.message;
-                            alertModal.classList.remove('hidden');
-                        }
-                    }
-                }
-            });
-        } catch(e) {}
-
-        // Teacher-only features
-        if (state.currentUser?.role === 'teacher') {
-            console.log("OurNote: Teacher role detected.");
-            document.querySelectorAll('.hidden-by-role').forEach(el => el.classList.remove('hidden-by-role'));
-            document.getElementById('btn-add-room')?.classList.remove('hidden');
-            setupModal('room-modal', 'btn-add-room', 'close-room-modal');
-            // setupRoomCreation is already called inside initNavigation()
+        const userAvatar = document.getElementById('user-avatar');
+        if (state.currentUser) {
+            if (usernameDisplay) usernameDisplay.textContent = state.currentUser.nickname || state.currentUser.name;
+            window.updateUserAvatar = () => {
+                const seed = state.currentUser.avatar_seed || state.currentUser.name;
+                const customAvatar = state.currentUser.avatar_url;
+                const url = customAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(seed)}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
+                if (userAvatar) userAvatar.style.backgroundImage = `url("${url}")`;
+                const modalAvatar = document.getElementById('modal-user-avatar');
+                if (modalAvatar) modalAvatar.style.backgroundImage = `url("${url}")`;
+            };
+            window.updateUserAvatar();
         }
     }
 
-
-
-    // Register Service Worker
     if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/frontend/sw.js').then(reg => {
-                console.log('OurNote: SW Registered');
-            }).catch(err => {
-                console.error('OurNote: SW Registration Failed', err);
-            });
-        });
+        navigator.serviceWorker.register('/frontend/sw.js').catch(() => {});
     }
-
-    // PWA Install Logic
-    let deferredPrompt;
-    const installBtns = document.querySelectorAll('#pwa-install-btn, #pwa-install-btn-mobile');
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        installBtns.forEach(btn => btn.classList.remove('hidden'));
-    });
-
-    const triggerInstall = async () => {
-        if (!deferredPrompt) return;
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-            console.log('User accepted the install prompt');
-        }
-        deferredPrompt = null;
-        installBtns.forEach(btn => btn.classList.add('hidden'));
-    };
-
-    installBtns.forEach(btn => btn.addEventListener('click', triggerInstall));
 });
 
 async function loadComponents() {
     const components = [
-        { id: 'modal-container', files: ['settings-modal.html', 'write-modal.html', 'password-modal.html', 'hamburger-modal.html', 'master-modal.html', 'mobile-modal.html', 'system-modals.html', 'confirm-modal.html', 'post-detail-modal.html', 'comment-modal.html', 'qr-modal.html', 'feedback-modal.html'] },
+        { id: 'modal-container', files: [
+            'settings-modal.html', 'write-modal.html', 'master-modal.html', 
+            'hamburger-modal.html', 'mobile-modal.html', 'system-modals.html', 
+            'confirm-modal.html', 'post-detail-modal.html', 'comment-modal.html', 
+            'qr-modal.html', 'feedback-modal.html', 'profile-modal.html', 'pin-modal.html'
+        ] },
         { id: 'security-container', files: ['security-layers.html', 'prank-layers.html'] }
     ];
 
-    for (const group of components) {
+    const loadTasks = components.flatMap(group => {
         const container = document.getElementById(group.id);
-        if (!container) continue;
-
-        for (const file of group.files) {
+        if (!container) return [];
+        return group.files.map(async (file) => {
             try {
-                const response = await fetch(`/frontend/html/components/${file}`);
-                const html = await response.text();
+                const res = await fetch(`/frontend/html/components/${file}`);
+                const html = await res.text();
                 container.insertAdjacentHTML('beforeend', html);
-            } catch (err) {
-                console.error(`Failed to load component: ${file}`, err);
-            }
-        }
-    }
+            } catch (err) { console.error(`Failed to load: ${file}`, err); }
+        });
+    });
+    await Promise.all(loadTasks);
 }
 
-// ---------------------------------------------------------
-// Feedback System Logic
-// ---------------------------------------------------------
+function initShortcuts() {
+    window.addEventListener('keydown', (e) => {
+        if (e.altKey) {
+            switch(e.key.toLowerCase()) {
+                case 'n': // Notice
+                    e.preventDefault();
+                    window.location.hash = '#notice';
+                    showToast('공지사항 필터가 적용되었습니다.', 'info');
+                    break;
+                case 'h': // Homework
+                    e.preventDefault();
+                    window.location.hash = '#homework';
+                    showToast('숙제 필터가 적용되었습니다.', 'info');
+                    break;
+                case 'e': // Event
+                    e.preventDefault();
+                    window.location.hash = '#event';
+                    showToast('이벤트 필터가 적용되었습니다.', 'info');
+                    break;
+                case 'w': // Write
+                    e.preventDefault();
+                    document.getElementById('open-write-modal')?.click();
+                    break;
+                case 's': // Settings
+                    e.preventDefault();
+                    window.openSettings();
+                    break;
+            }
+        }
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            document.getElementById('open-qr-modal')?.click();
+        }
+    });
+}
+
+function initProfileLogic() {
+    const saveBtn = document.getElementById('save-profile-btn');
+    const nicknameInput = document.getElementById('modal-user-nickname');
+    const avatarInput = document.getElementById('avatar-upload-input');
+    const triggerUpload = document.getElementById('trigger-avatar-upload');
+    const logoutBtn = document.getElementById('profile-logout-btn');
+
+    if (state.currentUser) {
+        const nameEl = document.getElementById('modal-user-name');
+        if (nameEl) nameEl.textContent = state.currentUser.name;
+        if (nicknameInput) nicknameInput.value = state.currentUser.nickname || state.currentUser.name;
+        const seedInput = document.getElementById('avatar-seed-input');
+        if (seedInput) seedInput.value = state.currentUser.avatar_seed || state.currentUser.name;
+    }
+
+    triggerUpload?.addEventListener('click', () => avatarInput?.click());
+
+    avatarInput?.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+            showToast('이미지 업로드 중...', 'info');
+            const res = await fetch('/api/upload', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.url) {
+                state.currentUser.avatar_url = data.url;
+                window.updateUserAvatar();
+                showToast('아바타 업로드 완료! 저장 버튼을 누르세요.', 'success');
+            }
+        } catch (err) { showToast('업로드 실패', 'error'); }
+    });
+
+    saveBtn?.addEventListener('click', async () => {
+        const nickname = nicknameInput.value.trim();
+        if (!nickname) return showToast('닉네임을 입력해주세요.', 'error');
+        try {
+            await fetch('/api/user/nickname', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: state.currentUser.id, nickname })
+            });
+            if (state.currentUser.avatar_url) {
+                await fetch('/api/user/avatar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: state.currentUser.id, url: state.currentUser.avatar_url })
+                });
+            }
+            state.currentUser.nickname = nickname;
+            localStorage.setItem('currentUser', JSON.stringify(state.currentUser));
+            const display = document.getElementById('display-username');
+            if (display) display.textContent = nickname;
+            showToast('프로필 저장 완료!', 'success');
+            document.getElementById('close-profile-modal').click();
+        } catch (err) { showToast('저장 중 오류 발생', 'error'); }
+    });
+
+    logoutBtn?.addEventListener('click', () => {
+        localStorage.removeItem('currentUser');
+        window.location.href = '/';
+    });
+
+    document.getElementById('random-avatar-btn')?.addEventListener('click', () => {
+        const newSeed = Math.random().toString(36).substring(7);
+        state.currentUser.avatar_seed = newSeed;
+        delete state.currentUser.avatar_url; 
+        window.updateUserAvatar();
+    });
+}
+
 function initFeedbackLogic() {
-    // 1. Submit Feedback
     const submitBtn = document.getElementById('btn-submit-feedback');
     if (submitBtn) {
         submitBtn.addEventListener('click', async () => {
             const content = document.getElementById('feedback-content').value.trim();
-            if (!content) {
-                showToast('피드백 내용을 입력해주세요.', 'error');
-                return;
-            }
-
+            if (!content) return showToast('내용을 입력해주세요.', 'error');
             try {
-                // Determine user info
-                const uid = state.currentUser ? state.currentUser.id : 'unknown';
-                const name = state.currentUser ? state.currentUser.name : 'Unknown';
-                const role = state.currentUser ? state.currentUser.role : 'student';
-
-                const res = await fetch('/api/feedback', {
+                const uid = state.currentUser?.id || 'anon';
+                const name = state.currentUser?.name || 'Anon';
+                await fetch('/api/feedback', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        author: `${name} (#${uid})`,
-                        role: role,
-                        content: content
-                    })
+                    body: JSON.stringify({ author: `${name} (#${uid})`, content: content })
                 });
-
-                if (res.ok) {
-                    showToast('피드백이 성공적으로 전송되었습니다!', 'success');
-                    document.getElementById('feedback-content').value = '';
-                    document.getElementById('close-feedback-modal').click();
-                } else {
-                    showToast('전송 실패. 다시 시도해주세요.', 'error');
-                }
-            } catch (err) {
-                console.error(err);
-                showToast('전송 중 오류가 발생했습니다.', 'error');
-            }
-        });
-    } else {
-        // If the modal isn't loaded yet, try again shortly
-        setTimeout(initFeedbackLogic, 500);
-        return;
-    }
-
-    // 2. Secret Corner Unlock (for Student #12 Seo Min-jun)
-    let cornerClicks = { tl: false, tr: false, br: false };
-    
-    // Define a function to show feedback list
-    const showFeedbackAdmin = async () => {
-        const listContainer = document.getElementById('feedback-list-view');
-        const submitContainer = document.getElementById('feedback-submit-view');
-        const title = document.querySelector('#feedback-modal h2');
-        
-        try {
-            const res = await fetch('/api/feedback');
-            const feedbacks = await res.json();
-            
-            // Transform UI
-            if(title) title.textContent = "피드백 관리 (관리자 모드)";
-            if(submitContainer) submitContainer.classList.add('hidden');
-            if(listContainer) {
-                listContainer.classList.remove('hidden');
-                listContainer.classList.add('flex');
-                
-                if (feedbacks.length === 0) {
-                    listContainer.innerHTML = '<p class="text-center text-text-secondary py-8">아직 등록된 피드백이 없습니다.</p>';
-                } else {
-                    listContainer.innerHTML = feedbacks.reverse().map(fb => `
-                        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 px-5">
-                            <div class="flex justify-between items-start mb-2">
-                                <span class="font-bold text-primary">${fb.author}</span>
-                                <span class="text-xs text-text-secondary">${fb.date}</span>
-                            </div>
-                            <p class="text-text-main text-sm leading-relaxed whitespace-pre-wrap">${fb.content}</p>
-                        </div>
-                    `).join('');
-                }
-            }
-            
-            // Open modal
-            document.getElementById('feedback-modal').classList.remove('hidden');
-            
-        } catch (err) {
-            console.error(err);
-            showToast('피드백 데이터를 불러올 수 없습니다.', 'error');
-        }
-    };
-
-    // Attach to DOM dynamically
-    document.addEventListener('click', (e) => {
-        // Check if QR corner was clicked
-        if (['qr-corner-tl', 'qr-corner-tr', 'qr-corner-br'].includes(e.target.id)) {
-            // Only active for Student 12 (Seo Min-jun)
-            if (!state.currentUser || state.currentUser.id !== "12") {
-                showToast('접근 권한이 없습니다.', 'error');
-                return;
-            }
-            
-            if (e.target.id === 'qr-corner-tl') { cornerClicks.tl = true; }
-            if (e.target.id === 'qr-corner-tr') { cornerClicks.tr = true; }
-            if (e.target.id === 'qr-corner-br') { cornerClicks.br = true; }
-
-            // Check if all 3 clicked
-            if (cornerClicks.tl && cornerClicks.tr && cornerClicks.br) {
-                // Reset state
-                cornerClicks = { tl: false, tr: false, br: false };
-                
-                // Trigger feedback admin mode
-                showToast('피드백 관리자 모드를 활성화합니다.', 'success');
-                
-                // Close QR modal if open
-                const closeBtn = document.getElementById('close-qr-modal');
-                if(closeBtn) closeBtn.click();
-                
-                const closeMobileBtn = document.getElementById('close-mobile-modal');
-                if(closeMobileBtn) closeMobileBtn.click();
-                
-                showFeedbackAdmin();
-            }
-        }
-    });
-
-    // Handle resetting the view when modal is closed
-    const modalObserver = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.target.id === 'feedback-modal' && mutation.target.classList.contains('hidden')) {
-                // Reset view when closed
-                const listContainer = document.getElementById('feedback-list-view');
-                const submitContainer = document.getElementById('feedback-submit-view');
-                const title = document.querySelector('#feedback-modal h2');
-                
-                if(title) title.textContent = "피드백";
-                if(submitContainer) submitContainer.classList.remove('hidden');
-                if(listContainer) {
-                    listContainer.classList.add('hidden');
-                    listContainer.classList.remove('flex');
-                }
-            }
-        });
-    });
-    
-    // We start observing after a slight delay to ensure it's in the DOM
-    setTimeout(() => {
-        const feedbackModal = document.getElementById('feedback-modal');
-        if (feedbackModal) {
-            modalObserver.observe(feedbackModal, { attributes: true, attributeFilter: ['class'] });
-        }
-    }, 2000);
-    // Daily Alert Setup (Admin)
-    const btnSaveAlert = document.getElementById('btn-save-alert');
-    const btnClearAlert = document.getElementById('btn-clear-alert');
-    if (btnSaveAlert && btnClearAlert) {
-        btnSaveAlert.addEventListener('click', async () => {
-            const input = document.getElementById('admin-alert-input').value.trim();
-            if(!input) return showToast('공지 내용을 입력하세요.', 'error');
-            try {
-                await fetch('/api/alert', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: input })
-                });
-                showToast('오늘의 공지가 설정되었습니다.', 'success');
-                document.getElementById('admin-alert-input').value = '';
-            } catch(e) { showToast('오류가 발생했습니다.', 'error'); }
-        });
-        
-        btnClearAlert.addEventListener('click', async () => {
-            try {
-                await fetch('/api/alert', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: "" })
-                });
-                showToast('공지가 삭제되었습니다.', 'success');
-                document.getElementById('admin-alert-input').value = '';
-            } catch(e) { showToast('오류가 발생했습니다.', 'error'); }
+                showToast('피드백 전송 완료!', 'success');
+                document.getElementById('feedback-content').value = '';
+                document.getElementById('close-feedback-modal').click();
+            } catch (err) { showToast('전송 실패', 'error'); }
         });
     }
-
-    // Daily Alert User Actions
-    document.addEventListener('click', (e) => {
-        if (e.target.id === 'btn-close-alert') {
-            document.getElementById('daily-alert-modal').classList.add('hidden');
-        } else if (e.target.id === 'btn-dismiss-alert-today') {
-            localStorage.setItem('dismissed_alert_date', new Date().toLocaleDateString());
-            document.getElementById('daily-alert-modal').classList.add('hidden');
-            showToast('오늘 하루 동안 알림이 표시되지 않습니다.');
-        }
-    });
-
-    // ─── EXTRA PREMIUM FEATURES ───
-
-    // 1. Scroll Progress Bar
-    window.addEventListener('scroll', () => {
-        const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-        const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-        const scrolled = (winScroll / height) * 100;
-        const bar = document.getElementById('ultra-bar');
-        if (bar) bar.style.width = scrolled + "%";
-    });
-
-    // 2. Magnetic Buttons Interaction
-    const initMagneticButtons = () => {
-        const magnets = document.querySelectorAll('.liquid-btn, .nav-link, .post-cat-chip, #mobile-hamburger, .size-12.rounded-full');
-        magnets.forEach(m => {
-            m.addEventListener('mousemove', (e) => {
-                const rect = m.getBoundingClientRect();
-                const x = e.clientX - rect.left - rect.width / 2;
-                const y = e.clientY - rect.top - rect.height / 2;
-                m.style.transform = `translate(${x * 0.3}px, ${y * 0.3}px)`;
-                if (m.classList.contains('nav-link')) m.style.zIndex = "10";
-            });
-            m.addEventListener('mouseleave', () => {
-                m.style.transform = '';
-                m.style.zIndex = "";
-            });
-        });
-    };
-    initMagneticButtons();
 }
+
+window.openSettings = () => {
+    const modal = document.getElementById('settings-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        setTimeout(() => modal.querySelector('.modal-v4')?.classList.add('active'), 10);
+    }
+};

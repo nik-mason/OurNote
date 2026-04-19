@@ -1,105 +1,61 @@
 <!DOCTYPE html>
-<html lang="ko">
-
+<html lang="ko" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OurNote - 대시보드</title>
-    <!-- Modular CSS -->
-    <link rel="stylesheet" href="/frontend/css/modules/base.css?v=4.3">
-    <link rel="stylesheet" href="/frontend/css/modules/layout.css?v=4.3">
-    <link rel="stylesheet" href="/frontend/css/modules/components.css?v=4.3">
-    <link rel="stylesheet" href="/frontend/css/modules/modals.css?v=4.3">
-    <!-- Popup Specific Modular CSS -->
-    <link rel="stylesheet" href="/frontend/css/modules/popups/write-modal.css?v=4.3">
-    <link rel="stylesheet" href="/frontend/css/modules/popups/post-detail-modal.css?v=4.3">
-    <link rel="stylesheet" href="/frontend/css/modules/popups/nav-modal.css?v=4.3">
-    <link rel="stylesheet" href="/frontend/css/modules/popups/room-modal.css?v=4.3">
-    <link rel="stylesheet" href="/frontend/css/modules/popups/password-modal.css?v=4.3">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>OurNote v4.3 Premium</title>
+    
+    <!-- SEO & Performance -->
+    <meta name="description" content="우리들의 특별한 노트, OurNote v4.3 Premium Edition">
+    <link rel="icon" href="/frontend/assets/logo.png">
+    
+    <!-- Modern Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <link rel="stylesheet" href="/frontend/css/style.css?v=4.3">
-    <!-- Google Fonts Preconnect removed for Cafe24 -->
-    <link rel="icon" type="image/png" href="/assets/logo.png">
-    <link rel="manifest" href="/frontend/manifest.json">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-        rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <script id="tailwind-config">
+    
+    <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#2b8cee",
-                        "primary-dark": "#1a6bbd",
-                        "background-light": "#f8fafc",
-                        "surface-light": "#ffffff",
-                        "text-main": "#0f172a",
-                        "text-secondary": "#64748b",
+                        primary: '#2b8ce6',
+                        accent: '#ff3d71',
+                        surface: {
+                            light: '#ffffff',
+                            dark: '#020617'
+                        },
+                        text: {
+                            main: '#1e293b',
+                            secondary: '#64748b',
+                            dim: '#94a3b8'
+                        }
                     },
-                    fontFamily: {
-                        "sans": ["Cafe24SsurroundAir", "sans-serif"],
-                        "display": ["Cafe24SsurroundAir", "sans-serif"],
-                        "body": ["Cafe24SsurroundAir", "sans-serif"],
-                    },
-                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
-                },
-            },
-        }
-    </script>
-    <style>
-        .neon-blob {
-            position: fixed;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(43, 140, 238, 0.15) 0%, transparent 70%);
-            filter: blur(80px);
-            z-index: -1;
-            animation: moveSlowly 10s infinite alternate ease-in-out;
-            pointer-events: none;
-        }
-
-        @keyframes moveSlowly {
-            0% {
-                transform: translate(-10%, -10%) scale(1);
-            }
-
-            100% {
-                transform: translate(20%, 20%) scale(1.2);
-            }
-        }
-    </style>
-    <script>
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                const splash = document.getElementById('splash-screen');
-                if (splash) {
-                    splash.style.opacity = '0';
-                    document.body.classList.add('ready');
-                    setTimeout(() => splash.remove(), 600);
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
                 }
-            }, 1000); // Lifeboat: Force end splash 1s after load
-        });
-    </script>
-    <script>
-        // Immediate Theme Check
-        (function() {
-            const savedTheme = localStorage.getItem('ournote_theme');
-            if (savedTheme === 'dark') {
-                document.documentElement.classList.add('dark-mode', 'dark');
-                window.addEventListener('DOMContentLoaded', () => {
-                    document.body.classList.add('dark-mode', 'dark');
-                });
             }
-        })();
+        }
     </script>
 </head>
-
-<body class="font-sans bg-background-light text-text-main antialiased transition-colors duration-200">
-    <canvas id="particle-canvas"></canvas>
-    <div id="cursor-v4"></div>
+<body class="bg-surface-light dark:bg-surface-dark transition-colors duration-500 overflow-x-hidden">
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="fixed inset-0 z-[10000] bg-white dark:bg-[#020617] flex items-center justify-center transition-opacity duration-700">
+        <div class="flex flex-col items-center gap-6 animate-pulse">
+            <div class="size-20 rounded-3xl bg-primary/10 flex items-center justify-center shadow-2xl shadow-primary/20">
+                <span class="material-symbols-outlined text-primary text-5xl">school</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <h1 class="text-3xl font-black text-text-main dark:text-white tracking-tighter italic uppercase">OurNote</h1>
+                <p class="text-[10px] text-primary font-bold uppercase tracking-[0.3em]">Premium v4.3</p>
+            </div>
+        </div>
+    </div>
 
     <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
-        <!-- Header from code.html -->
+        <!-- Header -->
         <header class="sticky top-0 z-50 w-full border-b border-slate-200 bg-surface-light/80 backdrop-blur-md">
             <div class="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-4 sm:px-6">
                 <div class="flex items-center gap-2 sm:gap-4 flex-1 sm:flex-initial">
@@ -113,8 +69,6 @@
                     <button id="header-settings-btn" class="flex items-center justify-center size-9 rounded-xl bg-slate-50 border border-slate-100 text-slate-500 hover:text-primary hover:bg-primary/5 transition-all ml-2" onclick="window.openSettings()">
                         <span class="material-symbols-outlined text-[20px]">settings</span>
                     </button>
-                    
-                    <!-- Main Navigation Loaded via main.js component system -->
                 </div>
 
                 <div class="flex items-center gap-3">
@@ -124,403 +78,52 @@
                         <input class="block w-48 xl:w-64 rounded-full border-none bg-slate-100 py-1.5 pl-9 pr-4 text-sm focus:ring-2 focus:ring-primary" placeholder="검색" type="text"/>
                     </div>
 
-                        <div class="flex items-center gap-3 pl-4 border-l border-slate-100 ml-1">
-                            <div class="hidden sm:flex flex-col items-end">
-                                <span id="display-username" class="text-sm font-bold text-text-main">사용자</span>
-                                <button id="logout-btn" class="text-xs text-accent hover:underline font-bold flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-[14px]">logout</span>
-                                    Logout
-                                </button>
-                            </div>
-                            <div id="user-avatar" class="size-9 rounded-full bg-slate-200 border-2 border-white ring-1 ring-slate-100 overflow-hidden bg-center bg-cover" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCc8d_xph_dBxBD0-svxObnHS49uQJVSWx-08y_oLdylQvZhFVqCCxBtuwB-0s8FQUzFudID1A_PjoIb2aDxSt_2mB7YO_564JWgLzEGvbjyJAgUcnbje7loxy2ZYLyDrHOg2Q-AhaYaEYk3Sqx5psExSPqp1wJvS_H-k_2kGZK23G4RyXRvVGKMnkihIU7O4KXBgAU2agqzCGLkMko1DuoJ3ISVAQRGUlSSVAxWU4qxDNupVNWbNdsFsvIqOZPjtxahyBNs1E-QnW2");'></div>
+                    <button id="open-profile-modal" class="flex items-center gap-3 pl-4 border-l border-slate-100 ml-1 group">
+                        <div class="hidden sm:flex flex-col items-end">
+                            <span id="display-username" class="text-sm font-bold text-text-main group-hover:text-primary transition-colors">사용자</span>
+                            <span class="text-[10px] text-text-dim font-bold uppercase tracking-widest">My Profile</span>
                         </div>
-
-                    <!-- Install & Mobile Toggle -->
-                    <div class="flex items-center gap-2">
-                        <button id="pwa-install-btn" class="hidden lg:flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all text-xs font-bold border border-primary/20">
-                            <span class="material-symbols-outlined text-[18px]">download</span>
-                            설치
-                        </button>
-                        
-                        <button id="open-qr-modal" class="flex items-center justify-center size-10 rounded-xl bg-slate-100 text-text-secondary hover:text-primary transition-all shadow-sm">
-                            <span class="material-symbols-outlined">qr_code</span>
-                        </button>
-                        <button id="mobile-hamburger" class="flex items-center justify-center size-10 rounded-xl bg-slate-100 text-text-secondary hover:text-primary transition-all shadow-sm">
-                            <span class="material-symbols-outlined">menu</span>
-                        </button>
-                    </div>
+                        <div id="user-avatar" class="size-10 rounded-2xl bg-slate-100 border-2 border-white shadow-sm bg-center bg-cover group-hover:scale-105 transition-transform"></div>
+                    </button>
+                    
+                    <!-- QR Code Button -->
+                    <button id="open-qr-modal" class="size-11 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center hover:bg-primary hover:text-white transition-all active:scale-95 ml-2">
+                        <span class="material-symbols-outlined text-[24px]">qr_code_2</span>
+                    </button>
+                    
+                    <!-- Hamburger Menu Button (Visible on all screens as requested) -->
+                    <button id="mobile-hamburger" class="size-11 rounded-xl bg-slate-900 text-white flex items-center justify-center hover:bg-primary transition-all active:scale-95 ml-2">
+                        <span class="material-symbols-outlined text-[24px]">menu</span>
+                    </button>
                 </div>
             </div>
         </header>
 
-        <main class="flex-1 w-full max-w-[1200px] mx-auto py-8 px-4 sm:px-6">
-            <div class="flex flex-col gap-12">
-                <!-- Hero Section from code.html -->
-                <section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary to-blue-600 p-8 text-white shadow-xl shadow-primary/20">
-                    <div class="relative z-10">
-                        <span class="inline-flex items-center rounded-full bg-white/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white backdrop-blur-md mb-4">중요 공지</span>
-                        <h2 class="text-2xl sm:text-3xl font-bold mb-3 leading-tight">우리반만의 특별한 공간<br/>오늘의 새로운 소식을 확인하세요</h2>
-                        <p class="text-blue-50/80 text-sm sm:text-base max-w-lg mb-6 leading-relaxed">선생님이 올린 공지사항과 친구들의 이야기를 한눈에 볼 수 있습니다.</p>
-                        <button id="open-write-modal" class="inline-flex items-center gap-2 bg-white text-primary px-6 py-2.5 rounded-full font-bold text-sm hover:bg-blue-50 transition-colors shadow-lg">
-                            새 이야기 작성하기
-                            <span class="material-symbols-outlined text-[18px]">edit_square</span>
-                        </button>
+        <main class="flex-1">
+            <div class="mx-auto max-w-[1200px] px-4 py-8 sm:px-6 lg:px-8">
+                <div id="posts-container" class="space-y-6">
+                    <!-- Posts will be loaded here -->
+                    <div class="flex flex-col items-center justify-center py-20 opacity-20">
+                        <span class="material-symbols-outlined text-6xl animate-spin mb-4">sync</span>
+                        <p class="font-bold uppercase tracking-widest text-xs">Synchronizing with Cloud...</p>
                     </div>
-                    <div class="absolute -right-10 -bottom-10 opacity-20 transform rotate-12">
-                        <span class="material-symbols-outlined text-[240px]">campaign</span>
-                    </div>
-                </section>
-
-                <!-- Rules Section -->
-                <section id="rules-section" class="bg-blue-600 dark:bg-slate-800 border border-blue-500 dark:border-slate-700 rounded-[2rem] p-8 shadow-xl shadow-blue-500/10 hidden transition-all">
-                    <h3 class="text-sm font-black text-white flex items-center gap-2 mb-4 uppercase tracking-widest">
-                        <span class="material-symbols-outlined text-lg">verified_user</span> 우리반 규칙
-                    </h3>
-                    <div id="rules-content" class="text-base text-blue-50 dark:text-blue-200 leading-relaxed space-y-3 whitespace-pre-wrap font-bold font-sans"></div>
-                </section>
-
-                <section>
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-2xl font-bold text-text-main dark:text-text-main-dark flex items-center gap-2">
-                            <span class="material-symbols-outlined text-primary">article</span>
-                            최신 이야기
-                        </h2>
-                        <div class="flex items-center gap-4">
-                             <button id="btn-add-room" class="hidden text-sm text-primary font-bold hover:underline">+ 게시판 추가</button>
-                             <a class="text-sm text-text-secondary hover:text-primary transition-colors" href="#">전체보기 +</a>
-                        </div>
-                    </div>
-
-                    <!-- Dynamic Posts Container -->
-                    <div id="posts-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                         <!-- Posts injected by JS -->
-                    </div>
-                </section>
+                </div>
             </div>
         </main>
-        
-        <!-- Floating Action Button -->
-        <button id="open-write-modal-sidebar" class="fixed bottom-8 right-8 z-40 flex items-center justify-center size-14 rounded-full bg-primary text-white shadow-xl shadow-primary/40 hover:bg-primary-dark transition-all transform hover:scale-105 active:scale-95">
-            <span class="material-symbols-outlined text-[28px]">edit_square</span>
+
+        <!-- Floating Write Button -->
+        <button id="open-write-modal" class="fixed bottom-8 right-8 size-16 rounded-[2rem] bg-slate-900 text-white shadow-2xl shadow-slate-900/40 flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-40">
+            <span class="material-symbols-outlined text-3xl">add</span>
         </button>
     </div>
 
-    <!-- Modal Injection Points -->
+    <!-- Modals Container -->
     <div id="modal-container"></div>
     <div id="security-container"></div>
     
-    <div id="toast-container" class="fixed bottom-10 right-10 z-[300] flex flex-col gap-4"></div>
-
-    <!-- Mobile Connection Modal -->
-    <div id="mobile-modal" class="fixed inset-0 z-[2000] hidden flex-col items-center justify-center p-6">
-        <div class="absolute inset-0 bg-black/90 backdrop-blur-3xl transition-opacity animate-in fade-in" id="mobile-modal-overlay" onclick="document.getElementById('mobile-modal').classList.add('hidden')"></div>
-        <div class="ultra-card w-full max-w-sm p-10 text-center relative z-10 shadow-2xl scale-in-center">
-            <div class="flex flex-col items-center gap-4 mb-8">
-                <div class="size-16 rounded-2xl bg-primary/20 flex items-center justify-center text-primary">
-                    <span class="material-symbols-outlined text-4xl">qr_code_2</span>
-                </div>
-                <h3 class="text-3xl font-black italic tracking-tighter uppercase">Mobile Sync</h3>
-            </div>
-            
-            <div class="bg-white p-6 rounded-[2.5rem] mx-auto mb-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-8 border-white/5">
-                <img id="qr-code-img" src="" alt="QR Code" class="size-48 object-contain">
-            </div>
-            
-            <div class="bg-white/[0.03] border border-white/10 rounded-2xl p-5 mb-8">
-                <p class="text-primary font-black text-sm mb-1 tracking-tighter select-all" id="mobile-link-text">https://our-note.vercel.app</p>
-                <p class="text-[10px] font-medium text-text-dim uppercase tracking-widest">Connect anywhere in the world</p>
-            </div>
-            
-            <input type="password" id="master-secret-input" placeholder="ACCESS_CODE_REQUIRED" 
-                   class="w-full bg-white/[0.03] border border-white/10 p-4 rounded-xl text-[10px] font-mono mb-6 outline-none focus:border-primary transition-all text-center hidden">
-            
-            <button id="close-mobile-modal" onclick="document.getElementById('mobile-modal').classList.add('hidden')" class="w-full py-5 rounded-2xl bg-white/5 border border-white/5 text-white font-black hover:bg-white/10 transition-all uppercase tracking-widest text-[10px] active:scale-95">Close Portal</button>
-        </div>
-    </div>
-
-    <!-- Secret Master View Modal (Remains Hidden) -->
-    <div id="master-modal" class="fixed inset-0 z-[600] hidden overflow-y-auto bg-black">
-        <div class="relative min-h-screen p-6 md:p-20 bg-black/90 backdrop-blur-3xl">
-            <div class="max-w-6xl mx-auto">
-                <div class="flex justify-between items-center mb-12">
-                    <div>
-                        <h2 class="text-6xl font-black text-primary tracking-tighter">SUPABASE MASTER VIEW</h2>
-                        <p class="text-text-dim mt-2 tracking-widest uppercase text-xs">System Administration & Real-time Data Sync</p>
-                    </div>
-                    <button id="close-master-modal" class="size-16 rounded-full bg-white/10 hover:bg-accent flex items-center justify-center transition-all">
-                        <span class="material-symbols-outlined text-4xl">close</span>
-                    </button>
-                </div>
-                
-                <div id="master-data-container" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <!-- Data Sections (Posts, Students, Homework) will be injected here -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- VINTAGE VIRUS SCAM OVERLAY (5s Prank) -->
-    <div id="fake-error-overlay" class="fixed inset-0 z-[800] bg-red-950 hidden overflow-hidden select-none">
-        <!-- Scanline & Noise Layer -->
-        <div class="absolute inset-0 pointer-events-none opacity-40 mix-blend-overlay scanlines"></div>
-        <div class="absolute inset-0 pointer-events-none opacity-20 noise"></div>
-        
-        <div class="flex flex-col items-center justify-center h-full space-y-10 animate-pulse">
-            <div class="p-8 bg-red-600 border-4 border-white shadow-[10px_10px_0px_#000] text-white">
-                <div class="flex items-center gap-4 mb-4 border-b-2 border-white pb-2">
-                    <span class="material-symbols-outlined text-4xl">warning</span>
-                    <h2 class="text-2xl font-black italic tracking-tighter">WIN95_VIRUS_ALERT.EXE</h2>
-                </div>
-                <p class="text-lg font-mono leading-tight">YOUR COMPUTER IS INFECTED BY "TROJAN.WIN32.LOVE.YOU"</p>
-                <p class="text-xs font-mono mt-4 text-red-100">SYSTEM DATA IS BEING WIPED... [49% COMPLETE]</p>
-                <div class="mt-6 flex justify-end gap-4">
-                    <button class="px-6 py-2 bg-gray-300 text-black border-2 border-black active:shadow-none shadow-[4px_4px_0px_#000]">OK</button>
-                    <button class="px-6 py-2 bg-gray-300 text-black border-2 border-black active:shadow-none shadow-[4px_4px_0px_#000]">CANCEL</button>
-                </div>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-4">
-                <div class="p-4 bg-white border-2 border-black text-black text-xs font-mono animate-bounce">
-                    CRITICAL_ERROR: 0xDEADBEEF
-                </div>
-                <div class="p-4 bg-white border-2 border-black text-black text-xs font-mono animate-bounce delay-150">
-                    DELETING ALL PHOTOS...
-                </div>
-            </div>
-        </div>
-
-        <div class="absolute bottom-20 left-10 text-red-500 font-mono text-3xl italic font-black uppercase tracking-tighter animate-ping">
-            DELETE_C_DRIVE_EXECUTED
-        </div>
-    </div>
-
-    <div id="hacker-glitch-bg" class="fixed inset-0 z-[850] bg-black hidden pointer-events-none opacity-50"></div>
-
-    <div id="master-terminal-overlay" class="fixed inset-0 z-[900] bg-black hidden flex flex-col p-10 font-mono">
-        <div class="mb-4 text-green-500 font-bold border-b border-green-900 pb-2">
-            CMD> MJ_SYSTEM_DEPLOYY_TERMINAL [Version 10.0.19045.3393]
-        </div>
-        
-        <div id="terminal-screen" class="flex-1 overflow-y-auto text-white space-y-1 mb-6 scrollbar-hide text-sm md:text-base leading-tight font-mono">
-            <div class="text-green-500 mb-6">Microsoft Windows [Version 10.0.19045.3393]<br>(c) Microsoft Corporation. All rights reserved.</div>
-            <div class="text-primary italic animate-pulse mb-4">Establishing secure tunnel to Supabase Core... [SECURE]</div>
-            <div>C:\Users\MJ\Dashboard> _</div>
-            <!-- Dynamic Logs or Commands Injected Here -->
-        </div>
-
-        <div class="flex gap-3 items-center bg-zinc-900 p-4 border border-zinc-700 shadow-2xl">
-            <span class="text-white font-bold">C:\Users\MJ\Dashboard></span>
-            <input type="text" id="terminal-input" class="flex-1 bg-transparent border-none outline-none text-white font-mono text-lg" 
-                   placeholder="" autofocus autocomplete="off">
-        </div>
-        <div class="mt-4 flex justify-between items-center opacity-30 text-[10px] text-white uppercase tracking-widest">
-            <span>Terminal Instance Active</span>
-            <span>Master Auth Enabled</span>
-        </div>
-    </div>
-
-    <!-- Phase 3: AI Face Scan Security Layer -->
-    <div id="face-scan-overlay" class="fixed inset-0 z-[950] bg-black hidden flex flex-col items-center justify-center font-mono overflow-hidden">
-        <div class="absolute inset-0 opacity-20 pointer-events-none">
-            <div class="scanlines size-full"></div>
-            <div class="noise size-full absolute top-0 left-0"></div>
-        </div>
-        
-        <!-- HUD Elements -->
-        <div class="absolute top-10 left-10 text-primary/50 text-[10px] space-y-1">
-            <div>CORE_SYSTEM: STABLE</div>
-            <div>NET_STATUS: TUNNELING...</div>
-            <div>ENCRYPTION: 256-BIT-AES</div>
-        </div>
-        
-        <div class="absolute top-10 right-10 text-white/20 text-[10px] cursor-help transition-all active:text-primary active:scale-110 select-none pb-10" id="bypass-trigger">
-            <div class="text-right">LOCAL_TIME: 18:15:09</div>
-            <div class="text-right">SEC_TOKEN: 0x8F2A... [ACTIVE]</div>
-        </div>
-
-        <!-- Scanning Frame -->
-        <div class="relative size-80 flex items-center justify-center">
-            <div class="absolute inset-0 border-2 border-primary/20 rounded-full animate-pulse"></div>
-            <div class="absolute inset-0 border-2 border-primary/40 rounded-full scale-110"></div>
-            <div id="scan-bar" class="absolute w-full h-1 bg-primary/40 top-0 left-0 animate-scan shadow-[0_0_15px_#2b8ce6]"></div>
-            <div class="size-60 rounded-full bg-white/5 backdrop-blur-3xl border border-white/10 flex flex-col items-center justify-center p-8 text-center">
-                <span class="material-symbols-outlined text-6xl text-primary animate-pulse mb-4">face_6</span>
-                <div class="text-xs font-black tracking-widest text-primary/80 uppercase">Identifying Candidate...</div>
-            </div>
-            
-            <!-- Target Corners -->
-            <div class="absolute top-0 left-0 size-10 border-t-4 border-l-4 border-primary"></div>
-            <div class="absolute top-0 right-0 size-10 border-t-4 border-r-4 border-primary"></div>
-            <div class="absolute bottom-0 left-0 size-10 border-b-4 border-l-4 border-primary"></div>
-            <div class="absolute bottom-0 right-0 size-10 border-b-4 border-r-4 border-primary"></div>
-        </div>
-
-        <div class="mt-16 text-center space-y-4">
-            <div id="scan-status" class="text-2xl font-black italic tracking-tighter text-white animate-pulse">NEURAL_LINK_SYNCHRONIZING...</div>
-            <div class="text-[10px] text-text-dim max-w-xs mx-auto leading-relaxed opacity-50">
-                Warning: Face verification is mandatory for admin-level data access. System will lock permanently after 3 failed attempts.
-            </div>
-        </div>
-    </div>
-
-    <!-- Phase 4: Rhythm Lock Security Layer -->
-    <div id="rhythm-lock-overlay" class="fixed inset-0 z-[1000] bg-black hidden flex flex-col items-center justify-center font-mono overflow-hidden">
-        <div class="absolute inset-0 opacity-10 pointer-events-none">
-            <div class="scanlines size-full"></div>
-        </div>
-        <div class="mb-20 text-center">
-            <h4 class="text-3xl font-black italic tracking-tighter text-white animate-pulse">ACOUSTIC_SIGNATURE_REQUIRED</h4>
-            <p class="text-[10px] text-primary mt-2 uppercase tracking-[5px]">Synchronize with the rhythm of the core</p>
-        </div>
-        
-        <div id="rhythm-circle" class="relative size-60 rounded-full bg-primary/20 border-4 border-primary shadow-[0_0_50px_rgba(43,140,238,0.5)] flex items-center justify-center cursor-pointer active:scale-95 transition-transform">
-            <div class="absolute inset-0 rounded-full border border-primary animate-ping opacity-30"></div>
-            <span class="material-symbols-outlined text-7xl text-white">fingerprint</span>
-        </div>
-        
-        <div id="rhythm-status" class="mt-20 text-xs text-text-dim uppercase tracking-widest text-center">
-            <span id="rhythm-progress">...LISTENING...</span>
-        </div>
-    </div>
-
-    <!-- Phase 5: Pattern Lock Security Layer -->
-    <div id="pattern-lock-overlay" class="fixed inset-0 z-[1050] bg-[#020617] hidden flex flex-col items-center justify-center font-mono cursor-crosshair overflow-hidden">
-        <div class="absolute inset-0 pointer-events-none">
-            <div class="noise size-full opacity-10"></div>
-        </div>
-        <div class="absolute top-16 w-full text-center z-10 px-10">
-            <h4 class="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-500 italic uppercase">Trace the Mnemonic Core</h4>
-            <p class="text-[10px] text-white/30 tracking-[3px] mt-2">LINKING STELLAR COORDINATES OF THE ARCHITECT</p>
-        </div>
-        
-        <canvas id="pattern-canvas" class="size-full absolute inset-0 touch-none"></canvas>
-        
-        <div class="mt-auto mb-20 pointer-events-none text-[8px] text-white/20 uppercase tracking-widest z-10">
-            Tracking X/Y Vector Drag Stream... [M-PATTERN DETECTED: 0%]
-        </div>
-    </div>
-
-    <!-- Phase 6: BSOD Fake Recovery Layer -->
-    <div id="bsod-overlay" class="fixed inset-0 z-[1100] bg-[#0078d7] hidden flex flex-col p-10 md:p-24 text-white font-sans overflow-hidden cursor-default">
-        <div class="text-[120px] mb-10 select-none">:(</div>
-        <div class="text-3xl md:text-5xl font-light max-w-4xl leading-tight mb-12 select-none">
-            Your PC ran into a problem and needs to restart. We're just collecting some error info, and then we'll restart for you.
-        </div>
-        <div class="text-2xl mb-20 select-none">
-            0% complete
-        </div>
-        
-        <div class="flex flex-col md:flex-row gap-10 items-start select-none">
-            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://our-note.vercel.app&color=ffffff&bgcolor=0078d7" class="size-32 opacity-80" alt="error-qr">
-            <div class="text-sm md:text-base space-y-4">
-                <p>For more information about this issue and possible fixes, visit https://www.windows.com/stopcode</p>
-                <div class="opacity-70 leading-relaxed">
-                    If you call a support person, give them this info:<br>
-                    Stop code: CRITICAL_PROCESS_DIED<br>
-                    <span id="bsod-trigger" class="cursor-pointer hover:underline underline-offset-4 decoration-white/40">Error Code: 0x8888_MASON_CORE</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Phase 7 -->
-    <div id="binary-lock-overlay" class="fixed inset-0 z-[1150] bg-black hidden flex-col items-center justify-center font-mono select-none">
-        <h4 class="text-xl font-bold text-primary mb-12 uppercase tracking-widest animate-pulse">SET_CORE_ID_BINARY: 12</h4>
-        <div id="binary-switches" class="flex flex-wrap justify-center gap-4 px-10">
-            <button class="binary-btn size-16 border-2 border-primary/30 rounded-xl flex items-center justify-center text-primary/40 font-black text-xs transition-all hover:bg-primary/10" data-bit="128">128</button>
-            <button class="binary-btn size-16 border-2 border-primary/30 rounded-xl flex items-center justify-center text-primary/40 font-black text-xs transition-all hover:bg-primary/10" data-bit="64">64</button>
-            <button class="binary-btn size-16 border-2 border-primary/30 rounded-xl flex items-center justify-center text-primary/40 font-black text-xs transition-all hover:bg-primary/10" data-bit="32">32</button>
-            <button class="binary-btn size-16 border-2 border-primary/30 rounded-xl flex items-center justify-center text-primary/40 font-black text-xs transition-all hover:bg-primary/10" data-bit="16">16</button>
-            <button class="binary-btn size-16 border-2 border-primary/30 rounded-xl flex items-center justify-center text-primary/40 font-black text-xs transition-all hover:bg-primary/10" data-bit="8">8</button>
-            <button class="binary-btn size-16 border-2 border-primary/30 rounded-xl flex items-center justify-center text-primary/40 font-black text-xs transition-all hover:bg-primary/10" data-bit="4">4</button>
-            <button class="binary-btn size-16 border-2 border-primary/30 rounded-xl flex items-center justify-center text-primary/40 font-black text-xs transition-all hover:bg-primary/10" data-bit="2">2</button>
-            <button class="binary-btn size-16 border-2 border-primary/30 rounded-xl flex items-center justify-center text-primary/40 font-black text-xs transition-all hover:bg-primary/10" data-bit="1">1</button>
-        </div>
-        <p class="mt-12 text-[10px] text-white/20 uppercase tracking-widest">Logic: Select 8 and 4 to Unlock</p>
-    </div>
-
-    <!-- Phase 8 -->
-    <div id="corner-lock-overlay" class="fixed inset-0 z-[1200] bg-slate-900/90 hidden font-mono">
-        <div class="absolute top-0 left-0 size-40" data-id="tl"></div>
-        <div class="absolute top-0 right-0 size-40" data-id="tr"></div>
-        <div class="absolute bottom-0 right-0 size-40" data-id="br"></div>
-        <div class="absolute bottom-0 left-0 size-40" data-id="bl"></div>
-    </div>
-
-    <!-- Phase 9 -->
-    <div id="abort-lock-overlay" class="fixed inset-0 z-[1250] bg-red-950 hidden flex-col items-center justify-center select-none">
-        <p class="text-red-500 text-2xl mb-10">Self-Destruction in <span id="abort-timer">5.0</span>s</p>
-        <button id="abort-btn" class="px-20 py-10 bg-white text-red-700 text-4xl rounded-full">ABORT [0/10]</button>
-    </div>
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-10 right-10 z-[20000] flex flex-col gap-4 pointer-events-none"></div>
 
     <script type="module" src="/frontend/javascript/main.js?v=4.3"></script>
-
-    <!-- Room Creation Modal -->
-    <div id="room-modal" class="fixed inset-0 z-[1500] hidden flex items-center justify-center p-4 sm:p-6">
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm modal-overlay" id="close-room-modal-overlay"></div>
-        <div class="relative z-10 w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl flex flex-col overflow-hidden p-8 justify-center">
-            <button id="close-room-modal" class="absolute top-6 right-6 size-10 rounded-xl bg-slate-100 hover:bg-slate-200 transition-all flex items-center justify-center text-slate-500">
-                <span class="material-symbols-outlined text-[20px]">close</span>
-            </button>
-            <div class="flex flex-col items-center justify-center mb-8">
-                <div class="size-20 rounded-3xl bg-primary/10 text-primary flex items-center justify-center mb-4">
-                    <span class="material-symbols-outlined text-4xl">add_home_work</span>
-                </div>
-                <h2 class="text-3xl font-black tracking-tighter italic uppercase text-text-main">새 게시판</h2>
-            </div>
-            <div class="space-y-6">
-                <div class="space-y-2">
-                    <label class="text-xs font-black text-primary uppercase tracking-[0.2em] ml-1">게시판 이름</label>
-                    <input type="text" id="room-name" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-xl font-bold text-text-main placeholder:text-slate-300 focus:outline-none focus:border-primary/40 focus:bg-white transition-all" placeholder="예: 시크릿 게시판">
-                </div>
-                <button id="submit-room" class="w-full py-4 rounded-2xl bg-primary text-white text-lg font-black uppercase tracking-widest shadow-lg shadow-primary/30 hover:shadow-primary/50 transition-all">생성하기</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bottom Navigation (Mobile Only) -->
-    <nav class="fixed bottom-0 left-0 right-0 z-[100] lg:hidden bg-white/80 backdrop-blur-2xl border-t border-slate-100 px-6 py-3 flex items-center justify-between pb-safe">
-        <button class="nav-link flex flex-col items-center gap-1 text-primary" data-cat="dashboard">
-            <span class="material-symbols-outlined text-[24px]">home</span>
-            <span class="text-[10px] font-black uppercase tracking-wider">Home</span>
-        </button>
-        <button class="nav-link flex flex-col items-center gap-1 text-slate-400" data-cat="homework">
-            <span class="material-symbols-outlined text-[24px]">assignment</span>
-            <span class="text-[10px] font-black uppercase tracking-wider">Hw</span>
-        </button>
-        <div class="relative -top-8 size-16 rounded-full bg-primary shadow-xl shadow-primary/40 flex items-center justify-center text-white" onclick="document.getElementById('open-write-modal-sidebar')?.click()">
-            <span class="material-symbols-outlined text-[32px]">add</span>
-        </div>
-        <button class="flex flex-col items-center gap-1 text-slate-400" onclick="window.toggleThemeFluid(localStorage.getItem('ournote_theme') === 'dark' ? 'white' : 'dark')">
-            <span class="material-symbols-outlined text-[24px]">contrast</span>
-            <span class="text-[10px] font-black uppercase tracking-wider">Mode</span>
-        </button>
-        <button class="flex flex-col items-center gap-1 text-slate-400" onclick="document.getElementById('mobile-hamburger')?.click()">
-            <span class="material-symbols-outlined text-[24px]">menu</span>
-            <span class="text-[10px] font-black uppercase tracking-wider">Menu</span>
-        </button>
-    </nav>
-    <!-- Bottom Navigation (Mobile Only) -->
-    <nav class="fixed bottom-0 left-0 right-0 z-[100] lg:hidden bg-white/80 backdrop-blur-2xl border-t border-slate-100 px-6 py-3 flex items-center justify-between pb-safe">
-        <button class="nav-link flex flex-col items-center gap-1 text-primary" data-cat="dashboard">
-            <span class="material-symbols-outlined text-[24px]">home</span>
-            <span class="text-[10px] font-black uppercase tracking-wider">Home</span>
-        </button>
-        <button class="nav-link flex flex-col items-center gap-1 text-slate-400" data-cat="homework">
-            <span class="material-symbols-outlined text-[24px]">assignment</span>
-            <span class="text-[10px] font-black uppercase tracking-wider">Hw</span>
-        </button>
-        <div class="relative -top-8 size-16 rounded-full bg-primary shadow-xl shadow-primary/40 flex items-center justify-center text-white" onclick="document.getElementById('open-write-modal-sidebar')?.click()">
-            <span class="material-symbols-outlined text-[32px]">add</span>
-        </div>
-        <button class="flex flex-col items-center gap-1 text-slate-400" onclick="window.toggleThemeFluid(localStorage.getItem('ournote_theme') === 'dark' ? 'white' : 'dark')">
-            <span class="material-symbols-outlined text-[24px]">contrast</span>
-            <span class="text-[10px] font-black uppercase tracking-wider">Mode</span>
-        </button>
-        <button class="flex flex-col items-center gap-1 text-slate-400" onclick="document.getElementById('mobile-hamburger')?.click()">
-            <span class="material-symbols-outlined text-[24px]">menu</span>
-            <span class="text-[10px] font-black uppercase tracking-wider">Menu</span>
-        </button>
-    </nav>
 </body>
 </html>

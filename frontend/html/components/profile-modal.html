@@ -1,0 +1,92 @@
+<div id="profile-modal" class="fixed inset-0 z-[11000] hidden overflow-hidden">
+    <div id="close-profile-overlay" class="absolute inset-0 bg-slate-900/40 backdrop-blur-xl transition-opacity duration-500 opacity-0 modal-overlay"></div>
+    
+    <div class="modal-v4 full-screen bg-surface-light flex flex-col shadow-none border-0">
+        <!-- Header -->
+        <div class="px-8 pt-12 pb-6 flex justify-between items-center shrink-0 border-b border-slate-100/50">
+            <div class="flex flex-col">
+                <h2 class="text-4xl font-black tracking-tighter italic uppercase text-text-main">내 프로필</h2>
+                <p class="text-[10px] text-primary font-bold uppercase tracking-[0.3em]">User Profile Settings</p>
+            </div>
+            <button id="close-profile-modal" class="size-14 rounded-2xl bg-slate-100 hover:bg-primary hover:text-white flex items-center justify-center transition-all shadow-sm">
+                <span class="material-symbols-outlined text-[32px]">close</span>
+            </button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto custom-scrollbar p-8 md:p-20">
+            <div class="max-w-2xl mx-auto flex flex-col items-center py-10 space-y-16">
+                
+                <!-- Avatar Section -->
+                <div class="relative group">
+                    <div id="modal-user-avatar" class="size-56 md:size-64 rounded-[4rem] bg-slate-100 border-8 border-white shadow-2xl bg-center bg-cover transition-transform group-hover:scale-105" style="background-image: url('');"></div>
+                    
+                    <div class="absolute -bottom-6 -right-6 flex flex-col gap-3">
+                        <!-- Custom Upload -->
+                        <button id="trigger-avatar-upload" class="size-16 rounded-2xl bg-slate-800 text-white shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
+                            <span class="material-symbols-outlined text-3xl">photo_camera</span>
+                        </button>
+                        <!-- Random Seed -->
+                        <button id="random-avatar-btn" class="size-14 rounded-2xl bg-primary text-white shadow-xl shadow-primary/30 flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
+                            <span class="material-symbols-outlined text-2xl">cached</span>
+                        </button>
+                    </div>
+                    <input type="file" id="avatar-upload-input" class="hidden" accept="image/*">
+                </div>
+
+                <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Name (Read Only) -->
+                    <div class="p-8 rounded-[2.5rem] bg-slate-50 border border-slate-100 space-y-3">
+                        <p class="text-[10px] font-black text-text-dim uppercase tracking-widest">Real Name</p>
+                        <h3 id="modal-user-name" class="text-3xl font-black text-text-main tracking-tighter">사용자 이름</h3>
+                        <p id="modal-user-role" class="text-xs font-bold text-primary uppercase tracking-widest">Student</p>
+                    </div>
+
+                    <!-- Nickname (Editable) -->
+                    <div class="p-8 rounded-[2.5rem] bg-white border-2 border-primary/20 shadow-xl shadow-primary/5 space-y-3 focus-within:border-primary transition-all">
+                        <p class="text-[10px] font-black text-primary uppercase tracking-widest">Nickname</p>
+                        <input type="text" id="modal-user-nickname" class="w-full bg-transparent text-3xl font-black text-text-main tracking-tighter outline-none placeholder:text-slate-200" placeholder="닉네임 입력...">
+                        <p class="text-[10px] text-text-dim font-bold uppercase tracking-widest">나를 표현할 이름을 지어보세요</p>
+                    </div>
+                </div>
+
+                <!-- Action Menu -->
+                <div class="w-full space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <button onclick="window.openSettings(); document.getElementById('close-profile-modal').click();" class="p-8 rounded-[2.5rem] bg-slate-50 border border-slate-100 flex items-center gap-6 hover:border-primary/50 hover:bg-primary/5 transition-all group">
+                            <div class="size-14 rounded-2xl bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-primary transition-colors">
+                                <span class="material-symbols-outlined text-2xl">settings</span>
+                            </div>
+                            <div class="text-left">
+                                <p class="font-black text-text-main text-lg">환경 설정</p>
+                                <p class="text-xs text-text-dim font-bold">테마, 글꼴, 보안 설정</p>
+                            </div>
+                        </button>
+
+                        <button id="profile-logout-btn" class="p-8 rounded-[2.5rem] bg-red-50/30 border border-red-100 flex items-center gap-6 hover:bg-red-500 hover:text-white transition-all group">
+                            <div class="size-14 rounded-2xl bg-white border border-red-100 flex items-center justify-center text-red-500 transition-colors">
+                                <span class="material-symbols-outlined text-2xl">logout</span>
+                            </div>
+                            <div class="text-left">
+                                <p class="font-black text-lg">로그아웃</p>
+                                <p class="text-xs opacity-60 font-bold uppercase tracking-widest">Sign Out</p>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- Save Profile Button -->
+                    <button id="save-profile-btn" class="w-full py-8 rounded-[2.5rem] bg-slate-900 text-white font-black text-xl uppercase tracking-[0.2em] hover:bg-black hover:scale-[1.02] active:scale-95 transition-all shadow-2xl">
+                        Save Changes
+                    </button>
+                </div>
+
+                <!-- Footer Info -->
+                <div class="pt-10 w-full text-center">
+                    <div class="inline-block p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                        <p class="text-[10px] text-text-dim font-black uppercase tracking-widest mb-2">My Avatar Seed</p>
+                        <input type="text" id="avatar-seed-input" class="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 text-center font-mono text-xs font-bold focus:border-primary outline-none transition-all" placeholder="Enter seed...">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

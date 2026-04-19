@@ -1,12 +1,12 @@
 <div id="settings-modal" class="fixed inset-0 z-[10000] hidden overflow-hidden">
     <!-- Full-screen background -->
-    <div id="close-settings-overlay" class="absolute inset-0 bg-white transition-opacity duration-500 opacity-0"></div>
+    <div id="close-settings-overlay" class="absolute inset-0 bg-surface-light transition-opacity duration-500 opacity-0"></div>
     
     <!-- Full-screen Content (no rounding, no max-width) -->
-    <div class="settings-fullscreen absolute inset-0 bg-white flex flex-col overflow-hidden transition-all duration-500 translate-y-full opacity-0">
+    <div class="settings-fullscreen absolute inset-0 bg-surface-light flex flex-col overflow-hidden transition-all duration-500 translate-y-full opacity-0">
         
         <!-- Top Bar -->
-        <div class="flex items-center justify-between px-6 sm:px-10 py-5 border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-0 z-10">
+        <div class="flex items-center justify-between px-6 sm:px-10 py-5 border-b border-slate-100 bg-surface-light/80 backdrop-blur-md sticky top-0 z-10">
             <div class="flex items-center gap-3">
                 <div class="size-10 rounded-xl bg-primary/10 flex items-center justify-center">
                     <span class="material-symbols-outlined text-primary">settings</span>
@@ -36,8 +36,8 @@
                     <p class="text-sm text-text-secondary -mt-2">앱의 테마를 라이트 / 다크 중 선택하세요.</p>
                     
                     <div class="grid grid-cols-2 gap-4">
-                        <button id="theme-light-btn" class="theme-select-btn relative rounded-[1.5rem] border-2 border-primary bg-white p-5 flex flex-col items-center gap-3 transition-all hover:shadow-lg group">
-                            <div class="w-full aspect-[16/9] rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center mb-1 overflow-hidden relative">
+                        <button id="theme-light-btn" class="theme-select-btn relative rounded-[1.5rem] border-2 border-primary bg-surface-light p-5 flex flex-col items-center gap-3 transition-all hover:shadow-lg group">
+                            <div class="w-full aspect-[16/9] rounded-xl bg-background-light border border-slate-200 flex items-center justify-center mb-1 overflow-hidden relative">
                                 <div class="absolute inset-0 bg-gradient-to-br from-white to-slate-100"></div>
                                 <span class="material-symbols-outlined text-4xl text-amber-400 relative z-10">light_mode</span>
                             </div>
@@ -70,37 +70,81 @@
                     
                     <!-- Font Selection -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <button class="font-select-btn p-4 rounded-2xl border-2 border-slate-100 bg-slate-50 text-left transition-all hover:border-primary/30" data-font="cafe24" style="font-family: 'Cafe24SsurroundAir', sans-serif;">
+                        <button class="font-select-btn p-4 rounded-2xl border-2 border-slate-100 bg-background-light text-left transition-all hover:border-primary/30" data-font="cafe24" style="font-family: 'Cafe24SsurroundAir', sans-serif;">
                             <p class="text-xs text-text-secondary mb-1">Cafe24</p>
                             <p class="text-base font-bold">써라운드 에어</p>
                         </button>
-                        <button class="font-select-btn p-4 rounded-2xl border-2 border-slate-100 bg-slate-50 text-left transition-all hover:border-primary/30" data-font="nanum" style="font-family: 'Nanum Gothic', sans-serif;">
+                        <button class="font-select-btn p-4 rounded-2xl border-2 border-slate-100 bg-background-light text-left transition-all hover:border-primary/30" data-font="nanum" style="font-family: 'Nanum Gothic', sans-serif;">
                             <p class="text-xs text-text-secondary mb-1">Nanum Gothic</p>
                             <p class="text-base font-bold">나눔고딕</p>
                         </button>
-                        <button class="font-select-btn p-4 rounded-2xl border-2 border-slate-100 bg-slate-50 text-left transition-all hover:border-primary/30" data-font="jua" style="font-family: 'Jua', sans-serif;">
+                        <button class="font-select-btn p-4 rounded-2xl border-2 border-slate-100 bg-background-light text-left transition-all hover:border-primary/30" data-font="jua" style="font-family: 'Jua', sans-serif;">
                             <p class="text-xs text-text-secondary mb-1">Bamin</p>
                             <p class="text-base font-bold">주아체</p>
                         </button>
-                        <button class="font-select-btn p-4 rounded-2xl border-2 border-slate-100 bg-slate-50 text-left transition-all hover:border-primary/30" data-font="konkon" style="font-family: 'OngleipKonkon', sans-serif;">
+                        <button class="font-select-btn p-4 rounded-2xl border-2 border-slate-100 bg-background-light text-left transition-all hover:border-primary/30" data-font="konkon" style="font-family: 'OngleipKonkon', sans-serif;">
                             <p class="text-xs text-text-secondary mb-1">Ongleip</p>
                             <p class="text-base font-bold">온글잎 콘콘체</p>
                         </button>
-                        <button class="font-select-btn p-4 rounded-2xl border-2 border-slate-100 bg-slate-50 text-left transition-all hover:border-primary/30" data-font="score" style="font-family: 'S-CoreDream', sans-serif;">
+                        <button class="font-select-btn p-4 rounded-2xl border-2 border-slate-100 bg-background-light text-left transition-all hover:border-primary/30" data-font="score" style="font-family: 'S-CoreDream', sans-serif;">
                             <p class="text-xs text-text-secondary mb-1">S-Core Dream</p>
                             <p class="text-base font-bold">에스코어 드림</p>
                         </button>
                     </div>
 
                     <!-- Bold Toggle -->
-                    <div class="flex items-center justify-between p-5 rounded-[1.5rem] bg-slate-50 border border-slate-100">
+                    <div class="flex items-center justify-between p-5 rounded-[1.5rem] bg-background-light border border-slate-100">
                         <div>
                             <p class="font-black text-text-main">모든 텍스트 볼드체(굵게)</p>
                             <p class="text-xs text-text-secondary">강조된 느낌을 줍니다.</p>
                         </div>
-                        <button id="toggle-global-bold" class="size-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 transition-all">
+                        <button id="toggle-global-bold" class="size-12 rounded-xl bg-surface-light border border-slate-200 flex items-center justify-center text-slate-400 transition-all">
                             <span class="material-symbols-outlined">format_bold</span>
                         </button>
+                    </div>
+                </section>
+
+                <div class="border-t border-slate-100"></div>
+                
+                <!-- ═══════════════════════════════════════ -->
+                <!-- SECTION 1.3: Keyboard Shortcuts Guide   -->
+                <!-- ═══════════════════════════════════════ -->
+                <section class="space-y-6">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span class="material-symbols-outlined text-primary text-xl">keyboard</span>
+                        <h3 class="text-lg font-black text-text-main">단축키 안내</h3>
+                    </div>
+                    <p class="text-sm text-text-secondary -mt-2">앱을 더 빠르고 스마트하게 사용하는 방법입니다.</p>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="p-4 rounded-2xl bg-background-light border border-slate-100 flex items-center justify-between">
+                            <span class="text-sm font-bold text-text-main">공지사항 이동</span>
+                            <kbd class="px-3 py-1 rounded-lg bg-white border-b-4 border-slate-200 text-xs font-black text-primary tracking-widest uppercase">Alt + N</kbd>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-background-light border border-slate-100 flex items-center justify-between">
+                            <span class="text-sm font-bold text-text-main">숙제 이동</span>
+                            <kbd class="px-3 py-1 rounded-lg bg-white border-b-4 border-slate-200 text-xs font-black text-primary tracking-widest uppercase">Alt + H</kbd>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-background-light border border-slate-100 flex items-center justify-between">
+                            <span class="text-sm font-bold text-text-main">이벤트 이동</span>
+                            <kbd class="px-3 py-1 rounded-lg bg-white border-b-4 border-slate-200 text-xs font-black text-primary tracking-widest uppercase">Alt + E</kbd>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-background-light border border-slate-100 flex items-center justify-between">
+                            <span class="text-sm font-bold text-text-main">새 글 쓰기</span>
+                            <kbd class="px-3 py-1 rounded-lg bg-white border-b-4 border-slate-200 text-xs font-black text-primary tracking-widest uppercase">Alt + W</kbd>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-background-light border border-slate-100 flex items-center justify-between">
+                            <span class="text-sm font-bold text-text-main">설정 열기</span>
+                            <kbd class="px-3 py-1 rounded-lg bg-white border-b-4 border-slate-200 text-xs font-black text-primary tracking-widest uppercase">Alt + S</kbd>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-between">
+                            <span class="text-sm font-bold text-primary">QR 코드 열기</span>
+                            <kbd class="px-3 py-1 rounded-lg bg-white border-b-4 border-slate-200 text-xs font-black text-primary tracking-widest uppercase">Ctrl + K</kbd>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-between">
+                            <span class="text-sm font-bold text-primary">커맨드 메뉴 (검색)</span>
+                            <kbd class="px-3 py-1 rounded-lg bg-white border-b-4 border-slate-200 text-xs font-black text-primary tracking-widest uppercase">Ctrl + /</kbd>
+                        </div>
                     </div>
                 </section>
 
@@ -116,13 +160,13 @@
                     </div>
                     <p class="text-sm text-text-secondary -mt-2">우리만의 대화방을 즐겁게 쓰기 위한 약속입니다.</p>
                     
-                    <div id="rules-display-container" class="bg-slate-50 border border-slate-100 rounded-[1.5rem] p-6 space-y-4 transition-all">
+                    <div id="rules-display-container" class="bg-background-light border border-slate-100 rounded-[1.5rem] p-6 space-y-4 transition-all">
                         <div id="rules-text-box" class="text-sm text-text-main whitespace-pre-wrap leading-relaxed font-bold opacity-80">
                             로딩 중...
                         </div>
                         
                         <div id="rules-edit-form" class="hidden space-y-4 pt-4 border-t border-slate-200">
-                            <textarea id="rules-edit-textarea" class="w-full p-4 rounded-xl bg-white border border-slate-200 text-sm font-bold min-h-[120px] focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all outline-none" placeholder="이용 규칙을 작성해 주세요."></textarea>
+                            <textarea id="rules-edit-textarea" class="w-full p-4 rounded-xl bg-surface-light border border-slate-200 text-sm font-bold min-h-[120px] focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all outline-none" placeholder="이용 규칙을 작성해 주세요."></textarea>
                             <button id="save-rules-btn" class="w-full py-3 rounded-xl bg-primary text-white font-black text-sm shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.01] active:scale-[0.98] transition-all">
                                 규칙 변경 내용 저장
                             </button>
@@ -143,23 +187,23 @@
                     </div>
                     <p class="text-sm text-text-secondary -mt-2">6자리 PIN을 변경할 수 있습니다.</p>
                     
-                    <div class="bg-slate-50 border border-slate-100 rounded-[1.5rem] p-6 sm:p-8 space-y-5">
+                    <div class="bg-background-light border border-slate-100 rounded-[1.5rem] p-6 sm:p-8 space-y-5">
                         <div class="space-y-2">
                             <label class="text-[11px] font-black text-text-secondary uppercase tracking-widest px-1">현재 PIN</label>
                             <input id="pin-current" type="password" inputmode="numeric" maxlength="6" 
-                                class="w-full p-4 rounded-2xl bg-white border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all text-center tracking-[0.8rem] font-bold text-xl outline-none" 
+                                class="w-full p-4 rounded-2xl bg-surface-light border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all text-center tracking-[0.8rem] font-bold text-xl outline-none" 
                                 placeholder="••••••">
                         </div>
                         <div class="space-y-2">
                             <label class="text-[11px] font-black text-text-secondary uppercase tracking-widest px-1">새 PIN</label>
                             <input id="pin-new" type="password" inputmode="numeric" maxlength="6" 
-                                class="w-full p-4 rounded-2xl bg-white border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all text-center tracking-[0.8rem] font-bold text-xl outline-none" 
+                                class="w-full p-4 rounded-2xl bg-surface-light border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all text-center tracking-[0.8rem] font-bold text-xl outline-none" 
                                 placeholder="••••••">
                         </div>
                         <div class="space-y-2">
                             <label class="text-[11px] font-black text-text-secondary uppercase tracking-widest px-1">새 PIN 확인</label>
                             <input id="pin-confirm" type="password" inputmode="numeric" maxlength="6" 
-                                class="w-full p-4 rounded-2xl bg-white border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all text-center tracking-[0.8rem] font-bold text-xl outline-none" 
+                                class="w-full p-4 rounded-2xl bg-surface-light border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all text-center tracking-[0.8rem] font-bold text-xl outline-none" 
                                 placeholder="••••••">
                         </div>
                         
@@ -236,7 +280,7 @@
         </div>
 
         <!-- Logout Button at Bottom -->
-        <div class="border-t border-slate-100 bg-white px-6 sm:px-10 py-4">
+        <div class="border-t border-slate-100 bg-surface-light px-6 sm:px-10 py-4">
             <div class="max-w-2xl mx-auto">
                 <button id="settings-logout-btn" class="w-full flex items-center justify-center gap-3 p-4 rounded-2xl bg-red-50 text-red-500 font-black hover:bg-red-500 hover:text-white transition-all">
                     <span class="material-symbols-outlined">logout</span>

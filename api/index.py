@@ -451,12 +451,16 @@ def add_post():
 
     # DB 실패 시 기존 JSON 방식 폴백
     def update_fn(posts):
-        posts = posts or []
-        new_post['id'] = uuid.uuid4().hex
-        new_post['date'] = time.strftime('%Y-%m-%d %H:%M')
-        new_post['likes'] = []
-        new_post['comments'] = []
-        posts.append(new_post)
+        if not isinstance(posts, list):
+            posts = []
+        
+        # Ensure new_post is a dict
+        post_to_add = new_post.copy() if isinstance(new_post, dict) else {}
+        post_to_add['id'] = uuid.uuid4().hex
+        post_to_add['date'] = time.strftime('%Y-%m-%d %H:%M')
+        post_to_add['likes'] = []
+        post_to_add['comments'] = []
+        posts.append(post_to_add)
         return posts
 
     update_data('posts.json', update_fn)
@@ -500,7 +504,8 @@ def create_homework():
 
         # DB 실패 시 폴백
         def update_fn(hws):
-            hws = hws or []
+            if not isinstance(hws, list):
+                hws = []
             new_hw = insert_data.copy()
             new_hw['date'] = date
             hws.append(new_hw)

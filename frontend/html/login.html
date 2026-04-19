@@ -82,6 +82,16 @@
             }, 3000); // 3s failsafe
         });
     </script>
+    <style>
+        /* 다크모드 강제 스타일 */
+        .dark-mode, .dark {
+            background-color: #020617 !important;
+            color: #f1f5f9 !important;
+        }
+        .dark-mode .bg-background-light, .dark .bg-background-light {
+            background-color: #020617 !important;
+        }
+    </style>
 </head>
 
 <body class="overflow-x-hidden font-body bg-background-light dark:bg-slate-900 transition-colors duration-300">

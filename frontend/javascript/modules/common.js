@@ -4,7 +4,7 @@
 export const state = {
     currentUser: JSON.parse(localStorage.getItem('currentUser')) || null,
     currentCategory: 'all',
-    isDashboard: window.location.pathname.includes('/dashboard')
+    isDashboard: window.location.pathname.includes('/dashboard') || !!document.getElementById('dashboard-hero') || (window.location.pathname === '/' && !!document.getElementById('posts-container'))
 };
 
 export function showToast(message, type = 'success') {

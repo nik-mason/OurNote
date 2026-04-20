@@ -180,9 +180,21 @@ def update_data(filename, update_fn):
             return new_data
         return None
 
+def invalidate_posts_cache():
+    global _cache
+    if 'posts_with_comments' in _cache:
+        del _cache['posts_with_comments']
+    if 'posts' in _cache:
+        del _cache['posts']
+
 def push_data(filename, data):
     global _cache
     name = filename.split('.')[0]
+    
+    # Specific invalidation for posts
+    if name == 'posts':
+        invalidate_posts_cache()
+        
     # Invalidate cache
     if name in _cache:
         del _cache[name]
@@ -228,8 +240,13 @@ def identify_student():
             # ID와 이름을 더 견고하게 비교 (문자열 변환 및 공백 제거)
             s_name = str(s.get('name', '')).replace(' ', '')
             s_id_str = str(s.get('id', ''))
-            
-            if s_id_str == s_id and s_name == name:
+            try:
+                # Compare as integers for flexibility (matches '1' with '01')
+                match_id = int(s_id_str) == int(s_id)
+            except (ValueError, TypeError, NameError):
+                match_id = s_id_str == s_id
+
+            if match_id and s_name == name:
                 return jsonify({"success": True, "user": {
                     "id": s.get('id'), 
                     "name": s.get('name'),
@@ -254,7 +271,13 @@ def login():
         sid = data.get('id')
         pin = data.get('pin')
         students = pull_data('students.json')
-        user = next((s for s in students if str(s.get('id')) == str(sid)), None)
+        def match_student(s):
+            try:
+                return int(s.get('id')) == int(sid)
+            except:
+                return str(s.get('id')) == str(sid)
+        
+        user = next((s for s in students if match_student(s)), None)
         
         if user:
             # 기존 평문 PIN과 새로운 해시 PIN 모두 대응 (이주 기간용)

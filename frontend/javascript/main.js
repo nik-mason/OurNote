@@ -2,7 +2,7 @@
  * OURNOTE ULTRA-ENGINE (V4 Modular)
  * Final integrated entry point.
  */
-import { state, showToast } from './modules/common.js?v=4.3';
+import { state, showToast, startRealtimePolling } from './modules/common.js?v=4.3';
 import { initSplash, initCursor, initParticles, setupModal } from './modules/ui.js?v=4.3';
 import { loadPosts, initPostForm } from './modules/posts.js?v=4.3';
 import { initAuth } from './modules/auth.js?v=4.3';
@@ -57,6 +57,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         initSettingsModal();
         initFeedbackLogic();
         initProfileLogic();
+        
+        // 🔥 실시간 업데이트 시작!
+        startRealtimePolling();
 
         if (window.updateUserAvatar) window.updateUserAvatar();
 

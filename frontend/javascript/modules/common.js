@@ -71,3 +71,63 @@ export function showConfirm(message, title = '확인') {
         cancelBtn.addEventListener('click', onCancel);
     });
 }
+
+// 🔥 실시간 업데이트 시스템! 댓글, 게시물, 카테고리 자동 반영
+let realtimePollingId = null;
+let lastPostsHash = null;
+let lastCategoriesHash = null;
+
+export function startRealtimePolling() {
+    if (realtimePollingId) clearInterval(realtimePollingId);
+    
+    // 2초마다 데이터 확인💨
+    realtimePollingId = setInterval(async () => {
+        try {
+            // 1️⃣ 게시물 확인
+            const postsRes = await fetch('/api/posts?t=' + Date.now());
+            const newPosts = await postsRes.json();
+            const newPostsHash = JSON.stringify(newPosts).slice(0, 50);
+            
+            if (lastPostsHash && newPostsHash !== lastPostsHash) {
+                console.log('🔄 게시물 변경 감지했어! 업데이트 중...');
+                window.currentPosts = newPosts;
+                
+                // 모달이 열려있으면 그걸 먼저 업데이트
+                if (window.currentOpenPostId) {
+                    const updated = newPosts.find(p => p.id === window.currentOpenPostId);
+                    if (updated && window.updateDetailContent) {
+                        window.updateDetailContent(updated, window.currentOpenIsHomework);
+                    }
+                } else {
+                    // 메인 페이지 업데이트
+                    if (window.loadPosts) {
+                        window.loadPosts();
+                    }
+                }
+            }
+            lastPostsHash = newPostsHash;
+            
+            // 2️⃣ 카테고리 확인
+            const catsRes = await fetch('/api/categories?t=' + Date.now());
+            const newCats = await catsRes.json();
+            const newCatsHash = JSON.stringify(newCats).slice(0, 50);
+            
+            if (lastCategoriesHash && newCatsHash !== lastCategoriesHash && window.refreshNavigation) {
+                console.log('📋 카테고리 변경 감지했어! 네비게이션 업데이트 중...');
+                window.refreshNavigation();
+                showToast('새로운 게시판이 추가됐어! ✨', 'info');
+            }
+            lastCategoriesHash = newCatsHash;
+            
+        } catch (err) {
+            console.warn('⚠️ 실시간 폴링 오류:', err);
+        }
+    }, 2000); // 2초마다 체크 💨
+}
+
+export function stopRealtimePolling() {
+    if (realtimePollingId) {
+        clearInterval(realtimePollingId);
+        realtimePollingId = null;
+    }
+}

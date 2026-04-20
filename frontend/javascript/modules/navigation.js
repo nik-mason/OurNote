@@ -5,6 +5,9 @@ import { state, showConfirm } from './common.js';
 import { loadPosts } from './posts.js';
 
 export function initNavigation() {
+    // 🔥 전역 함수로 카테고리 새로고침 설정 (실시간 업데이트용)
+    window.refreshNavigation = loadCategories;
+    
     // Select all nav links including dynamic ones that might be added later
     document.addEventListener('click', (e) => {
         const link = e.target.closest('.nav-link');
@@ -127,11 +130,14 @@ export function setupRoomCreation() {
         const name = input?.value.trim();
         
         if (!name) {
-            import('./common.js').then(c => c.showToast('게시판 이름을 입력해주세요.', 'error'));
+            import('./common.js').then(c => c.showToast('게시판 이름을 입력해줘! 📝', 'error'));
             return;
         }
 
         try {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span>';
+            
             const res = await fetch('/api/categories', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -139,7 +145,7 @@ export function setupRoomCreation() {
             });
 
             if (res.ok) {
-                import('./common.js').then(c => c.showToast('새 게시판이 생성되었습니다.'));
+                import('./common.js').then(c => c.showToast('새로운 게시판이 생성됐어! 🎉'));
                 const modal = document.getElementById('room-modal');
                 if(modal) modal.classList.add('hidden');
                 
@@ -149,16 +155,19 @@ export function setupRoomCreation() {
                 // Refresh list
                 loadCategories();
             } else {
-                import('./common.js').then(c => c.showToast('생성에 실패했습니다.', 'error'));
+                import('./common.js').then(c => c.showToast('생성에 실패했어 😭', 'error'));
             }
         } catch (err) {
-            import('./common.js').then(c => c.showToast('서버 오류가 발생했습니다.', 'error'));
+            import('./common.js').then(c => c.showToast('서버 오류 발생했어! 🚨', 'error'));
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span class="material-symbols-outlined">add</span>';
         }
     });
 }
 
 async function deleteCategory(id) {
-    const ok = await showConfirm('정말 이 게시판을 삭제하시겠습니까? 게시글이 모두 사라집니다.', '게시판 삭제');
+    const ok = await showConfirm('정말 이 게시판을 삭제할래? 게시글이 모두 사라져 🗑️', '게시판 삭제');
     if (!ok) return;
     
     try {
@@ -167,16 +176,16 @@ async function deleteCategory(id) {
         });
         
         if (res.ok) {
-            import('./common.js').then(c => c.showToast('게시판이 삭제되었습니다.'));
+            import('./common.js').then(c => c.showToast('게시판이 삭제됐어! 👋'));
             if (state.currentCategory === id) {
                 state.currentCategory = 'all';
                 loadPosts();
             }
             loadCategories();
         } else {
-            import('./common.js').then(c => c.showToast('삭제에 실패했습니다.', 'error'));
+            import('./common.js').then(c => c.showToast('삭제에 실패했어 😭', 'error'));
         }
     } catch (err) {
-        import('./common.js').then(c => c.showToast('서버 오류가 발생했습니다.', 'error'));
+        import('./common.js').then(c => c.showToast('서버 오류 발생했어! 🚨', 'error'));
     }
 }

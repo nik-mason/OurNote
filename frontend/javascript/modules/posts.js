@@ -927,10 +927,14 @@ window.updateDetailContent = (post, isHomework = false) => {
 
         list.innerHTML = renderCommentsList(post.comments);
 
-        // Setup comment submission
-        const submitBtn = document.getElementById('detail-submit-comment');
+        // Setup comment submission - 🔥 댓글 중복 방지를 위해 핸들러 갱신!
+        let submitBtn = document.getElementById('detail-submit-comment');
         if (submitBtn) {
-            // Using a named function to avoid cloning issues or duplication
+            // 기존 이벤트 리스너를 완전히 제거한 후 새로 추가
+            const newBtn = submitBtn.cloneNode(true);
+            submitBtn.parentNode?.replaceChild(newBtn, submitBtn);
+            submitBtn = document.getElementById('detail-submit-comment');
+            
             submitBtn.onclick = async () => {
                 if (submitBtn.disabled) return;
                 
@@ -962,7 +966,7 @@ window.updateDetailContent = (post, isHomework = false) => {
                     if (res.ok) {
                         input.value = '';
                         window.currentReplyParentId = null;
-                        showToast(payload.parent_id ? '답글이 등록되었습니다! 💬' : '댓글이 등록되었습니다! 💬');
+                        showToast(payload.parent_id ? '답글이 등록됐어! 💬' : '댓글이 등록됐어! 💬');
                         
                         // Silent refresh data
                         const postsRes = await fetch('/api/posts');
@@ -976,18 +980,18 @@ window.updateDetailContent = (post, isHomework = false) => {
                             }, 50);
                         }
                     } else {
-                        let errMsg = '댓글 등록에 실패했습니다.';
+                        let errMsg = '댓글 등록 실패했어 😭';
                         try {
                             const errData = await res.json();
                             console.error('[OurNote] Comment failed:', res.status, errData);
-                            if (errData.error) errMsg = `댓글 등록 실패: ${errData.error}`;
+                            if (errData.error) errMsg = `댓글 실패: ${errData.error}`;
                         } catch(_) {
                             console.error('[OurNote] Comment failed:', res.status, res.statusText);
                         }
                         showToast(errMsg, 'error');
                     }
                 } catch (err) {
-                    showToast('서버 오류가 발생했습니다.', 'error');
+                    showToast('서버 오류 발생했어 🚨', 'error');
                 } finally {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<span class="material-symbols-outlined text-[20px]">send</span>';

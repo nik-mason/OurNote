@@ -343,11 +343,13 @@ export async function loadPosts() {
             
             console.log('📖 Before filter - posts count:', posts.length);
             
-            // Apply category filtering if hash exists
-            if (category !== 'dashboard') {
+            // Apply category filtering: only if NOT 'all' or 'dashboard'
+            if (category !== 'dashboard' && category !== 'all') {
                 console.log('📖 Filtering by category:', category);
                 posts = posts.filter(p => p && p.category === category);
                 console.log('📖 After filter - posts count:', posts.length);
+            } else {
+                console.log('📖 No filtering - showing all posts (category:', category, ')');
             }
             
             window.currentPosts = posts;

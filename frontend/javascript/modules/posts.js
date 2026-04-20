@@ -331,6 +331,8 @@ export async function loadPosts() {
             console.log('📖 Posts response:', res.status);
             if (!res.ok) throw new Error('서버 응답 오류 (POSTS)');
             let posts = await res.json();
+            console.log('📖 Posts raw data:', posts);
+            console.log('📖 Posts is Array?', Array.isArray(posts));
             console.log('📖 Posts data:', posts.length);
             
             // Safety Check: Ensure posts is an array
@@ -339,13 +341,21 @@ export async function loadPosts() {
                 posts = [];
             }
             
+            console.log('📖 Before filter - posts count:', posts.length);
+            
             // Apply category filtering if hash exists
             if (category !== 'dashboard') {
+                console.log('📖 Filtering by category:', category);
                 posts = posts.filter(p => p && p.category === category);
+                console.log('📖 After filter - posts count:', posts.length);
             }
             
             window.currentPosts = posts;
-            console.log('📖 Rendering posts');
+            console.log('📖 window.currentPosts set to:', window.currentPosts.length);
+            console.log('📖 About to call renderPosts with:', posts.length, 'posts');
+            console.log('📖 posts object:', posts);
+            console.log('📖 posts.slice():', posts.slice());
+            console.log('📖 posts.slice().reverse():', posts.slice().reverse());
             renderPosts(posts.slice().reverse());
             console.log('✅ Posts rendered');
         }

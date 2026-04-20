@@ -1,1 +1,18 @@
-[]
+[
+    {
+        "title": "12",
+        "content": "12",
+        "category": "dashboard",
+        "author": "강단비 (#01)",
+        "user_role": "student",
+        "is_anonymous": false,
+        "image_url": "",
+        "student_id": "01",
+        "assigned_students": [],
+        "tasks": [],
+        "id": "e23ac5cb5d8a4173ba34ac88e914f40a",
+        "date": "2026-04-20 22:49",
+        "likes": [],
+        "comments": []
+    }
+]

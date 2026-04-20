@@ -289,21 +289,32 @@ export async function loadPosts() {
     // 학생 이름 캐시 (선생님 숙제 진행도 뷰용)
     if (!window.cachedStudents || window.cachedStudents.length === 0) {
         try {
+            console.log('📚 Fetching students cache');
             const sRes = await fetch('/api/students');
             window.cachedStudents = await sRes.json();
-        } catch (e) { window.cachedStudents = []; }
+            console.log('✅ Students cached:', window.cachedStudents.length);
+        } catch (e) { 
+            console.warn('⚠️ Student fetch failed:', e);
+            window.cachedStudents = []; 
+        }
     }
 
     try {
         // Render Roadmap first
+        console.log('🛣️ Rendering roadmap');
         renderRoadmap();
+        console.log('✅ Roadmap rendered');
 
         const category = window.location.hash.replace('#', '') || state.currentCategory || 'dashboard';
+        console.log('📂 Category:', category);
         
         if (category === 'homework') {
+            console.log('📝 Fetching homework');
             const res = await fetch(`/api/homework?t=${Date.now()}`);
+            console.log('📝 Homework response:', res.status);
             if (!res.ok) throw new Error('서버 응답 오류 (HW)');
             let hws = await res.json();
+            console.log('📝 Homework data:', hws.length);
             
             if (!Array.isArray(hws)) {
                 console.warn('API/HOMEWORK returned non-array:', hws);
@@ -311,11 +322,16 @@ export async function loadPosts() {
             }
             
             window.currentHomework = hws;
+            console.log('📝 Rendering homework');
             renderHomework(hws.slice().reverse());
+            console.log('✅ Homework rendered');
         } else {
+            console.log('📖 Fetching posts');
             const res = await fetch(`/api/posts?t=${Date.now()}`);
+            console.log('📖 Posts response:', res.status);
             if (!res.ok) throw new Error('서버 응답 오류 (POSTS)');
             let posts = await res.json();
+            console.log('📖 Posts data:', posts.length);
             
             // Safety Check: Ensure posts is an array
             if (!Array.isArray(posts)) {
@@ -329,7 +345,9 @@ export async function loadPosts() {
             }
             
             window.currentPosts = posts;
+            console.log('📖 Rendering posts');
             renderPosts(posts.slice().reverse());
+            console.log('✅ Posts rendered');
         }
     } catch (err) {
         console.error('Data Load Error:', err);

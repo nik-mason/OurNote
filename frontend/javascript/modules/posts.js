@@ -417,13 +417,22 @@ export function renderRoadmap() {
 }
 
 export function renderPosts(posts) {
+    console.log('🎨 renderPosts called with:', posts.length, 'posts');
     const container = document.getElementById('posts-container');
-    if (!container) return;
+    if (!container) {
+        console.warn('❌ Container not found!');
+        return;
+    }
+    console.log('✅ Container found');
     container.innerHTML = '';
+    console.log('✅ Container cleared');
     
+    console.log('📊 currentCategory:', state.currentCategory);
     const filtered = state.currentCategory === 'all' ? posts : posts.filter(p => p.category === state.currentCategory);
+    console.log('🔍 Filtered posts:', filtered.length);
     
     if (filtered.length === 0) {
+        console.log('📭 No posts to display, showing empty state');
         const illustrations = {
             'dashboard': { emoji: '✨', msg: '아직 등록된 이야기가 없어요. 첫 번째 주인공이 되어보세요!' },
             'notice': { emoji: '📢', msg: '중요한 소식이 들어오면 여기에 나타날 거예요.' },
@@ -439,9 +448,11 @@ export function renderPosts(posts) {
                 <p class="text-sm text-text-dim font-bold">새로운 소식을 기다리는 중...</p>
             </div>
         `;
+        console.log('✅ Empty state rendered');
         return;
     }
 
+    console.log('📝 Rendering', filtered.length, 'posts');
     filtered.forEach((post, index) => {
         const card = document.createElement('article');
         // Clean White Card Style + Staggered Animation

@@ -860,13 +860,8 @@ window.updateDetailContent = (post, isHomework = false) => {
                         <span class="text-[10px] font-black">답글쓰기</span>
                     </button>
                     ` : ''}
-<<<<<<< HEAD
-                    ${(state.currentUser?.role === 'teacher' || c.author === state.currentUser?.name) ? `
-                    <button onclick="window.deleteComment(${post.id}, ${c.id})" class="flex items-center gap-1 text-slate-400 hover:text-red-500 transition-colors ml-auto">
-=======
                     ${(isTeacher || (state.currentUser && String(c.author).includes(`#${state.currentUser.id}`))) ? `
                     <button onclick="window.deleteComment('${post.id}', '${c.id}')" class="flex items-center gap-1 text-slate-400 hover:text-red-500 transition-colors ml-auto">
->>>>>>> 20a8673a4ccfab95c8d4d9ff49c30a0a0008671a
                         <span class="material-symbols-outlined text-[14px]">delete</span>
                         <span class="text-[10px] font-black">삭제</span>
                     </button>

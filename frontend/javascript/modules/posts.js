@@ -261,10 +261,15 @@ window.deleteComment = async (postId, commentId) => {
 };
 
 export async function loadPosts() {
+    console.log('🔄 loadPosts started');
     const container = document.getElementById('posts-container');
-    if (!container) return;
+    if (!container) {
+        console.warn('⚠️ posts-container not found!');
+        return;
+    }
 
     // Show Skeletons immediately
+    console.log('💀 Showing skeletons');
     container.innerHTML = Array(6).fill(0).map(() => `
         <div class="skeleton-card">
             <div class="skeleton-shimmer"></div>
